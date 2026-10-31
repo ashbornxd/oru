@@ -1,5 +1,5 @@
 {
-  "name": "@orlune/oru",
+  "name": "@ashbornxd/oru",
   "version": "0.2.0",
   "description": "A Python-inspired language and compiler for building websites.",
   "type": "module",
