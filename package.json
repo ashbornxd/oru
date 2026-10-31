@@ -1,17 +1,21 @@
 {
   "name": "@orlune/oru",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.2.0",
   "description": "A simple, Python-inspired language for building websites.",
   "type": "module",
   "bin": {
     "oru": "./dist/cli.js"
   },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "tsx src/cli.ts dev",
+    "dev": "tsx src/cli.ts run dev",
     "compile": "tsx src/cli.ts build",
-    "test": "tsx --test src/*.test.ts"
+    "test": "tsx --test src/*.test.ts",
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
