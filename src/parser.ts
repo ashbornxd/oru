@@ -147,7 +147,7 @@ export function parse(source: string): OruDocument {
       continue;
     }
 
-    const elementMatch = line.match(/^([a-zA-Z]+)\s*(?:\((.*)\))?\s*:\s*$/);
+    const elementMatch = line.match(/^([a-zA-Z]+)\s*(?:\((.*)\))?\s*:?\s*$/);
     if (!elementMatch) {
       throw new OruError(`I don't understand "${line}". Check the syntax.`, index + 1);
     }
