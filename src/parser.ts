@@ -10,7 +10,7 @@ const elementTags: Record<string, string> = {
 };
 
 const styleScopes = new Set([
-  "section", "box", "stack", "grid", "heading", "text",
+  "section", "box", "stack", "grid", "nav", "heading", "text",
   "image", "button", "link", "input", "form", "video", "list", "item", "class"
 ]);
 
