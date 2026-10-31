@@ -6,16 +6,24 @@ ORU is a small, Python-inspired language for creating websites. Write your site 
 
 > ORU is an early release. Syntax and compiler behavior may change before 1.0.
 
-## Install for development
+## Requirements
 
-Requirements: Node.js 20+ and npm.
+- Node.js 20 or newer
+- npm
+
+## Install
+
+Install the ORU command-line tool:
 
 ```sh
-git clone https://github.com/ashbornxd/oru.git
-cd oru
-npm install
-npm run build
-npm link
+npm install --global @orlune/oru
+```
+
+Check the installation:
+
+```sh
+oru --version
+oru --help
 ```
 
 ## Create a project
@@ -38,7 +46,7 @@ myWeb/
 oru run dev
 ```
 
-Open http://localhost:3000. The dev server rebuilds when `main.oru` changes.
+Open http://localhost:3000. The development server rebuilds when `main.oru` changes.
 
 ## Build for production
 
@@ -63,11 +71,12 @@ Deploy the contents of `dist/` to any static web host. You do not need ORU insta
 | `oru create <name>` | Create a project with one `main.oru` file |
 | `oru run dev` | Start the local development server |
 | `oru build` | Create production-ready static files |
+| `oru --version` | Show the installed version |
 | `oru --help` | Show command help |
 
 ## Language example
 
-```python
+```oru
 title = "My first website"
 description = "Made with ORU."
 
@@ -97,9 +106,13 @@ page about:
 - Local development server
 - Optional local assets
 
-## Development
+## Contributing
+
+To work on the ORU compiler itself:
 
 ```sh
+git clone https://github.com/ashbornxd/oru.git
+cd oru
 npm install
 npm test
 npm run build
@@ -107,4 +120,4 @@ npm run build
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
