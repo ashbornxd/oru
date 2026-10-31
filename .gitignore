@@ -1,4 +1,36 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+coverage/
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+.npmrc
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Caches and temporary files
 .oru-cache/
+.cache/
+.tmp/
+temp/
+
+# Operating system files
 .DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors and IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
