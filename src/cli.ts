@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createServer } from "node:http";
 import { watch } from "node:fs";
-import { access, cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
 import { compile } from "./compiler.js";
 
@@ -41,7 +41,7 @@ function option(args: string[], name: string, fallback: string): string {
 }
 
 async function createProject(name: string): Promise<void> {
-  if (!name || name.startsWith("-")) throw new Error("Give your project a name: oru create myWebsite");
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(name)) throw new Error("Use a simple project name (letters, numbers, hyphens, underscores).");
   const target = resolve(name);
   await mkdir(target, { recursive: true });
   try {
