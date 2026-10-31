@@ -1,242 +1,559 @@
+# ORU documentation site
 title = "ORU Documentation"
-description = "Learn ORU, a simple language for building websites."
-background = "#f8f9fc"
+description = "A practical reference for every ORU element, style and layout."
+background = "#f7f8fb"
 
 class Card:
     class.background = white
     class.padding = 24
-    class.radius = 14
+    class.radius = 12
 
 class CodeBlock:
-    class.background = "#eaf0f8"
+    class.background = "#edf1f7"
     class.padding = 16
-    class.radius = 12
+    class.radius = 10
 
 page index:
     nav:
         nav.background = white
-        nav.padding = 18 6%
-        nav.gap = 24
-
+        nav.padding = 16 6%
+        nav.gap = 20
         heading("ORU"):
-            heading.size = 26
+            heading.size = 24
             heading.color = "#315efb"
-
-        link("Documentation", "index.html"):
+        link("Overview", "index.html"):
             link.color = "#315efb"
-        link("Language Guide", "guide.html"):
-            link.color = "#315efb"
-        link("GitHub", "https://github.com/ashbornxd/oru"):
-            link.color = "#315efb"
+        link("Elements", "elements.html"):
+            link.color = "#475569"
+        link("Styling", "styling.html"):
+            link.color = "#475569"
+        link("Layouts", "layouts.html"):
+            link.color = "#475569"
 
     section:
-        section.padding = 80 8
-        section.align = center
-
-        text("THE WEB, SIMPLIFIED"):
+        section.padding = 64 8
+        text("LANGUAGE REFERENCE"):
             text.size = 12
             text.weight = bold
             text.color = "#315efb"
             text.space = 2
-
         heading("Build for the web."):
-            heading.size = 52
+            heading.size = 48
             heading.weight = bold
-            heading.color = "#171923"
-
-        text("A simple programming language for creating websites."):
+            heading.color = "#172033"
+        text("ORU is a small, Python-inspired language for describing websites. Write readable .oru files and compile them into standard HTML and CSS."):
             text.size = 18
             text.color = "#64748b"
-
         stack:
             stack.gap = 12
-            stack.align = center
-
-            button("Get started", "go guide.html"):
+            button("Explore the elements", "go elements.html"):
                 button.background = "#315efb"
                 button.color = white
-                button.padding = 14 24
+                button.padding = 12 20
                 button.radius = 8
-
-            link("View on GitHub", "https://github.com/ashbornxd/oru"):
+            link("See styling and layout", "styling.html"):
                 link.color = "#315efb"
 
     section:
-        section.padding = 40 8
-
-        heading("Get started"):
-            heading.size = 32
-
-        text("Install ORU and create your first website."):
-            text.color = "#64748b"
-
-        CodeBlock:
-            text("npm install -g @ashbornxd/oru"):
-                text.size = 15
-                text.color = "#171923"
-
-        CodeBlock:
-            text("oru create my-website\\ncd my-website\\noru run dev"):
-                text.size = 15
-                text.color = "#171923"
-
-    section:
-        section.padding = 40 8
-
-        heading("Why ORU?"):
-            heading.size = 32
-
-        grid:
-            grid.columns = 3
-            grid.gap = 16
-
-            Card:
-                heading("Simple syntax"):
-                    heading.size = 21
-                text("Write readable code using indentation and simple expressions.")
-
-            Card:
-                heading("Web focused"):
-                    heading.size = 21
-                text("Build websites with ORU instead of manually writing HTML.")
-
-            Card:
-                heading("Fast builds"):
-                    heading.size = 21
-                text("Compile projects into static web files.")
+        section.padding = 28 8
+        heading("Start in three steps"):
+            heading.size = 30
+            heading.color = "#172033"
+        Card:
+            heading("1. Install ORU"):
+                heading.size = 20
+            CodeBlock:
+                text('npm install -g @ashbornxd/oru'):
+                    text.size = 14
+                    text.color = "#172033"
+        Card:
+            heading("2. Create a project"):
+                heading.size = 20
+            CodeBlock:
+                text('oru create my-website\ncd my-website'):
+                    text.size = 14
+                    text.color = "#172033"
+        Card:
+            heading("3. Start the dev server"):
+                heading.size = 20
+            CodeBlock:
+                text('oru run dev'):
+                    text.size = 14
+                    text.color = "#172033"
+            text("Open the local address printed by the CLI, usually http://localhost:3000."):
+                text.color = "#64748b"
 
     section:
-        section.padding = 40 8
-
-        heading("Your first ORU page"):
-            heading.size = 32
-
-        text("A small example of what ORU code looks like."):
+        section.padding = 28 8
+        heading("Your first page"):
+            heading.size = 30
+        text("A page starts with project settings, then a page declaration and indented elements."):
             text.color = "#64748b"
-
         CodeBlock:
-            text("title = \"My Website\"\\n\\npage index:\\n    section:\\n        heading(\"Hello, web!\")\\n        text(\"Built with ORU.\")"):
+            text('title = "My website"\ndescription = "A small site made with ORU."\nbackground = "#ffffff"\n\npage index:\n    section:\n        heading("Hello, web!")\n        text("My first ORU page.")'):
                 text.size = 14
-                text.color = "#171923"
+                text.color = "#172033"
 
     section:
-        section.padding = 40 8
+        section.padding = 28 8
+        heading("How ORU is organised"):
+            heading.size = 30
+        grid:
+            grid.columns = 2
+            grid.gap = 16
+            Card:
+                heading("Pages"):
+                    heading.size = 20
+                text("Each page becomes an HTML file. The index page becomes index.html.")
+            Card:
+                heading("Elements"):
+                    heading.size = 20
+                text("Use named elements for structure, content, navigation and forms.")
+            Card:
+                heading("Styles"):
+                    heading.size = 20
+                text("Set properties on the element they belong to, such as text.color.")
+            Card:
+                heading("Classes"):
+                    heading.size = 20
+                text("Reuse a small set of shared wrapper styles across your pages.")
 
-        heading("Explore the documentation"):
-            heading.size = 32
-
+    section:
+        section.padding = 28 8
+        heading("More guides"):
+            heading.size = 30
         Card:
-            heading("Language basics"):
-                heading.size = 22
-            text("Learn about project settings, pages, elements, styling and reusable classes.")
-            link("Read the language guide", "guide.html"):
+            heading("Every element"):
+                heading.size = 20
+            text("Syntax, arguments and examples for all supported elements.")
+            link("Open element reference", "elements.html"):
+                link.color = "#315efb"
+        Card:
+            heading("Styling reference"):
+                heading.size = 20
+            text("Project settings and the supported style properties.")
+            link("Open styling guide", "styling.html"):
+                link.color = "#315efb"
+        Card:
+            heading("Layouts and forms"):
+                heading.size = 20
+            text("Build page structure with stacks, grids, lists and form controls.")
+            link("Open layout guide", "layouts.html"):
                 link.color = "#315efb"
 
-        Card:
-            heading("CLI reference"):
-                heading.size = 22
-            text("Create, develop and build ORU projects.")
-            text("oru create  |  oru run dev  |  oru build"):
-                text.color = "#315efb"
-
     section:
-        section.background = "#171923"
-        section.padding = 32 8
-
+        section.background = "#172033"
+        section.padding = 28 8
         heading("ORU"):
-            heading.size = 26
+            heading.size = 24
             heading.color = white
+        text("Build. Create. Explore."):
+            text.color = "#cbd5e1"
+        text("ORU 0.3 · Built by Orlune · MIT License"):
+            text.color = "#94a3b8"
 
-        text("A simpler way to build for the web."):
-            text.color = "#a0aec0"
-
-        text("Built by Orlune · MIT License"):
-            text.color = "#64748b"
-
-page guide:
+page elements:
     nav:
         nav.background = white
-        nav.padding = 18 6
-        nav.gap = 24
-
+        nav.padding = 16 6%
+        nav.gap = 20
         heading("ORU"):
-            heading.size = 26
+            heading.size = 24
             heading.color = "#315efb"
-
-        link("Home", "index.html"):
+        link("Overview", "index.html"):
+            link.color = "#475569"
+        link("Elements", "elements.html"):
             link.color = "#315efb"
-        link("GitHub", "https://github.com/ashbornxd/oru"):
+        link("Styling", "styling.html"):
+            link.color = "#475569"
+        link("Layouts", "layouts.html"):
+            link.color = "#475569"
+
+    section:
+        section.padding = 48 8
+        text("REFERENCE / ELEMENTS"):
+            text.weight = bold
+            text.color = "#315efb"
+        heading("Every element"):
+            heading.size = 40
+            heading.color = "#172033"
+        text("Elements are written by name. Add parentheses for arguments. Add a colon when the element contains nested elements or style properties."):
+            text.color = "#64748b"
+
+        heading("Structure"):
+            heading.size = 28
+        Card:
+            heading("section"):
+                heading.size = 21
+            text("A semantic page section. Use it to group related content.")
+            CodeBlock:
+                text('section:\n    heading("About us")\n    text("A short introduction.")'):
+                    text.size = 14
+        Card:
+            heading("box"):
+                heading.size = 21
+            text("A generic container for grouping elements. It can have its own background, padding and dimensions.")
+            CodeBlock:
+                text('box:\n    box.background = "#f1f5f9"\n    box.padding = 20\n    text("Grouped content")'):
+                    text.size = 14
+
+        heading("Layout"):
+            heading.size = 28
+        Card:
+            heading("stack"):
+                heading.size = 21
+            text("Places children in a vertical flow. Use stack.gap to control the space between them.")
+            CodeBlock:
+                text('stack:\n    stack.gap = 12\n    text("First")\n    text("Second")'):
+                    text.size = 14
+        Card:
+            heading("grid"):
+                heading.size = 21
+            text("Places children in a responsive grid. A numeric columns value guides the minimum card width; columns adapt to available space.")
+            CodeBlock:
+                text('grid:\n    grid.columns = 3\n    grid.gap = 16\n    box:\n        text("One")\n    box:\n        text("Two")'):
+                    text.size = 14
+        Card:
+            heading("nav"):
+                heading.size = 21
+            text("Creates a navigation region. Add links or a heading inside it.")
+            CodeBlock:
+                text('nav:\n    nav.gap = 16\n    link("Home", "index.html")\n    link("About", "about.html")'):
+                    text.size = 14
+
+        heading("Content"):
+            heading.size = 28
+        Card:
+            heading("heading"):
+                heading.size = 21
+            text("Creates a heading. Its HTML level is h1. Pass the heading text as the first argument.")
+            CodeBlock:
+                text('heading("Welcome to my site")'):
+                    text.size = 14
+        Card:
+            heading("text"):
+                heading.size = 21
+            text("Creates a paragraph. Pass the paragraph content as the first argument.")
+            CodeBlock:
+                text('text("A short paragraph goes here.")'):
+                    text.size = 14
+        Card:
+            heading("image"):
+                heading.size = 21
+            text("Displays an image. The first argument is its asset path; the second is its alternative text.")
+            CodeBlock:
+                text('image("assets/photo.jpg", "A mountain view")'):
+                    text.size = 14
+        Card:
+            heading("video"):
+                heading.size = 21
+            text("Displays a video with browser controls. The first argument is the video file path.")
+            CodeBlock:
+                text('video("assets/intro.mp4")'):
+                    text.size = 14
+        Card:
+            heading("divider"):
+                heading.size = 21
+            text("Adds a horizontal divider between content groups.")
+            CodeBlock:
+                text('heading("Section one")\ndivider()\nheading("Section two")'):
+                    text.size = 14
+
+        heading("Actions"):
+            heading.size = 28
+        Card:
+            heading("link"):
+                heading.size = 21
+            text("Creates a link. The first argument is its label and the second is the destination.")
+            CodeBlock:
+                text('link("Read the guide", "guide.html")'):
+                    text.size = 14
+        Card:
+            heading("button"):
+                heading.size = 21
+            text("Creates a button. The first argument is its label. An optional second argument can use go followed by a page or URL to navigate.")
+            CodeBlock:
+                text('button("Open guide", "go guide.html")'):
+                    text.size = 14
+
+        heading("Forms"):
+            heading.size = 28
+        Card:
+            heading("form"):
+                heading.size = 21
+            text("Creates an HTML form. Its first argument is the form action URL. ORU generates the form markup; you must provide a server endpoint to process submissions.")
+            CodeBlock:
+                text('form("/contact"):\n    input("Your name")'):
+                    text.size = 14
+        Card:
+            heading("input"):
+                heading.size = 21
+            text("Creates an input field. Its first argument is the placeholder text.")
+            CodeBlock:
+                text('input("Email address")'):
+                    text.size = 14
+
+        heading("Lists"):
+            heading.size = 28
+        Card:
+            heading("list"):
+                heading.size = 21
+            text("Creates a list container for item elements.")
+            CodeBlock:
+                text('list:\n    item("First item")\n    item("Second item")'):
+                    text.size = 14
+        Card:
+            heading("item"):
+                heading.size = 21
+            text("Creates one list entry. Put it inside a list.")
+            CodeBlock:
+                text('item("A list entry")'):
+                    text.size = 14
+
+        heading("Reusable classes"):
+            heading.size = 28
+        Card:
+            text("A class is a reusable wrapper with shared styles. Define it at the top level, then use its name inside a page.")
+            CodeBlock:
+                text('class Card:\n    class.background = white\n    class.padding = 20\n    class.radius = 12\n\npage index:\n    Card:\n        heading("Reusable content")'):
+                    text.size = 14
+
+        text("Tip: use four spaces for each indentation level. Tabs are not supported."):
+            text.color = "#64748b"
+
+    section:
+        section.background = "#172033"
+        section.padding = 28 8
+        heading("ORU"):
+            heading.color = white
+        link("Back to overview", "index.html"):
+            link.color = "#bfccff"
+
+page styling:
+    nav:
+        nav.background = white
+        nav.padding = 16 6%
+        nav.gap = 20
+        heading("ORU"):
+            heading.size = 24
+            heading.color = "#315efb"
+        link("Overview", "index.html"):
+            link.color = "#475569"
+        link("Elements", "elements.html"):
+            link.color = "#475569"
+        link("Styling", "styling.html"):
+            link.color = "#315efb"
+        link("Layouts", "layouts.html"):
+            link.color = "#475569"
+
+    section:
+        section.padding = 48 8
+        text("REFERENCE / STYLING"):
+            text.weight = bold
+            text.color = "#315efb"
+        heading("Styling and settings"):
+            heading.size = 40
+            heading.color = "#172033"
+        text("ORU uses element-scoped properties. The scope before the dot must match the element being styled."):
+            text.color = "#64748b"
+
+        heading("Project settings"):
+            heading.size = 28
+        text("Place project settings at the top of main.oru, before page declarations.")
+        CodeBlock:
+            text('title = "My website"\ndescription = "A short site description."\nbackground = "#f7f8fb"\nfont = "assets/site-font.woff2"'):
+                text.size = 14
+        text("title sets the document title. description sets the page description. background sets the site background. font loads a local font file as the page font."):
+            text.color = "#64748b"
+
+        heading("How element styles work"):
+            heading.size = 28
+        CodeBlock:
+            text('section:\n    section.background = "#f1f5f9"\n    section.padding = 24\n\n    heading("Hello"):\n        heading.size = 36\n        heading.color = "#172033"'):
+                text.size = 14
+        text("A style assignment belongs inside the element it styles. For example, heading.size belongs inside heading, not section."):
+            text.color = "#64748b"
+
+        heading("Supported properties"):
+            heading.size = 28
+        Card:
+            heading("section"):
+                heading.size = 20
+            text("background, padding, radius, width, height, align, gap")
+        Card:
+            heading("box"):
+                heading.size = 20
+            text("background, padding, radius, width, height, gap, shadow, align")
+        Card:
+            heading("stack"):
+                heading.size = 20
+            text("gap, align, justify, padding, width")
+        Card:
+            heading("grid"):
+                heading.size = 20
+            text("columns, gap, align, padding")
+        Card:
+            heading("nav"):
+                heading.size = 20
+            text("background, padding, gap, align")
+        Card:
+            heading("heading"):
+                heading.size = 20
+            text("color, size, weight, font, line, align")
+        Card:
+            heading("text"):
+                heading.size = 20
+            text("color, size, weight, font, line, align, space")
+        Card:
+            heading("button"):
+                heading.size = 20
+            text("color, background, size, weight, radius, padding, width")
+        Card:
+            heading("link"):
+                heading.size = 20
+            text("color, size, weight, decoration")
+        Card:
+            heading("image"):
+                heading.size = 20
+            text("width, height, fit, radius")
+        Card:
+            heading("video"):
+                heading.size = 20
+            text("width, radius, fit")
+        Card:
+            heading("form"):
+                heading.size = 20
+            text("gap, width, padding")
+        Card:
+            heading("input"):
+                heading.size = 20
+            text("color, background, size, radius, padding, width")
+        Card:
+            heading("list"):
+                heading.size = 20
+            text("color, gap, size")
+        Card:
+            heading("item"):
+                heading.size = 20
+            text("color, size")
+        Card:
+            heading("class"):
+                heading.size = 20
+            text("background, padding, radius, width, gap, align")
+
+        heading("Values and units"):
+            heading.size = 28
+        text("Use a color name such as white or a hex color such as #315efb. Numeric text sizes are treated as pixels and scale on smaller screens. Numeric spacing values use pixels. You can also write CSS units such as 2rem or 12px.")
+        CodeBlock:
+            text('text("A readable paragraph"):\n    text.size = 18\n    text.line = 1.6\n    text.color = "#475569"\n\nbox:\n    box.padding = 2rem\n    box.radius = 12px'):
+                text.size = 14
+
+        heading("Reusable classes"):
+            heading.size = 28
+        text("Classes define shared wrapper styles. The class scope is written as class.property.")
+        CodeBlock:
+            text('class Panel:\n    class.background = white\n    class.padding = 24\n    class.radius = 12\n\npage index:\n    Panel:\n        heading("Panel title")'):
+                text.size = 14
+
+        heading("Responsive defaults"):
+            heading.size = 28
+        text("Generated pages include flexible media, wrapping text, touch-sized controls, fluid numeric text sizes and responsive grids. Preview your design on both a phone and a desktop because responsive defaults are a starting point, not a guarantee for every layout.")
+
+    section:
+        section.background = "#172033"
+        section.padding = 28 8
+        heading("ORU"):
+            heading.color = white
+        link("Back to overview", "index.html"):
+            link.color = "#bfccff"
+
+page layouts:
+    nav:
+        nav.background = white
+        nav.padding = 16 6%
+        nav.gap = 20
+        heading("ORU"):
+            heading.size = 24
+            heading.color = "#315efb"
+        link("Overview", "index.html"):
+            link.color = "#475569"
+        link("Elements", "elements.html"):
+            link.color = "#475569"
+        link("Styling", "styling.html"):
+            link.color = "#475569"
+        link("Layouts", "layouts.html"):
             link.color = "#315efb"
 
     section:
         section.padding = 48 8
-
-        text("DOCUMENTATION"):
-            text.color = "#315efb"
+        text("GUIDE / PAGE STRUCTURE"):
             text.weight = bold
-
-        heading("Language basics"):
-            heading.size = 42
-
-        text("Everything you need to understand the ORU language."):
+            text.color = "#315efb"
+        heading("Layouts, lists and forms"):
+            heading.size = 40
+            heading.color = "#172033"
+        text("Combine a few simple elements to build the structure of a page."):
             text.color = "#64748b"
 
-        divider()
-
-        heading("1. Project settings"):
-            heading.size = 26
-        text("Define your website title and description at the top of your file.")
+        heading("Multiple pages"):
+            heading.size = 28
+        text("Declare each page in the same main.oru file. The index page becomes index.html; every other page becomes its own HTML file.")
         CodeBlock:
-            text("title = \"My Website\"\\ndescription = \"My first ORU website.\"\\nbackground = \"#ffffff\""):
+            text('page index:\n    heading("Home")\n    link("About", "about.html")\n\npage about:\n    heading("About this site")\n    link("Home", "index.html")'):
                 text.size = 14
 
-        heading("2. Pages"):
-            heading.size = 26
-        text("The index page becomes index.html. Other pages become their own HTML files.")
+        heading("Vertical stack"):
+            heading.size = 28
+        text("Use stack when you want elements arranged from top to bottom.")
         CodeBlock:
-            text("page index:\\n    section:\\n        heading(\"Home\")\\n\\npage about:\\n    heading(\"About\")"):
+            text('stack:\n    stack.gap = 16\n    heading("Join us")\n    text("Get updates from our team.")\n    button("Learn more", "go about.html")'):
                 text.size = 14
 
-        heading("3. Elements"):
-            heading.size = 26
-        text("Structure: section, box. Layout: stack, grid. Content: heading, text, image, video, divider. Actions: button, link. Forms: form, input. Lists: list, item. Navigation: nav.")
+        heading("Responsive grid"):
+            heading.size = 28
+        text("Use grid for groups of cards. ORU automatically adapts the number of columns to the available width.")
         CodeBlock:
-            text("page index:\\n    section:\\n        heading(\"Welcome\")\\n        text(\"Hello from ORU!\")\\n        image(\"assets/photo.jpg\", \"A landscape\")"):
+            text('grid:\n    grid.columns = 3\n    grid.gap = 20\n    box:\n        text("First card")\n    box:\n        text("Second card")\n    box:\n        text("Third card")'):
                 text.size = 14
 
-        heading("4. Styling"):
-            heading.size = 26
-        text("Use element-scoped properties. The style scope must match the element.")
+        heading("Lists"):
+            heading.size = 28
         CodeBlock:
-            text("section:\\n    section.background = \"#f4f4f4\"\\n    section.padding = 24\\n\\n    heading(\"Hello\"):\\n        heading.size = 36\\n        heading.color = white"):
+            text('list:\n    item("Design")\n    item("Development")\n    item("Launch")'):
                 text.size = 14
 
-        heading("5. Reusable classes"):
-            heading.size = 26
-        text("Define a reusable wrapper once, then use its name inside a page.")
+        heading("Navigation"):
+            heading.size = 28
         CodeBlock:
-            text("class Card:\\n    class.background = white\\n    class.padding = 24\\n    class.radius = 12\\n\\npage index:\\n    Card:\\n        heading(\"My Card\")"):
+            text('nav:\n    nav.gap = 18\n    link("Home", "index.html")\n    link("Projects", "projects.html")\n    link("Contact", "contact.html")'):
                 text.size = 14
 
-        heading("6. Layouts"):
-            heading.size = 26
-        text("Use stack for vertical layouts and grid for responsive columns.")
+        heading("Forms: important note"):
+            heading.size = 28
+        text("ORU can generate basic HTML form and input elements. It does not provide a database, form handler or server endpoint. Your form action must point to a service that accepts and processes the submitted data.")
         CodeBlock:
-            text("grid:\\n    grid.columns = 3\\n    grid.gap = 20\\n    box:\\n        text(\"Card one\")"):
+            text('form("/api/contact"):\n    input("Your name")\n    input("Email address")\n    button("Send")'):
                 text.size = 14
 
-        heading("7. Build your project"):
-            heading.size = 26
+        heading("Buttons and navigation"):
+            heading.size = 28
+        text("A button action beginning with go navigates to the supplied destination. Use a link when you want a normal clickable destination.")
         CodeBlock:
-            text("oru run dev\\noru build"):
+            text('button("Open about page", "go about.html")\nlink("Read more", "about.html")'):
                 text.size = 14
-        text("Generated website files are written to the dist directory.")
+
+        heading("Run and build"):
+            heading.size = 28
+        CodeBlock:
+            text('oru run dev\noru build'):
+                text.size = 14
+        text("The development command starts a local preview. The build command writes generated static website files to dist/. You can deploy that folder to a static web host."):
+            text.color = "#64748b"
 
     section:
-        section.background = "#171923"
-        section.padding = 30 8
-
+        section.background = "#172033"
+        section.padding = 28 8
         heading("ORU"):
             heading.color = white
-        text("Build. Create. Explore."):
-            text.color = "#a0aec0"
+        link("Back to overview", "index.html"):
+            link.color = "#bfccff"
