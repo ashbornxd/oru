@@ -102,8 +102,8 @@ export function parse(source: string): OruDocument {
         else if (key === "background") document.styles["background-color"] = value;
         else throw new OruError(`Unknown project setting "${key}".`, index + 1);
       } else {
-        const normalized = key === "text.size" ? "font-size"
-          : key === "text.color" ? "color"
+        const normalized = key === "text.size" || key === "text-size" ? "font-size"
+          : key === "text.color" || key === "text-color" ? "color"
           : key === "text.font" ? "font-family"
           : key.includes(".") ? key.replace(/^text\./, "").replaceAll(".", "-")
           : key;
