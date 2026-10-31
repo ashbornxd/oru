@@ -2,9 +2,9 @@
 
 **A simpler way to build for the web.**
 
-ORU is a small, Python-inspired language for creating websites. Write your site in one readable `main.oru` file; ORU compiles it into standard web files.
+ORU is a Python-inspired language for building websites. Describe pages, content, layouts, and styles in readable `.oru` files. ORU compiles them into standard web files.
 
-> ORU is an early release. Syntax and compiler behavior may change before 1.0.
+> ORU 0.3 is an early language redesign. Syntax and compiler behavior may still change before 1.0.
 
 ## Requirements
 
@@ -13,102 +13,74 @@ ORU is a small, Python-inspired language for creating websites. Write your site 
 
 ## Install
 
-Install the ORU command-line tool:
-
 ```sh
 npm install --global @ashbornxd/oru
-```
-
-Check the installation:
-
-```sh
 oru --version
-oru --help
 ```
 
-## Create a project
+## Create and run a project
 
 ```sh
-oru create myWeb
-cd myWeb
-```
-
-A new project contains just one file:
-
-```text
-myWeb/
-└── main.oru
-```
-
-## Develop
-
-```sh
+oru create myWebsite
+cd myWebsite
 oru run dev
 ```
 
-Open http://localhost:3000. The development server rebuilds when `main.oru` changes.
+Open http://localhost:3000.
 
-## Build for production
+## Build
 
 ```sh
 oru build
 ```
 
-ORU writes deployable HTML and copies an optional `assets/` directory into `dist/`. The generated folder is build output; it is not part of the source project.
-
-To choose another output folder:
-
-```sh
-oru build --out public
-```
-
-Deploy the contents of `dist/` to any static web host. You do not need ORU installed on the hosting server.
-
-## Commands
-
-| Command | Purpose |
-| --- | --- |
-| `oru create <name>` | Create a project with one `main.oru` file |
-| `oru run dev` | Start the local development server |
-| `oru build` | Create production-ready static files |
-| `oru --version` | Show the installed version |
-| `oru --help` | Show command help |
+ORU writes static files to `dist/` and copies an optional `assets/` folder. Deploy `dist/` to any static web host.
 
 ## Language example
 
 ```oru
-title = "My first website"
+title = "My website"
 description = "Made with ORU."
 
 page index:
     section:
-        padding = 40px
-        text-align = center
+        section.padding = 32
+        section.align = center
 
         heading("Hello, web!"):
-            font-size = 40px
+            heading.size = 44
+            heading.color = "#182230"
 
-        text("I built this with ORU.")
+        text("A website written in ORU."):
+            text.size = 18
+            text.color = "#596579"
+
+        button("Explore", "go about"):
+            button.background = "#2457d6"
+            button.color = white
+            button.radius = 12
 
 page about:
     section:
         heading("About")
-        text("A second page, in the same file.")
+        text("Another page, in the same file.")
 ```
 
-## Current features
+## What ORU provides
 
-- Multiple pages in one `.oru` file
-- Reusable style classes
-- Readable, indentation-based syntax
-- Common semantic elements and inline styles
-- Static HTML output
-- Local development server
+- Multiple pages in one source file
+- Semantic elements and reusable style classes
+- Element-scoped styling such as `text.color` and `button.radius`
+- Simple vertical stacks and auto-fitting grids
+- Responsive defaults for phones, tablets, and desktops
+- Static HTML output and a local development server
 - Optional local assets
 
-## Contributing
+## Documentation
 
-To work on the ORU compiler itself:
+Read [Language basics](docs/language-basics.md) for the current syntax and supported elements.
+
+## Contributing
 
 ```sh
 git clone https://github.com/ashbornxd/oru.git

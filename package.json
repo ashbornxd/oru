@@ -1,34 +1,14 @@
 {
   "name": "@ashbornxd/oru",
-  "version": "0.2.0",
-  "description": "A Python-inspired language and compiler for building websites.",
+  "version": "0.3.0",
+  "description": "A Python-inspired language and compiler for building responsive websites.",
   "type": "module",
-  "bin": {
-    "oru": "dist/cli.js"
-  },
-  "files": [
-    "dist/",
-    "README.md",
-    "LICENSE"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ashbornxd/oru.git"
-  },
+  "bin": { "oru": "dist/cli.js" },
+  "files": ["dist/", "README.md", "LICENSE"],
+  "repository": { "type": "git", "url": "https://github.com/ashbornxd/oru.git" },
   "homepage": "https://github.com/ashbornxd/oru#readme",
-  "bugs": {
-    "url": "https://github.com/ashbornxd/oru/issues"
-  },
-  "keywords": [
-    "oru",
-    "orlune",
-    "programming-language",
-    "web-development",
-    "website-builder",
-    "compiler",
-    "html",
-    "static-site"
-  ],
+  "bugs": { "url": "https://github.com/ashbornxd/oru/issues" },
+  "keywords": ["oru", "orlune", "programming-language", "web-development", "website-builder", "compiler"],
   "scripts": {
     "build": "npm run clean && tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts run dev",
@@ -43,12 +23,7 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   },
-  "engines": {
-    "node": ">=20"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
+  "engines": { "node": ">=20" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
   "license": "MIT"
 }

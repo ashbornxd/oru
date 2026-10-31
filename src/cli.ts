@@ -5,7 +5,7 @@ import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
 import { compile } from "./compiler.js";
 
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 const STARTER = `title = "My website"
 
 page index:
