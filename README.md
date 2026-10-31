@@ -16,7 +16,7 @@ ORU is a small, Python-inspired language for creating websites. Write your site 
 Install the ORU command-line tool:
 
 ```sh
-npm install --global @orlune/oru
+npm install --global @ashbornxd/oru
 ```
 
 Check the installation:
