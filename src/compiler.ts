@@ -3,6 +3,7 @@ import { parse } from "./parser.js";
 
 const voidTags = new Set(["img", "input", "hr"]);
 const properties: Record<string, Record<string, string>> = {
+  nav: { background: "background-color", padding: "padding", gap: "gap", align: "align-items" },
   section: { background: "background-color", padding: "padding", radius: "border-radius", width: "width", height: "min-height", align: "text-align", gap: "gap" },
   box: { background: "background-color", padding: "padding", radius: "border-radius", width: "width", height: "height", gap: "gap", shadow: "box-shadow", align: "text-align" },
   stack: { gap: "gap", align: "align-items", justify: "justify-content", padding: "padding", width: "width" },
@@ -46,6 +47,9 @@ function toCss(styles: StyleMap, scope: string): string {
     }
     if (scope === "grid" && property === "columns" && /^\d+$/.test(cssValue)) {
       cssValue = `repeat(auto-fit, minmax(min(100%, ${Math.max(140, 1100 / Number(cssValue))}px), 1fr))`;
+    }
+    if (["padding", "gap", "border-radius", "width", "height", "min-height", "max-width", "margin", "letter-spacing"].includes(cssProperty)) {
+      cssValue = cssValue.replace(/(^|\\s)(-?\\d+(?:\\.\\d+)?)(?=\\s|$)/g, "$1$2px");
     }
     return [`${cssProperty}:${cssValue}`];
   }).join(";");
