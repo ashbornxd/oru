@@ -80,14 +80,14 @@ page index:
                 text('oru run dev'):
                     text.size = 14
                     text.color = "#172033"
-            text("Open the local address printed by the CLI, usually http://localhost:3000.")
+            text("Open the local address printed by the CLI, usually http://localhost:3000."):
                 text.color = "#64748b"
 
     section:
         section.padding = 28 8
         heading("Your first page"):
             heading.size = 30
-        text("A page starts with project settings, then a page declaration and indented elements.")
+        text("A page starts with project settings, then a page declaration and indented elements."):
             text.color = "#64748b"
         CodeBlock:
             text('title = "My website"\ndescription = "A small site made with ORU."\nbackground = "#ffffff"\n\npage index:\n    section:\n        heading("Hello, web!")\n        text("My first ORU page.")'):
@@ -363,7 +363,7 @@ page styling:
         CodeBlock:
             text('title = "My website"\ndescription = "A short site description."\nbackground = "#f7f8fb"\nfont = "assets/site-font.woff2"'):
                 text.size = 14
-        text("title sets the document title. description sets the page description. background sets the site background. font loads a local font file as the page font.")
+        text("title sets the document title. description sets the page description. background sets the site background. font loads a local font file as the page font."):
             text.color = "#64748b"
 
         heading("How element styles work"):
@@ -371,7 +371,7 @@ page styling:
         CodeBlock:
             text('section:\n    section.background = "#f1f5f9"\n    section.padding = 24\n\n    heading("Hello"):\n        heading.size = 36\n        heading.color = "#172033"'):
                 text.size = 14
-        text("A style assignment belongs inside the element it styles. For example, heading.size belongs inside heading, not section.")
+        text("A style assignment belongs inside the element it styles. For example, heading.size belongs inside heading, not section."):
             text.color = "#64748b"
 
         heading("Supported properties"):
@@ -547,7 +547,7 @@ page layouts:
         CodeBlock:
             text('oru run dev\noru build'):
                 text.size = 14
-        text("The development command starts a local preview. The build command writes generated static website files to dist/. You can deploy that folder to a static web host.")
+        text("The development command starts a local preview. The build command writes generated static website files to dist/. You can deploy that folder to a static web host."):
             text.color = "#64748b"
 
     section:
