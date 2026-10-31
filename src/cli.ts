@@ -65,7 +65,7 @@ async function cleanOutput(output: string): Promise<string> {
   const root = resolve(output);
   const cwd = resolve(".");
   const relative = root.slice(cwd.length + 1);
-  const firstSegment = relative.split(sep)[0];
+  const firstSegment = relative.split(sep)[0] ?? "";
 
   if (
     root === cwd ||
