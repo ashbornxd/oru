@@ -10,6 +10,7 @@ page index:
     section:
         heading("Hello, ORU"):
             font-size = 32px
+            text-align = center
         text("A paragraph.")
 `);
   const html = result.files.get("index.html");
@@ -17,6 +18,7 @@ page index:
   assert.match(html, /<title>Test site<\/title>/);
   assert.match(html, /<h1[^>]*>Hello, ORU<\/h1>/);
   assert.match(html, /A paragraph\./);
+  assert.match(html, /text-align:center/);
 });
 
 test("supports multiple pages", () => {
