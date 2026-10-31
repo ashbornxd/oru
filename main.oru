@@ -1,233 +1,39 @@
-title = "ORU — Documentation"
-description = "Learn ORU, a simple language for building websites."
+title = "My Portfolio"
+description = "A simple website built with ORU."
+background = "#f7f7f7"
 
-background = "#f8f9fc"
-
-class CodeBlock:
-    background = "#dbffe0"
-    color = "#000000"
-    padding = 10px
-    border-radius = 12px
-    font-size = 14px
-    border = 1px solid #e2e8f0
-
-class Card:
-    background = white
-    padding = 24px
-    border-radius = 14px
-    border = 1px solid #e2e8f0
+class Intro:
+    class.background = white
+    class.padding = 48
+    class.radius = 20
 
 page index:
-    nav:
-        background = white
-        padding = 20px 6%
-        border-bottom = 1px solid #e2e8f0
-
-        row:
-            heading("ORU"):
-                font-size = 26px
-                color = #315efb
-
-            link("Documentation", "index.html")
-            link("Language Guide", "guide.html")
-            link("GitHub", "https://github.com/ashbornxd/oru")
-
-    section:
-        padding = 100px 8%
-        text-align = center
-
-        text("THE WEB, SIMPLIFIED"):
-            font-size = 12px
-            font-weight = bold
-            color = #315efb
-            letter-spacing = 2px
-
-        heading("Build for the web."):
-            font-size = 52px
-            font-weight = bold
-            color = #171923
-
-        text("A simple, programming language for creating websites."):
-            font-size = 18px
-            color = #64748b
-            line-height = 40px
-
-        row:
-            justify-content = center
-
-            button("Get Started", "go guide.html"):
-                background = #315efb
-                color = white
-                padding = 14px 24px
-                border-radius = 8px
-
-            link("View on GitHub", "https://github.com/ashbornxd/oru")
+    Intro:
+        stack:
+            stack.gap = 16
+            heading("Welcome to my portfolio"):
+                heading.size = 42
+                heading.color = "#171717"
+                heading.align = center
+            text("Thanks for visiting my little corner of the web."):
+                text.size = 18
+                text.color = "#666666"
+                text.align = center
+            button("Explore my work", "go #work"):
+                button.background = "#171717"
+                button.color = white
+                button.padding = 12 20
+                button.radius = 10
 
     section:
-        padding = 50px 8%
-
-        heading("Get started"):
-            font-size = 32px
-
-        text("Install ORU and create your first website."):
-            color = #64748b
-
-        CodeBlock:
-            text("npm install -g @ashbornxd/oru")
-
-        CodeBlock:
-            text("oru create my-website\ncd my-website\noru run dev")
-
-    section:
-        padding = 50px 8%
-
-        heading("Why ORU?"):
-            font-size = 32px
-
-        row:
-            Card:
-                heading("Simple syntax"):
-                    font-size = 21px
-                text("Write readable code using indentation and simple expressions.")
-
-            Card:
-                heading("Web focused"):
-                    font-size = 21px
-                text("Build websites using ORU without manually writing HTML.")
-
-            Card:
-                heading("Fast builds"):
-                    font-size = 21px
-                text("Compile your projects into static web files.")
-
-    section:
-        padding = 50px 8%
-
-        heading("Your first ORU page"):
-            font-size = 32px
-
-        text("A small example of what ORU code looks like."):
-            color = #64748b
-
-        CodeBlock:
-            text("title = \"My Website\"\n\npage index:\n    section:\n        heading(\"Hello, web!\")\n        text(\"Built with ORU.\")")
-
-    section:
-        padding = 50px 8%
-
-        heading("Explore the documentation"):
-            font-size = 32px
-
-        Card:
-            heading("Language basics"):
-                font-size = 22px
-
-            text("Learn about project settings, pages, elements, styling and reusable classes.")
-
-            link("Read the language guide →", "guide.html")
-
-        Card:
-            heading("CLI reference"):
-                font-size = 22px
-
-            text("Learn how to create, develop and build ORU projects.")
-
-            text("oru create   |   oru run dev   |   oru build"):
-                color = #315efb
-
-    footer:
-        background = #171923
-        padding = 35px 8%
-
-        heading("ORU"):
-            color = white
-            font-size = 26px
-
-        text("A simpler way to build for the web."):
-            color = #a0aec0
-
-        text("Built by Orlune · MIT License"):
-            color = #64748b
-
-page guide:
-    nav:
-        background = white
-        padding = 20px
-        row:
-            heading("ORU"):
-                color = #315efb
-            link("Home", "index.html")
-            link("GitHub", "https://github.com/ashbornxd/oru")
-
-    section:
-        padding = 50px 8%
-
-        text("DOCUMENTATION"):
-            color = #315efb
-            font-weight = bold
-
-        heading("Language basics"):
-            font-size = 42px
-
-        text("Everything you need to understand the ORU language."):
-            color = #64748b
-
-        divider()
-
-        heading("1. Project settings"):
-            font-size = 26px
-
-        text("Define your website title and description at the top of your file.")
-
-        CodeBlock:
-            text("title = \"My Website\"\ndescription = \"My first ORU website.\"\nbackground = \"#ffffff\"")
-
-        heading("2. Pages"):
-            font-size = 26px
-
-        text("Every ORU project needs at least one page. The index page becomes index.html.")
-
-        CodeBlock:
-            text("page index:\n    section:\n        heading(\"Home\")\n\npage about:\n    heading(\"About\")")
-
-        heading("3. Elements"):
-            font-size = 26px
-
-        text("ORU supports section, container, row, column, nav, header, footer, main, heading, text, image, button, link, input, divider, list and item.")
-
-        CodeBlock:
-            text("page index:\n    section:\n        heading(\"Welcome\")\n        text(\"Hello from ORU!\")\n        image(\"assets/photo.jpg\")")
-
-        heading("4. Styling"):
-            font-size = 26px
-
-        text("Styles are defined inside an element using indentation.")
-
-        CodeBlock:
-            text("page index:\n    section:\n        background = black\n        padding = 24px\n\n        heading(\"Hello\"):\n            font-size = 36px\n            color = white")
-
-        heading("5. Reusable classes"):
-            font-size = 26px
-
-        text("Create reusable style definitions and apply them to elements.")
-
-        CodeBlock:
-            text("class Card:\n    background = white\n    padding = 24px\n    border-radius = 12px\n\npage index:\n    Card:\n        heading(\"My Card\")")
-
-        heading("6. Build your project"):
-            font-size = 26px
-
-        CodeBlock:
-            text("oru build")
-
-        text("Your generated website will be available inside the dist directory.")
-
-    footer:
-        background = #171923
-        padding = 30px
-
-        heading("ORU"):
-            color = white
-
-        text("Build. Create. Explore."):
-            color = #a0aec0
+        section.padding = 40
+        heading("My work")
+        grid:
+            grid.columns = 3
+            grid.gap = 20
+            box:
+                text("Project one")
+            box:
+                text("Project two")
+            box:
+                text("Project three")
