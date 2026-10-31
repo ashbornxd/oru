@@ -91,7 +91,7 @@ export function parse(source: string): OruDocument {
     while (stack.length && indent <= stack[stack.length - 1]!.indent) stack.pop();
 
     const parent = stack[stack.length - 1]?.node;
-    const assignment = line.match(/^([a-zA-Z_][\w.]*)\s*=\s*(.+)$/);
+    const assignment = line.match(/^([a-zA-Z_][\w.-]*)\s*=\s*(.+)$/);
     if (assignment) {
       const key = assignment[1]!;
       const value = unquote(assignment[2]!);
