@@ -22,6 +22,7 @@ Usage:
   oru build             Build for production
   oru run dev           Start the local development server
   oru --help
+  oru --version
 
 Options:
   --port <number>       Development server port (default: 3000)
@@ -41,15 +42,20 @@ function option(args: string[], name: string, fallback: string): string {
 }
 
 async function createProject(name: string): Promise<void> {
-  if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(name)) throw new Error("Use a simple project name (letters, numbers, hyphens, underscores).");
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(name)) {
+    throw new Error("Use a simple project name (letters, numbers, hyphens, underscores).");
+  }
+
   const target = resolve(name);
   await mkdir(target, { recursive: true });
+
   try {
     await access(join(target, "main.oru"));
     throw new Error(`"${name}" already contains a main.oru file. Nothing was changed.`);
   } catch (error) {
     if (error instanceof Error && error.message.includes("already contains")) throw error;
   }
+
   await writeFile(join(target, "main.oru"), STARTER, { flag: "wx" });
   console.log(`Created ${name}/main.oru`);
   console.log(`Next: cd ${name} && oru run dev`);
@@ -58,9 +64,17 @@ async function createProject(name: string): Promise<void> {
 async function cleanOutput(output: string): Promise<string> {
   const root = resolve(output);
   const cwd = resolve(".");
-  if (root === cwd || root === resolve(cwd, "..") || !root.startsWith(cwd + sep)) {
-    throw new Error("Build output must be a folder inside the current project, such as dist/.");
+  const relative = root.slice(cwd.length + 1);
+  const firstSegment = relative.split(sep)[0];
+
+  if (
+    root === cwd ||
+    !root.startsWith(cwd + sep) ||
+    ["assets", "src", ".git", "node_modules"].includes(firstSegment)
+  ) {
+    throw new Error("Build output must be a separate folder inside the project, such as dist/ or public/.");
   }
+
   await rm(root, { recursive: true, force: true });
   await mkdir(root, { recursive: true });
   return root;
@@ -102,6 +116,10 @@ const mimeTypes: Record<string, string> = {
 };
 
 async function runDev(port: number): Promise<void> {
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error("Port must be a number between 1 and 65535.");
+  }
+
   const input = resolve("main.oru");
   let building = false;
 
@@ -134,7 +152,7 @@ async function runDev(port: number): Promise<void> {
       response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
       response.end("Not found");
     }
-  }).listen(port, "0.0.0.0", () => {
+  }).listen(port, "127.0.0.1", () => {
     console.log(`ORU dev server → http://localhost:${port}`);
     console.log("Watching main.oru for changes. Press Ctrl+C to stop.");
   });
@@ -145,7 +163,12 @@ async function runDev(port: number): Promise<void> {
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const command = args[0];
+
   if (!command || command === "--help" || command === "-h") return help();
+  if (command === "--version" || command === "-v") {
+    console.log(VERSION);
+    return;
+  }
 
   if (command === "create") {
     await createProject(args[1] ?? "");
