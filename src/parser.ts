@@ -118,7 +118,7 @@ export function parse(source: string): OruDocument {
     const tag = elementTags[name];
     if (!tag) throw new OruError(`Unknown element "${name}".`, index + 1);
     const args = readArguments(elementMatch[2] ?? "");
-    const node = makeNode("element", name, index + 1, tag, args[0]);
+    const node = makeNode("element", name, index + 1, tag, name === "image" ? args[1] : args[0]);
     if (name === "image") node.styles["oru.src"] = args[0] ?? "";
     if (name === "link") node.styles["oru.href"] = args[1] ?? "#";
     if (name === "button" && args[1]) node.styles["oru.action"] = args[1];
