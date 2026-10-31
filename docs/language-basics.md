@@ -1,87 +1,129 @@
-# ORU language basics (prototype)
+# ORU language basics
 
-ORU source files use the `.oru` extension. Indentation defines nested content. Use four spaces per level; tabs are not supported.
+ORU uses the `.oru` extension and indentation to describe a website. Use four spaces per level. Tabs are not supported.
 
 ## Project settings
 
-At the top of a file:
+Set these at the top of `main.oru`:
 
-```python
+```oru
 title = "My website"
-description = "What this website is about."
+description = "A short description."
 background = "#ffffff"
 font = "assets/site-font.woff2"
 ```
 
 ## Pages
 
-Every project needs at least one page. The `index` page becomes `index.html`.
+The `index` page becomes `index.html`. Other pages become their own HTML files.
 
-```python
+```oru
 page index:
     section:
         heading("Welcome")
-```
+        text("A website made with ORU.")
 
-Additional pages become separate HTML files:
-
-```python
 page about:
     heading("About")
 ```
 
 ## Elements
 
-Available elements: `section`, `container`, `row`, `column`, `nav`, `header`, `footer`, `main`, `heading`, `text`, `image`, `button`, `link`, `input`, `divider`, `list`, and `item`.
+- Structure: `section`, `box`
+- Layout: `stack`, `grid`
+- Content: `heading`, `text`, `image`, `video`, `divider`
+- Actions: `button`, `link`
+- Forms: `form`, `input`
+- Lists: `list`, `item`
+- Navigation: `nav`
 
-Text-like elements accept a quoted value. A colon is only needed when the element contains nested content or styles:
+Elements can be empty or contain nested elements. Add a colon when an element has children or styles.
 
-```python
-heading("A page heading"):
-    font-size = 36px
-
-text("A paragraph of text.")
-image("assets/photo.jpg")
-link("Read more", "about.html")
-button("Go home", "go index.html")
-input("Your email")
+```oru
+section:
+    heading("A title")
+    text("A short description.")
+    image("assets/photo.jpg", "A landscape")
+    link("Read more", "about.html")
+    button("Open projects", "go #projects")
 ```
 
 ## Styling
 
-Put styles inside an element's indented block:
+ORU uses element-scoped properties rather than CSS property names. The scope must match the element being styled.
 
-```python
+```oru
 section:
-    background = "#f4f4f4"
-    padding = 24px
-    border-radius = 12px
+    section.background = "#f4f4f4"
+    section.padding = 32
+    section.radius = 16
+
+    heading("Build something"):
+        heading.size = 44
+        heading.color = "#182230"
+        heading.weight = bold
+        heading.align = center
+
+    text("A little text"):
+        text.size = 18
+        text.color = "#596579"
+        text.line = 1.6
+
+    button("Get started"):
+        button.background = "#2457d6"
+        button.color = white
+        button.radius = 12
+        button.padding = 12 20
 ```
 
-Text-specific shortcuts are supported:
+Numbers for text sizes are treated as pixels and automatically scale down on smaller screens. Other numeric spacing values use the browser's pixel unit. Values with units, such as `2rem` or `12px`, can also be used.
 
-```python
-text("Hello"):
-    text-size = 20px
-    text-color = navy
+### Layouts
+
+A stack places children vertically. A grid automatically fits as many columns as its available width allows, then becomes one column on narrow screens.
+
+```oru
+stack:
+    stack.gap = 16
+    text("First")
+    text("Second")
+
+grid:
+    grid.columns = 3
+    grid.gap = 20
+    box:
+        text("Card one")
+    box:
+        text("Card two")
 ```
 
-## Reusable classes
+## Reusable styles
 
-Define a class before using it:
+Define a reusable wrapper once, then use its name inside a page.
 
-```python
+```oru
 class Card:
-    background = white
-    padding = 24px
-    border-radius = 12px
+    class.background = white
+    class.padding = 24
+    class.radius = 16
 
 page index:
     Card:
         heading("A reusable card")
-        text("The class styles are applied to this container.")
+        text("The class styles are applied to this box.")
 ```
 
-## Notes
+## Mobile behavior
 
-This is the first compiler prototype. It intentionally supports a small language surface; unsupported syntax produces a line-numbered error instead of being silently ignored.
+ORU's generated pages include responsive defaults: flexible images and videos, wrapping text, touch-sized controls, fluid numeric text sizes, auto-fitting grids, and layouts that fit narrow screens. You do not need to create a separate mobile page.
+
+These defaults are a starting point, not a guarantee that every design will look perfect on every device. Preview your site at phone and desktop widths.
+
+## Build
+
+```sh
+oru run dev
+oru build
+```
+
+The compiler generates static HTML with embedded CSS and small interaction scripts. You can host the output on any static web host.
