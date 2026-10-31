@@ -1,0 +1,28 @@
+title = "Alex Morgan — Designer"
+description = "Selected design and development work."
+
+class Intro:
+    text-align = center
+    padding = 64px 24px
+    background = "#f1f1f1"
+
+page index:
+    Intro:
+        heading("Hello, I'm Alex"):
+            font-size = 44px
+        text("I design and build for the web."):
+            font-size = 20px
+        link("See my projects", "#projects"):
+            color = "#2457d6"
+            text-decoration = none
+
+    section:
+        padding = 32px 24px
+        heading("Selected projects"):
+        row:
+            column:
+                text("Project One")
+                text("A small description of the project.")
+            column:
+                text("Project Two")
+                text("A small description of the project.")
