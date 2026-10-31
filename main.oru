@@ -1,0 +1,26 @@
+title = "My Portfolio"
+description = "A simple website built with ORU."
+background = "#f7f7f7"
+
+page index:
+    section:
+        background = white
+        padding = 48px
+        text-align = center
+        heading("Welcome to my portfolio"):
+            font-size = 40px
+            color = "#171717"
+        text("Thanks for visiting my little corner of the web."):
+            font-size = 18px
+            color = "#666666"
+        button("Explore my work", "go #work"):
+            background = "#171717"
+            color = white
+            padding = 12px 20px
+            border-radius = 8px
+
+    section:
+        padding = 48px
+        text-align = center
+        heading("My work"):
+        text("A place to share the things I create.")
