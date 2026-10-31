@@ -25,7 +25,7 @@ page index:
   assert.match(html, /background-color:#f5f5f5/);
   assert.match(html, /font-size:clamp\(/);
   assert.match(html, /data-oru-action="go about"/);
-  assert.match(html, /border-radius:12px\/);
+  assert.match(html, /border-radius:12px/);
 });
 
 test("creates responsive stack and auto-fit grid layouts", () => {
