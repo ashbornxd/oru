@@ -1,21 +1,41 @@
 {
   "name": "@orlune/oru",
   "version": "0.2.0",
-  "description": "A simple, Python-inspired language for building websites.",
+  "description": "A Python-inspired language and compiler for building websites.",
   "type": "module",
   "bin": {
     "oru": "./dist/cli.js"
   },
   "files": [
     "dist/",
-    "README.md"
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ashbornxd/oru.git"
+  },
+  "homepage": "https://github.com/ashbornxd/oru#readme",
+  "bugs": {
+    "url": "https://github.com/ashbornxd/oru/issues"
+  },
+  "keywords": [
+    "oru",
+    "orlune",
+    "programming-language",
+    "web-development",
+    "website-builder",
+    "compiler",
+    "html",
+    "static-site"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli.ts run dev",
     "compile": "tsx src/cli.ts build",
     "test": "tsx --test src/*.test.ts",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "prepublishOnly": "npm test"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
@@ -24,6 +44,10 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "license": "MIT"
 }
