@@ -2,29 +2,70 @@
 
 **A simpler way to build for the web.**
 
-ORU is a Python-inspired language for creating websites and web applications. It uses readable, indented syntax and compiles to ordinary HTML, CSS, and JavaScript.
+ORU is a small, Python-inspired language for creating websites. Write your site in one readable `main.oru` file; ORU compiles it into standard web files.
 
-> ORU is an early prototype. Syntax and compiler behavior may change before 1.0.
+> ORU is an early release. Syntax and compiler behavior may change before 1.0.
 
-## Requirements
+## Install for development
 
-- Node.js 20 or newer
-- npm
-
-## Get started
+Requirements: Node.js 20+ and npm.
 
 ```sh
 git clone https://github.com/ashbornxd/oru.git
 cd oru
 npm install
-npm run dev
+npm run build
+npm link
 ```
 
-Open http://localhost:3000.
+## Create a project
 
-## Build a website
+```sh
+oru create myWeb
+cd myWeb
+```
 
-Edit `main.oru`:
+A new project contains just one file:
+
+```text
+myWeb/
+└── main.oru
+```
+
+## Develop
+
+```sh
+oru run dev
+```
+
+Open http://localhost:3000. The dev server rebuilds when `main.oru` changes.
+
+## Build for production
+
+```sh
+oru build
+```
+
+ORU writes deployable HTML and copies an optional `assets/` directory into `dist/`. The generated folder is build output; it is not part of the source project.
+
+To choose another output folder:
+
+```sh
+oru build --out public
+```
+
+Deploy the contents of `dist/` to any static web host. You do not need ORU installed on the hosting server.
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `oru create <name>` | Create a project with one `main.oru` file |
+| `oru run dev` | Start the local development server |
+| `oru build` | Create production-ready static files |
+| `oru --help` | Show command help |
+
+## Language example
 
 ```python
 title = "My first website"
@@ -39,46 +80,29 @@ page index:
             font-size = 40px
 
         text("I built this with ORU.")
+
+page about:
+    section:
+        heading("About")
+        text("A second page, in the same file.")
 ```
 
-Build it:
+## Current features
+
+- Multiple pages in one `.oru` file
+- Reusable style classes
+- Readable, indentation-based syntax
+- Common semantic elements and inline styles
+- Static HTML output
+- Local development server
+- Optional local assets
+
+## Development
 
 ```sh
-npm run compile
-```
-
-The generated website is written to `dist/`.
-
-## CLI
-
-After building the package, use the CLI:
-
-- `oru build [file.oru]` — compile a website.
-- `oru dev [file.oru]` — compile and start a local development server.
-- `oru build main.oru --out public` — choose an output directory.
-
-## Current language features
-
-- Project title and description
-- Multiple pages (`page index:`, `page about:`)
-- Reusable style classes (`class Card:`, then `Card:`)
-- Sections, containers, rows, and columns
-- Headings, text, images, buttons, links, and inputs
-- Inline styling with readable property names
-- Responsive base layout styles
-
-## Project structure
-
-```text
-oru/
-├── src/
-│   ├── ast.ts
-│   ├── parser.ts
-│   ├── compiler.ts
-│   └── cli.ts
-├── examples/
-├── main.oru
-└── package.json
+npm install
+npm test
+npm run build
 ```
 
 ## License
