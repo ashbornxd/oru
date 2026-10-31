@@ -58,7 +58,7 @@ test("rejects old CSS-style properties and invalid style scopes", () => {
   assert.throws(() => parse(`page index:
     text("Hello"):
         font-size = 20px
-`), /Use text.property/);
+`), /understand/);
   assert.throws(() => compile(`page index:
     text("Hello"):
         text.unknown = value
