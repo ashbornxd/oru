@@ -49,7 +49,7 @@ function toCss(styles: StyleMap, scope: string): string {
       cssValue = `repeat(auto-fit, minmax(min(100%, ${Math.max(140, 1100 / Number(cssValue))}px), 1fr))`;
     }
     if (["padding", "gap", "border-radius", "width", "height", "min-height", "max-width", "margin", "letter-spacing"].includes(cssProperty)) {
-      cssValue = cssValue.replace(/(^|\\s)(-?\\d+(?:\\.\\d+)?)(?=\\s|$)/g, "$1$2px");
+      cssValue = cssValue.replace(/(^|\s)(-?\d+(?:\.\d+)?)(?=\s|$)/g, "$1$2px");
     }
     return [`${cssProperty}:${cssValue}`];
   }).join(";");
