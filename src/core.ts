@@ -660,6 +660,9 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
 
   call = async (name, args, line) => {
     const host = hostFunctions.get(name);
+    if (host && (name === "print" || name === "len" || name === "range" || functions.has(name))) {
+      throw new OruError("Host capability '" + name + "' conflicts with a built-in or ORU function.", line);
+    }
     if (host) return await host(...args);
     if (name === "print") {
       const value = args.map(x => typeof x === "string" ? x : JSON.stringify(x)).join(" ");
