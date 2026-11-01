@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { compileProject } from "./project-build.js";
@@ -138,6 +138,47 @@ page:
     text("Home")
 `);
     await assert.rejects(() => compileProject(root), /conflicts with an existing declaration/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+
+test("rejects unsafe, missing, and symlinked image assets", async () => {
+  const root = await mkdtemp(join(tmpdir(), "oru-assets-"));
+  try {
+    await writeFile(join(root, "oru.config"), 'name: "Assets"\n');
+    await writeFile(join(root, "index.oru"), 'page:\n    image("../outside.png", "Bad path")\n');
+    await assert.rejects(() => compileProject(root), /inside assets/);
+
+    await mkdir(join(root, "assets"));
+    await writeFile(join(root, "index.oru"), 'page:\n    image("assets/missing.png", "Missing")\n');
+    await assert.rejects(() => compileProject(root), /asset was not found/);
+
+    const outside = join(root, "outside.png");
+    await writeFile(outside, "not an image");
+    await symlink(outside, join(root, "assets", "linked.png"));
+    await writeFile(join(root, "index.oru"), 'page:\n    image("https://cdn.example.com/logo.png", "Remote")\n');
+    await assert.rejects(() => compileProject(root), /symbolic links/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("allows safe project assets and HTTPS image URLs", async () => {
+  const root = await mkdtemp(join(tmpdir(), "oru-safe-assets-"));
+  try {
+    await mkdir(join(root, "assets"));
+    await writeFile(join(root, "assets", "logo.png"), "image");
+    await writeFile(join(root, "oru.config"), 'name: "Assets"\n');
+    await writeFile(join(root, "index.oru"), `page:
+    column:
+        image("assets/logo.png", "Local logo")
+        image("https://cdn.example.com/remote.png", "Remote logo")
+`);
+    const files = await compileProject(root);
+    assert.ok(files.get("index.html")?.includes("assets/logo.png"));
+    assert.ok(files.get("index.html")?.includes("https://cdn.example.com/remote.png"));
   } finally {
     await rm(root, { recursive: true, force: true });
   }
