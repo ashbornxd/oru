@@ -37,7 +37,8 @@
     "prepack": "npm run build",
     "prepublishOnly": "npm test",
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "test:showcase": "cd examples/showcase && node ../../dist/cli.js build --out .test-dist"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

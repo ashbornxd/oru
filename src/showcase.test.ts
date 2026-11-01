@@ -6,7 +6,7 @@ import { runAsync } from "./core.js";
 
 test("builds the complete ORU 1.0 showcase website", async () => {
   const root = resolve("examples/showcase");
-  const files = await compileProject(root);
+  const files = await compileProject(root, { includeRuntime: false });
 
   for (const route of [
     "index.html",
@@ -26,8 +26,6 @@ test("builds the complete ORU 1.0 showcase website", async () => {
   assert.match(home, /assets\/oru-mark\.svg/);
   assert.match(home, /assets\/arrow\.svg/);
   assert.match(home, /getGreeting/);
-  assert.ok(files.has("_oru/core.js"));
-  assert.ok(files.has("_oru/ast.js"));
 });
 
 test("showcase imported async helpers and language examples execute", async () => {

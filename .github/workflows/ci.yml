@@ -23,6 +23,7 @@ jobs:
       - run: npm audit --audit-level=high
       - run: npm test
       - run: npm run build
+      - run: npm run test:showcase
       - run: npm pack --dry-run
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:browser
