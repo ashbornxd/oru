@@ -176,7 +176,7 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const description = escapeHtml(page.metadata.description || "");
   const language = escapeHtml(page.metadata.language || "en");
   const depth = route.output.split("/").length - 1;
-  const corePath = "../".repeat(depth) + "_oru/core.js";
+  const corePath = depth === 0 ? "./_oru/core.js" : "../".repeat(depth) + "_oru/core.js";
   const script = runtimeSource(page, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
