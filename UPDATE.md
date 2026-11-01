@@ -606,4 +606,6 @@ Added on `oru-1.0.0-dev`:
 - Updated contributor instructions with the browser test command.
 - Fixed file-input state updates to redraw the Canvas and announce the filename without rebuilding native controls, preserving the browser's selected `FileList` so native required validation and form submission still work.
 
-**Verification pending:** the new Chromium workflow must complete successfully before this milestone is considered verified.
+**Verification: GitHub Actions passed on 2026-11-01** (unit tests, TypeScript build, Chromium install, and browser integration test). The browser suite verifies that a selected file remains in the native FileList, browser-required validation blocks empty submission, valid submission reaches the ORU handler, CSP headers are present, and a 390px viewport has no horizontal overflow.
+
+The browser syntax check also caught a generated-runtime escaping bug: a newline separator in the renderer's multiline text code was being emitted as a literal newline inside a JavaScript string. The compiler template now escapes it correctly, and the generated runtime is syntax-checked before Chromium launches.
