@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, button hover/active/disabled states and image icons, responsive row wrapping, scrollable pages, and a semantic text/image layer with native keyboard-operable controls. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: advanced form controls and custom validation, advanced layout primitives, full WCAG conformance, broader security review, browser integration testing, and final release validation.
+**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, button hover/active/disabled states and image icons, responsive row wrapping, scrollable pages, and a semantic text/image layer with native keyboard-operable controls. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: advanced form controls (selects, textareas, and file inputs), advanced layout primitives, full WCAG conformance, broader security review, browser integration testing, and final release validation.
 
 ## Vision
 
@@ -530,3 +530,14 @@ Implemented on `oru-1.0.0-dev`:
 - Added tests for semantic headings, labels, and control order.
 
 **Still incomplete:** exact screen-reader reading order between noninteractive text and interactive controls, comprehensive keyboard-only testing, focus management after navigation, and full WCAG conformance.
+
+
+### Milestone 12 — Custom native validation messages
+
+**Implemented on `oru-1.0.0-dev`:**
+- Inputs accept an optional `validationMessage` string.
+- When native browser validation rejects an input, ORU applies the custom message with the browser's Constraint Validation API.
+- Editing the field clears the custom message so validation can run again.
+- Added compiler output tests and documented the property.
+
+**Still open:** richer input widgets, async validation, cross-field validation, and validation summaries.
