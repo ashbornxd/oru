@@ -709,3 +709,15 @@ Implemented on `oru-1.0.0-dev`:
 - Added regression tests for async host calls, nested async functions, sequential awaits, state updates, sync compatibility, and invalid top-level await.
 
 **Not yet release-complete:** browser event handlers are still synchronous; rejected async event handlers are not yet routed to the page error UI. Full async parser/runtime edge-case testing, accessibility, independent security/performance review, real-device testing, and release validation remain open. CI must pass on the new branch head before this milestone is considered verified.
+
+
+### Milestone 32 — Async browser event integration
+
+Implemented on `oru-1.0.0-dev`:
+- The generated browser runtime now initializes pages through `runAsync()`.
+- Click, form-submit, hover, leave, and active handlers use `callAsync()`; state persistence and rerender happen only after handler completion.
+- Rejected async handlers are logged and displayed through an accessible `role="alert"` banner.
+- Browser integration coverage includes async click completion, state rerendering, and accessible error reporting.
+- Updated compiler expectations to verify the async runtime import.
+
+**Verification pending:** run the latest full CI matrix, including Chromium, Firefox, and WebKit, on the final branch head. Browser runtime host-capability configuration and comprehensive async semantics review remain open, along with accessibility, external security/performance review, real-device testing, and final release validation.
