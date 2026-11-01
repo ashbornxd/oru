@@ -229,7 +229,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     for (const region of regions) {
       const node = region.node;
       const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : "button");
-      el.style.cssText = "position:absolute;overflow:hidden;left:" + region.x + "px;top:" + region.y + "px;width:" + region.w + "px;height:" + region.h + "px;";
+      el.style.cssText = "position:absolute;overflow:hidden;left:" + region.x + "px;top:" + region.y + "px;width:" + region.w + "px;height:" + region.h + "px;pointer-events:auto;";
       if (node.type === "input") {
         el.style.opacity = "1";
         el.style.background = "transparent";
