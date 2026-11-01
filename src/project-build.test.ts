@@ -183,3 +183,20 @@ test("allows safe project assets and HTTPS image URLs", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+
+test("validates button icon assets like image widget assets", async () => {
+  const root = await mkdtemp(join(tmpdir(), "oru-button-icons-"));
+  try {
+    await writeFile(join(root, "oru.config"), 'name: "Button icons"\n');
+    await writeFile(join(root, "index.oru"), 'page:\n    button("Continue"):\n        icon: "assets/missing.png"\n');
+    await assert.rejects(() => compileProject(root), /asset was not found/);
+    await mkdir(join(root, "assets"));
+    await writeFile(join(root, "assets", "arrow.png"), "image");
+    await writeFile(join(root, "index.oru"), 'page:\n    button("Continue"):\n        icon: "assets/arrow.png"\n');
+    const files = await compileProject(root);
+    assert.ok(files.get("index.html")?.includes("assets/arrow.png"));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
