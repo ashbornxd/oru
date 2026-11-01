@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development. The first language-core interpreter milestone is implemented on `oru-1.0.0-dev`; page composition, modules, reactive state, and the Canvas 2D browser runtime remain unimplemented.
+**Status:** Active development; not release-ready. The core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic, click handlers, and basic reactive page-local bindings are implemented on `oru-1.0.0-dev`. Cross-page global state, modules/imports, reusable style classes, complete forms, advanced responsive layout, accessibility parity, and comprehensive browser/security testing remain open.
 
 ## Vision
 
