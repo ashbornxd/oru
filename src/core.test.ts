@@ -301,3 +301,39 @@ test("short-circuits async logical expressions without invoking skipped capabili
   assert.equal(await program.callAsync("check"), true);
   assert.equal(calls, 0);
 });
+
+
+test("supports mixed synchronous and asynchronous function calls", async () => {
+  const program = await runAsync(`func double(value):
+    return value * 2
+async func load():
+    value = await fetchValue()
+    return double(value) + 1
+`, { asyncFunctions: { fetchValue: async () => 20 } });
+  assert.equal(await program.callAsync("load"), 41);
+});
+
+test("awaits nested call arguments and grouped expressions correctly", async () => {
+  const program = await runAsync(`async func calculate():
+    value = combine(await firstValue(), (await secondValue()) * 2)
+    return value
+`, {
+    asyncFunctions: {
+      firstValue: async () => 3,
+      secondValue: async () => 4,
+      combine: (a, b) => a + b
+    }
+  });
+  assert.equal(await program.callAsync("calculate"), 11);
+});
+
+test("preserves state when an async function returns early after awaiting", async () => {
+  const program = await runAsync(`state status = "idle"
+async func finish():
+    status = await getStatus()
+    return status
+    status = "unreachable"
+`, { asyncFunctions: { getStatus: async () => "complete" } });
+  assert.equal(await program.callAsync("finish"), "complete");
+  assert.equal(program.getGlobalState().status, undefined);
+});
