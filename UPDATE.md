@@ -221,6 +221,11 @@ These details are implemented as the first coherent baseline, but remain open to
 
 | Project configuration | `oru.config` is a required UTF-8 text file at the project root, with a single `name: "Project Name"` field for 1.0. | The CLI validates the project identity and reserves this file for future explicit settings; unknown fields are errors rather than silently ignored. |
 
+
+| Page logic | A page may contain one optional `logic:` block between metadata and `page:`. Its indented contents use the general ORU language syntax. | The page's logic is initialized once when that page loads. |
+| Click handlers | A button may declare `on.click: functionName`; the named function must be defined in that page's `logic:` block. | Activating the button calls the named ORU function through the interpreter. |
+| Browser interpreter delivery | The build emits the ORU interpreter and its error module under `_oru/` and loads them as a local ES module. | Nested pages use relative module paths and do not depend on a remote runtime host. |
+
 ### Completion roadmap
 
 1. Harden the core interpreter: source locations, assignment/mutation, predictable scopes, diagnostics, and test coverage.
