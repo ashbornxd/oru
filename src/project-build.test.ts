@@ -32,3 +32,49 @@ test("requires project configuration and the index page", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+test("resolves named and namespace style imports between page files", async () => {
+  const root = await mkdtemp(join(tmpdir(), "oru-imports-"));
+  try {
+    await writeFile(join(root, "oru.config"), 'name: "Imports"\n');
+    await writeFile(join(root, "theme.oru"), `class navText:
+    color: #123456
+    size: 22
+page:
+    text("Theme module")
+`);
+    await writeFile(join(root, "index.oru"), `from theme import navText
+page:
+    text("Named import"):
+        class: navText
+`);
+    await writeFile(join(root, "about.oru"), `import theme
+page:
+    text("Namespace import"):
+        class: theme.navText
+`);
+    const files = await compileProject(root);
+    assert.equal(files.size, 3);
+    assert.ok(files.get("index.html")?.includes("#123456"));
+    assert.ok(files.get("about/index.html")?.includes("#123456"));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects circular style imports", async () => {
+  const root = await mkdtemp(join(tmpdir(), "oru-cycles-"));
+  try {
+    await writeFile(join(root, "oru.config"), 'name: "Cycles"\n');
+    await writeFile(join(root, "index.oru"), `import about
+page:
+    text("Home")
+`);
+    await writeFile(join(root, "about.oru"), `import index
+page:
+    text("About")
+`);
+    await assert.rejects(() => compileProject(root), /Circular style import/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
