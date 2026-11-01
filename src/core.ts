@@ -529,34 +529,34 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
   let call: (name: string, args: OruValue[], line: number) => Promise<OruValue> = async () => null;
 
   const truthy = (value: OruValue): boolean => value !== false && value !== null && value !== 0 && value !== "";
-  const evalExpr = async (expr: Expr, env: Environment, inAsync: boolean): Promise<OruValue> => {
+  const evalExpr = async (expr: Expr, env: Environment, inAsync: boolean, line: number): Promise<OruValue> => {
     switch (expr.kind) {
       case "literal": return expr.value;
-      case "name": return env.get(expr.name, 0);
+      case "name": return env.get(expr.name, line);
       case "list": {
         const values: OruValue[] = [];
-        for (const item of expr.items) values.push(await evalExpr(item, env, inAsync));
+        for (const item of expr.items) values.push(await evalExpr(item, env, inAsync, line));
         return values;
       }
       case "object": {
         const result = Object.create(null) as Record<string, OruValue>;
-        for (const [key, value] of expr.entries) result[key] = await evalExpr(value, env, inAsync);
+        for (const [key, value] of expr.entries) result[key] = await evalExpr(value, env, inAsync, line);
         return result;
       }
       case "await":
-        if (!inAsync) throw new OruError("await can only be used inside an async function.", 0);
-        return await evalExpr(expr.value, env, inAsync);
+        if (!inAsync) throw new OruError("await can only be used inside an async function.", line);
+        return await evalExpr(expr.value, env, inAsync, line);
       case "unary": {
-        const value = await evalExpr(expr.value, env, inAsync);
+        const value = await evalExpr(expr.value, env, inAsync, line);
         if (expr.op === "!" || expr.op === "not") return !truthy(value);
-        if (typeof value !== "number") throw new OruError("Unary '" + expr.op + "' expects a number.", 0);
+        if (typeof value !== "number") throw new OruError("Unary '" + expr.op + "' expects a number.", line);
         return expr.op === "-" ? -value : value;
       }
       case "binary": {
-        const left = await evalExpr(expr.left, env, inAsync);
-        if (expr.op === "and") return truthy(left) ? evalExpr(expr.right, env, inAsync) : left;
-        if (expr.op === "or") return truthy(left) ? left : evalExpr(expr.right, env, inAsync);
-        const right = await evalExpr(expr.right, env, inAsync);
+        const left = await evalExpr(expr.left, env, inAsync, line);
+        if (expr.op === "and") return truthy(left) ? evalExpr(expr.right, env, inAsync, line) : left;
+        if (expr.op === "or") return truthy(left) ? left : evalExpr(expr.right, env, inAsync, line);
+        const right = await evalExpr(expr.right, env, inAsync, line);
         if (expr.op === "==") return JSON.stringify(left) === JSON.stringify(right);
         if (expr.op === "!=") return JSON.stringify(left) !== JSON.stringify(right);
         if (["<", "<=", ">", ">="].includes(expr.op)) {
@@ -572,33 +572,33 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
             if (expr.op === ">") return left > right;
             return left >= right;
           }
-          throw new OruError("Values cannot be ordered.", 0);
+          throw new OruError("Values cannot be ordered.", line);
         }
         if (expr.op === "+" && typeof left === "string" && typeof right === "string") return left + right;
-        if (typeof left !== "number" || typeof right !== "number") throw new OruError("Operator '" + expr.op + "' expects numbers.", 0);
-        if (["/", "//", "%"].includes(expr.op) && right === 0) throw new OruError("Division by zero.", 0);
+        if (typeof left !== "number" || typeof right !== "number") throw new OruError("Operator '" + expr.op + "' expects numbers.", line);
+        if (["/", "//", "%"].includes(expr.op) && right === 0) throw new OruError("Division by zero.", line);
         const value = expr.op === "+" ? left + right : expr.op === "-" ? left - right : expr.op === "*" ? left * right : expr.op === "/" ? left / right : expr.op === "//" ? Math.floor(left / right) : expr.op === "%" ? left % right : left ** right;
-        if (!Number.isFinite(value)) throw new OruError("Numeric result is outside the supported range.", 0);
+        if (!Number.isFinite(value)) throw new OruError("Numeric result is outside the supported range.", line);
         return value;
       }
       case "member": {
-        const object = await evalExpr(expr.object, env, inAsync);
-        if (!object || typeof object !== "object" || Array.isArray(object) || !Object.hasOwn(object, expr.key)) throw new OruError("Unknown object key '" + expr.key + "'.", 0);
+        const object = await evalExpr(expr.object, env, inAsync, line);
+        if (!object || typeof object !== "object" || Array.isArray(object) || !Object.hasOwn(object, expr.key)) throw new OruError("Unknown object key '" + expr.key + "'.", line);
         return (object as Record<string, OruValue>)[expr.key]!;
       }
       case "index": {
-        const object = await evalExpr(expr.object, env, inAsync);
-        const index = await evalExpr(expr.index, env, inAsync);
+        const object = await evalExpr(expr.object, env, inAsync, line);
+        const index = await evalExpr(expr.index, env, inAsync, line);
         if (Array.isArray(object) && typeof index === "number") return object[index] ?? null;
         if (typeof object === "string" && typeof index === "number") return object[index] ?? "";
         if (object && typeof object === "object" && !Array.isArray(object) && typeof index === "string") return Object.hasOwn(object, index) ? (object as Record<string, OruValue>)[index]! : null;
-        throw new OruError("Invalid index operation.", 0);
+        throw new OruError("Invalid index operation.", line);
       }
       case "call": {
-        if (expr.callee.kind !== "name") throw new OruError("Only named functions can be called.", 0);
+        if (expr.callee.kind !== "name") throw new OruError("Only named functions can be called.", line);
         const args: OruValue[] = [];
-        for (const argument of expr.args) args.push(await evalExpr(argument, env, inAsync));
-        return call(expr.callee.name, args, 0);
+        for (const argument of expr.args) args.push(await evalExpr(argument, env, inAsync, line));
+        return call(expr.callee.name, args, line);
       }
     }
   };
@@ -610,24 +610,24 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
     for (const statement of body) {
       if (++steps > maxSteps) throw new OruError("Execution step limit exceeded.", statement.line);
       switch (statement.kind) {
-        case "assign": env.assign(statement.name, await evalExpr(statement.value, env, inAsync), statement.line); break;
+        case "assign": env.assign(statement.name, await evalExpr(statement.value, env, inAsync, statement.line), statement.line); break;
         case "global":
           globalNames.add(statement.name);
-          if (!shared.has(statement.name)) shared.declare(statement.name, await evalExpr(statement.value, env, inAsync), statement.line);
-          else if (!topLevel) shared.assign(statement.name, await evalExpr(statement.value, env, inAsync), statement.line);
+          if (!shared.has(statement.name)) shared.declare(statement.name, await evalExpr(statement.value, env, inAsync, statement.line), statement.line);
+          else if (!topLevel) shared.assign(statement.name, await evalExpr(statement.value, env, inAsync, statement.line), statement.line);
           break;
-        case "state": env.declare(statement.name, await evalExpr(statement.value, env, inAsync), statement.line); break;
-        case "expression": await evalExpr(statement.value, env, inAsync); break;
+        case "state": env.declare(statement.name, await evalExpr(statement.value, env, inAsync, statement.line), statement.line); break;
+        case "expression": await evalExpr(statement.value, env, inAsync, statement.line); break;
         case "func": functions.set(statement.name, { params: statement.params, body: statement.body, closure: env, isAsync: statement.isAsync }); break;
         case "if": {
           for (const item of statement.branches) {
-            if (item.condition === null || truthy(await evalExpr(item.condition, env, inAsync))) { await execute(item.body, env, inFunction, inAsync, inLoop, topLevel); break; }
+            if (item.condition === null || truthy(await evalExpr(item.condition, env, inAsync, statement.line))) { await execute(item.body, env, inFunction, inAsync, inLoop, topLevel); break; }
           }
           break;
         }
         case "while": {
           let count = 0;
-          while (truthy(await evalExpr(statement.condition, env, inAsync))) {
+          while (truthy(await evalExpr(statement.condition, env, inAsync, statement.line))) {
             if (++count > maxSteps) throw new OruError("Loop iteration limit exceeded.", statement.line);
             try { await execute(statement.body, env, inFunction, inAsync, true, topLevel); }
             catch (signal) { if (signal instanceof AsyncBreak) break; if (!(signal instanceof AsyncContinue)) throw signal; }
@@ -635,7 +635,7 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
           break;
         }
         case "for": {
-          const iterable = await evalExpr(statement.iterable, env, inAsync);
+          const iterable = await evalExpr(statement.iterable, env, inAsync, statement.line);
           const values = Array.isArray(iterable) ? iterable : typeof iterable === "string" ? [...iterable] : null;
           if (!values) throw new OruError("for loops require a list or string.", statement.line);
           for (const value of values) {
@@ -647,7 +647,7 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
         }
         case "return":
           if (!inFunction) throw new OruError("return can only be used inside a function.", statement.line);
-          throw new AsyncReturn(statement.value ? await evalExpr(statement.value, env, inAsync) : null);
+          throw new AsyncReturn(statement.value ? await evalExpr(statement.value, env, inAsync, statement.line) : null);
         case "break":
           if (!inLoop) throw new OruError("break can only be used inside a loop.", statement.line);
           throw new AsyncBreak();
