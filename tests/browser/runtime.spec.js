@@ -100,7 +100,7 @@ test("native file selection keeps the FileList for required form submission", as
   expect(response?.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
 
   const file = page.getByLabel("Choose a file");
-  const send = page.locator("#oru-controls button");
+  const send = page.locator('#oru-controls button[aria-label="Send"]');
   await expect(send, runtimeErrors.join("\\n") || "ORU controls were not rendered").toHaveCount(1);
   expect(await send.getAttribute("aria-label")).toBe("Send");
   await send.click();
