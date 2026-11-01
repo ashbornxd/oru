@@ -12,10 +12,10 @@ function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: 
 ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
 (() => {
   const data = ${payload};
-  const app = data.logic ? run(data.logic) : null;
+  const app = data.logic ? run(data.logic, { output: value => console.log(value) }) : null;
   const activate = node => {
     const handler = node.properties["on.click"];
-    if (handler && app) { app.call(String(handler)); render(); }
+    if (handler && app) { try { app.call(String(handler)); } catch (error) { console.error("ORU click handler failed:", error); } render(); }
     if (node.type === "link") {
       const route = String(node.route ?? node.properties.route ?? "");
       const target = data.routes[route] ?? route;
