@@ -17,6 +17,7 @@ page:
   assert.ok(html.includes('<canvas aria-hidden="true"'));
   assert.ok(html.includes("A &lt;safe&gt; title"));
   assert.ok(html.includes("oru-controls"));
+  assert.ok(html.includes('role="group" aria-label="Page controls"'));
   assert.ok(html.includes("Continue"));
 });
 
