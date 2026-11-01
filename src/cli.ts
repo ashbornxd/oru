@@ -109,6 +109,14 @@ async function build(output = "dist"): Promise<void> {
   console.log(`Built ${files.size} page(s) → ${output}/`);
 }
 
+const securityHeaders = {
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "strict-origin-when-cross-origin",
+  "x-frame-options": "DENY",
+  "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+  "permissions-policy": "camera=(), microphone=(), geolocation=()"
+};
+
 const mimeTypes: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -163,7 +171,7 @@ async function runDev(port: number): Promise<void> {
   createServer(async (request, response) => {
     try {
       if (request.method !== "GET" && request.method !== "HEAD") {
-        response.writeHead(405, { "content-type": "text/plain; charset=utf-8", "allow": "GET, HEAD", "x-content-type-options": "nosniff" });
+        response.writeHead(405, { ...securityHeaders, "content-type": "text/plain; charset=utf-8", "allow": "GET, HEAD" });
         response.end("Method not allowed");
         return;
       }
@@ -173,10 +181,10 @@ async function runDev(port: number): Promise<void> {
       const file = resolve(root, relativePath);
       if (file !== root && !file.startsWith(root + sep)) throw new Error("Invalid path");
       const data = await readFile(file);
-      response.writeHead(200, { "content-type": mimeTypes[extname(file)] ?? "application/octet-stream", "x-content-type-options": "nosniff", "referrer-policy": "strict-origin-when-cross-origin" });
+      response.writeHead(200, { ...securityHeaders, "content-type": mimeTypes[extname(file)] ?? "application/octet-stream" });
       response.end(request.method === "HEAD" ? undefined : data);
     } catch {
-      response.writeHead(404, { "content-type": "text/plain; charset=utf-8", "x-content-type-options": "nosniff" });
+      response.writeHead(404, { ...securityHeaders, "content-type": "text/plain; charset=utf-8" });
       response.end("Not found");
     }
   }).listen(port, "127.0.0.1", () => {
