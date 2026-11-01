@@ -128,7 +128,7 @@ test("rejects await outside async functions", async () => {
 });
 
 test("supports async state updates and sequential awaits", async () => {
-  const program = await runAsync(`state status = "idle"
+  const program = await runAsync(`state status = pass
 async func refresh():
     first = await getValue(1)
     second = await getValue(2)
