@@ -40,18 +40,18 @@ function validateLinks(widget: PageWidget, routes: Record<string, string>): void
   }
   for (const child of widget.children) validateLinks(child, routes);
 }
-function validateForms(widget: PageWidget, logic: string, insideForm = false): void {
+function validateForms(widget: PageWidget, functions: Set<string>, insideForm = false): void {
   if (widget.type === "form") {
     if (insideForm) throw new OruError("Forms cannot be nested.", widget.line);
     const handler = widget.properties["on.submit"];
-    if (typeof handler !== "string" || !new RegExp("\\bfunc\\s+" + handler + "\\s*\\(").test(logic)) {
+    if (typeof handler !== "string" || !functions.has(handler)) {
       throw new OruError("A form requires on.submit: name referencing a function in logic:.", widget.line);
     }
   }
   if (insideForm && widget.type === "button" && widget.properties["on.click"] !== undefined) {
     throw new OruError("Buttons inside a form submit the form; use on.submit on the form instead.", widget.line);
   }
-  for (const child of widget.children) validateForms(child, logic, insideForm || widget.type === "form");
+  for (const child of widget.children) validateForms(child, functions, insideForm || widget.type === "form");
 }
 function validateBindings(widget: PageWidget, declared: Set<string>, globals: Set<string>): void {
   if (widget.binding && !declared.has(widget.binding)) throw new OruError("Bound widget variable must be declared with state or global: " + widget.binding, widget.line);
@@ -168,7 +168,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       const image = new Image();
       image.onload = () => { ctx.drawImage(image, x, y, w, h); };
       image.src = String(p.src ?? "");
-      regions.push({ x, y, w, h, node });
+      regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
     if (node.type === "input") {
@@ -292,7 +292,8 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const resolvedPage = { ...page, widgets: page.widgets.map(widget => resolveWidget(widget, page.classes)) };
   const declaredBindings = new Set([...page.logic.matchAll(/(?:^|\n)\s*(?:state|global)\s+([A-Za-z_]\w*)\s*=/g)].map(match => match[1]!));
   const globalBindings = new Set([...page.logic.matchAll(/(?:^|\n)\s*global\s+([A-Za-z_]\w*)\s*=/g)].map(match => match[1]!));
-  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings, globalBindings); validateForms(widget, page.logic); }
+  const declaredFunctions = new Set([...page.logic.matchAll(/\\bfunc\\s+([A-Za-z_]\\w*)\\s*\\(/g)].map(match => match[1]!));
+  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings, globalBindings); validateForms(widget, declaredFunctions); }
   const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
