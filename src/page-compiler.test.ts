@@ -357,3 +357,45 @@ page:
   assert.ok(html.includes('status.setAttribute("aria-live", "polite")'));
   assert.ok(html.includes('if (node.type !== "select" && !isFileInput) el.value = textOf(node)'));
 });
+
+
+test("supports coherent main-axis and cross-axis alignment on containers", () => {
+  const page = parsePage(`page:
+    column:
+        mainAlign: center
+        crossAlign: end
+        row:
+            mainAlign: spaceBetween
+            crossAlign: center
+            text("Left"):
+                width: 120
+            text("Right"):
+                width: 120
+        box:
+            mainAlign: end
+            crossAlign: stretch
+            text("Footer")
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('const mainAlign = String(p.mainAlign ?? "start")'));
+  assert.ok(html.includes('mainAlign === "spaceBetween"'));
+  assert.ok(html.includes('mainAlign === "spaceAround"'));
+  assert.ok(html.includes('const crossAlign = String(p.crossAlign ?? "stretch")'));
+  assert.ok(html.includes('crossAlign === "center"'));
+  assert.ok(html.includes('crossAlign === "end"'));
+});
+
+test("rejects unsupported container alignment values", () => {
+  const main = parsePage(`page:
+    row:
+        mainAlign: diagonal
+        text("Item")
+`);
+  assert.throws(() => compilePage(main, routeForPage("index.oru"), { index: "/" }), /mainAlign must be/);
+  const cross = parsePage(`page:
+    column:
+        crossAlign: baseline
+        text("Item")
+`);
+  assert.throws(() => compilePage(cross, routeForPage("index.oru"), { index: "/" }), /crossAlign must be/);
+});
