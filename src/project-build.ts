@@ -1,5 +1,6 @@
 import { readFile, readdir } from "node:fs/promises";
-import { join, relative, resolve, sep } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import { OruError } from "./ast.js";
 import { parsePage } from "./project.js";
 import { buildRouteTable } from "./routes.js";
@@ -47,6 +48,25 @@ export async function compileProject(projectDirectory = "."): Promise<Map<string
   for (const pageRoute of routeTable.values()) {
     const page = parsed.get(pageRoute.source)!;
     output.set(pageRoute.output, compilePage(page, pageRoute, routeMap));
+  }
+  if ([...parsed.values()].some(page => page.logic.trim().length > 0)) {
+    const moduleDirectory = dirname(fileURLToPath(import.meta.url));
+    const runtimeDirectories = [moduleDirectory, resolve(moduleDirectory, "../dist")];
+    for (const filename of ["core.js", "ast.js"]) {
+      let runtimeSource: string | undefined;
+      for (const directory of runtimeDirectories) {
+        try {
+          runtimeSource = await readFile(join(directory, filename), "utf8");
+          break;
+        } catch {
+          // Try the built package directory.
+        }
+      }
+      if (runtimeSource === undefined) {
+        throw new OruError("The ORU browser interpreter is missing. Run npm run build before building pages with logic:.");
+      }
+      output.set("_oru/" + filename, runtimeSource);
+    }
   }
   return output;
 }
