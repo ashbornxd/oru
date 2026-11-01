@@ -99,6 +99,9 @@ async function build(output = "dist"): Promise<void> {
     await writeFile(target, content, "utf8");
   }
 
+  await mkdir(join(outputRoot, "_oru"), { recursive: true });
+  await cp(new URL("./core.js", import.meta.url), join(outputRoot, "_oru", "core.js"));
+
   try {
     await access(resolve("assets"));
     await cp(resolve("assets"), join(outputRoot, "assets"), { recursive: true });
