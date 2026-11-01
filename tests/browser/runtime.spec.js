@@ -36,6 +36,10 @@ page:
 `);
 
   const output = await compileProject(root);
+  const pageHTML = output.get("index.html");
+  const inlineScript = pageHTML?.match(/<script type="module">([\\s\\S]*?)<\\/script>/)?.[1];
+  if (!inlineScript) throw new Error("Compiled page is missing its module runtime.");
+  new Function(inlineScript.replace(/^import\\s+\\{\\s*run\\s*\\}\\s+from\\s+"[^"]+";\\s*/, ""));
   for (const [filename, content] of output) {
     const target = join(root, filename);
     await mkdir(join(target, ".."), { recursive: true });
