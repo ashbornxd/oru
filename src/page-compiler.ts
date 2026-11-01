@@ -179,7 +179,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       ctx.fillStyle = visibleValue ? color(node, "text.color", "#202124") : "#777777";
       ctx.font = "14px system-ui";
       ctx.fillText(visibleValue || String(p.placeholder ?? ""), x + 10, y + 14);
-      regions.push({ x, y, w, h, node });
+      regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
     const horizontal = node.type === "row";
