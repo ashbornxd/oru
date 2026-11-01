@@ -78,3 +78,67 @@ page:
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("imports named functions and values into page logic", async () => {
+  const root = await mkdtemp(join(tmpdir(), "oru-logic-imports-"));
+  try {
+    await writeFile(join(root, "oru.config"), 'name: "Logic imports"\n');
+    await writeFile(join(root, "utils.oru"), `logic:
+    APP_NAME = "ORU"
+    func greet(name):
+        return "Hello " + name
+    func unused():
+        return "not imported"
+page:
+    text("Utilities")
+`);
+    await writeFile(join(root, "index.oru"), `from utils import greet, APP_NAME
+logic:
+    state message = greet(APP_NAME)
+page:
+    text(message)
+`);
+    const files = await compileProject(root);
+    const html = files.get("index.html") ?? "";
+    assert.ok(html.includes('func greet(name)'));
+    assert.ok(html.includes('APP_NAME = "ORU"'));
+    assert.ok(!html.includes('func unused()'));
+    assert.ok(html.includes('state message = greet(APP_NAME)'));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects missing, stateful, and colliding logic imports", async () => {
+  const root = await mkdtemp(join(tmpdir(), "oru-logic-import-errors-"));
+  try {
+    await writeFile(join(root, "oru.config"), 'name: "Logic imports"\n');
+    await writeFile(join(root, "utils.oru"), `logic:
+    state internal = 1
+    func greet():
+        return "hello"
+page:
+    text("Utilities")
+`);
+    await writeFile(join(root, "index.oru"), `from utils import missing
+page:
+    text("Home")
+`);
+    await assert.rejects(() => compileProject(root), /was not exported/);
+    await writeFile(join(root, "index.oru"), `from utils import internal
+page:
+    text("Home")
+`);
+    await assert.rejects(() => compileProject(root), /was not exported/);
+    await writeFile(join(root, "index.oru"), `from utils import greet
+logic:
+    func greet():
+        return "local"
+page:
+    text("Home")
+`);
+    await assert.rejects(() => compileProject(root), /conflicts with an existing declaration/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
