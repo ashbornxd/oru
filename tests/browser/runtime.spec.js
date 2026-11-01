@@ -19,6 +19,12 @@ test.beforeAll(async () => {
     state passwordValue = ""
     state confirmation = ""
     state verified = false
+    state asyncDone = false
+    async func fetchValue():
+        return "ready"
+    async func finishAsync():
+        value = await fetchValue()
+        asyncDone = value == "ready"
     func submit():
         submitted = true
     func verify():
@@ -28,6 +34,9 @@ page:
         text(selected)
         text(submitted)
         text(verified)
+        text(asyncDone)
+        button("Async action"):
+            on.click: finishAsync
         row:
             wrapAt: 600
             mainAlign: spaceBetween
@@ -66,7 +75,7 @@ page:
   const pageHTML = output.get("index.html");
   const inlineScript = pageHTML?.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1];
   if (!inlineScript) throw new Error("Compiled page is missing its module runtime.");
-  const executableSource = inlineScript.trimStart().replace(/^import\s+\{\s*run\s*\}\s+from\s+"[^"]+";\s*/, "");
+  const executableSource = inlineScript.trimStart().replace(/^import\s+\{\s*runAsync\s*\}\s+from\s+"[^"]+";\s*/, "");
   try {
     new Function(executableSource);
   } catch (error) {
