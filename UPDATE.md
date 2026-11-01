@@ -239,6 +239,9 @@ These details are implemented as the first coherent baseline, but remain open to
 
 | Style class imports | Use `from module.path import className` for named style classes or `import module.path` to import a module namespace. Module paths resolve relative to the importing page file; a leading `../` moves to its parent directory. | A module is another `.oru` page file. Its declared style classes are available to import; import cycles and name collisions are build errors. Function imports are not part of this first class-import slice. |
 
+
+| Input binding | `input(name)` binds an input to a page variable; `input("Placeholder")` remains a placeholder-only input. The bound variable must be a string-compatible page or global value. | The value is written back when the input changes, then bound UI content is refreshed. Native browser constraints cover required, minimum/maximum length, and letters/numbers patterns. |
+
 ### Completion roadmap
 
 1. Harden the core interpreter: source locations, assignment/mutation, predictable scopes, diagnostics, and test coverage.
