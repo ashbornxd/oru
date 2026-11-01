@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, responsive row wrapping, scrollable pages, and a semantic text/image layer with native keyboard-operable controls. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: advanced form controls and custom validation, advanced layout primitives, full WCAG conformance, broader security review, browser integration testing, and final release validation.
+**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, button hover/active/disabled states and image icons, responsive row wrapping, scrollable pages, and a semantic text/image layer with native keyboard-operable controls. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: advanced form controls and custom validation, advanced layout primitives, full WCAG conformance, broader security review, browser integration testing, and final release validation.
 
 ## Vision
 
@@ -497,3 +497,22 @@ Implemented on `oru-1.0.0-dev`:
 - Added tests for nested global updates, restored-state behavior, and prototype-key isolation.
 
 **Still incomplete:** deeper type checking for nested collections, mutable collection operations, improved source-line diagnostics for expression runtime errors, and a broader interpreter security review.
+
+
+### Decision — Button interaction model (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Button states | Buttons support `on.click`, `on.hover`, `on.active`, and `on.leave` handlers, plus state-specific background and text colors. | State handlers reference named page logic functions. Native DOM controls forward pointer events to the Canvas renderer. A button can be disabled and can display a local/HTTPS icon with an accessible alternative label. |
+
+### Milestone 17 — Button states and icon support
+
+Implemented on `oru-1.0.0-dev`:
+- Added button hover, active, disabled visual states and text colors.
+- Added `on.hover`, `on.active`, and `on.leave` named event handlers; click handlers remain supported.
+- Event handlers are validated against functions in page logic at build time.
+- Buttons can display an image icon with an accessible `alt` label.
+- Button icon assets follow the same safe local/HTTPS asset policy as image widgets.
+- Added tests for state styling, event handlers, and icon asset validation.
+
+**Still incomplete:** nested button content/slots, keyboard-specific focus styling in the Canvas visual layer, advanced animation/transitions, and browser interaction testing.
