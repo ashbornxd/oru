@@ -12,6 +12,7 @@ export interface PageWidget {
 }
 export interface OruPage {
   metadata: { title: string; description: string; language: string };
+  classes: Record<string, Record<string, PageValue>>;
   widgets: PageWidget[];
   logic: string;
   sourcePath?: string;
@@ -93,19 +94,22 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
   const metadata = { title: "Untitled", description: "", language: "en" };
   const widgets: PageWidget[] = [];
   const stack: Array<{ indent: number; widget: PageWidget }> = [];
-  let section: "metadata" | "logic" | "page" | null = null;
+  let section: "metadata" | "class" | "logic" | "page" | null = null;
   let sawPage = false;
   let sawMetadata = false;
+  let sawClass = false;
+  let activeClass = "";
   let sawLogic = false;
+  const classes: Record<string, Record<string, PageValue>> = {};
   const logicLines: string[] = [];
 
   for (const line of lines) {
     while (stack.length && line.indent <= stack[stack.length - 1]!.indent) stack.pop();
     if (line.indent === 0 && line.text === "metadata:") {
-      if (sawMetadata || sawLogic || sawPage) throw new OruError("metadata must appear once before logic and page.", line.number);
+      if (sawMetadata || sawClass || sawLogic || sawPage) throw new OruError("metadata must appear once before classes, logic, and page.", line.number);
       sawMetadata = true; section = "metadata"; continue;
     }
-    if (line.indent === 0 && line.text === "logic:") {
+    const classHeader = line.indent === 0 ? line.text.match(/^class\\s+([A-Za-z_]\\w*)\\s*:\\s*$/) : null;\n    if (classHeader) {\n      if (sawLogic || sawPage) throw new OruError("Style classes must be declared before logic and page.", line.number);\n      activeClass = classHeader[1]!;\n      if (classes[activeClass]) throw new OruError("Style class already exists: " + activeClass, line.number);\n      classes[activeClass] = {};\n      sawClass = true; section = "class"; continue;\n    }\n    if (line.indent === 0 && line.text === "logic:") {
       if (sawLogic || sawPage) throw new OruError("logic must appear once before page.", line.number);
       sawLogic = true; section = "logic"; continue;
     }
@@ -113,8 +117,8 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
       if (sawPage) throw new OruError("A .oru file can define exactly one page.", line.number);
       sawPage = true; section = "page"; continue;
     }
-    if (!section) throw new OruError("Start the file with metadata:, logic:, or page:.", line.number);
-    if (section === "logic") {
+    if (!section) throw new OruError("Start the file with metadata:, a class declaration, logic:, or page:.", line.number);
+    if (section === "class") {\n      if (line.indent !== 4) throw new OruError("Style class properties must be indented once.", line.number);\n      const field = line.text.match(/^([A-Za-z_]\\w*)\\s*:\\s*(.+)$/);\n      if (!field) throw new OruError("Expected a style property in the form name: value.", line.number);\n      const key = field[1]!;\n      if (key in classes[activeClass]!) throw new OruError("Style property is defined twice: " + key, line.number);\n      classes[activeClass]![key] = valueOf(field[2]!, line.number);\n      continue;\n    }\n    if (section === "logic") {
       if (line.indent < 4) throw new OruError("Logic statements must be indented once under logic:.", line.number);
       logicLines.push(" ".repeat(line.indent - 4) + line.text);
       continue;
