@@ -533,7 +533,11 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
     switch (expr.kind) {
       case "literal": return expr.value;
       case "name": return env.get(expr.name, 0);
-      case "list": return Promise.all(expr.items.map(x => evalExpr(x, env, inAsync)));
+      case "list": {
+        const values: OruValue[] = [];
+        for (const item of expr.items) values.push(await evalExpr(item, env, inAsync));
+        return values;
+      }
       case "object": {
         const result = Object.create(null) as Record<string, OruValue>;
         for (const [key, value] of expr.entries) result[key] = await evalExpr(value, env, inAsync);
@@ -592,7 +596,8 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
       }
       case "call": {
         if (expr.callee.kind !== "name") throw new OruError("Only named functions can be called.", 0);
-        const args = await Promise.all(expr.args.map(x => evalExpr(x, env, inAsync)));
+        const args: OruValue[] = [];
+        for (const argument of expr.args) args.push(await evalExpr(argument, env, inAsync));
         return call(expr.callee.name, args, 0);
       }
     }
