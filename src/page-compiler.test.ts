@@ -328,3 +328,29 @@ page:
   assert.ok(html.includes('placeholder.selected = !textOf(node)'));
   assert.ok(html.includes('el.required = true'));
 });
+
+test("supports accessible native file selection and filename state bindings", () => {
+  const page = parsePage(`logic:
+    state avatar = ""
+    state attachments = []
+page:
+    input(avatar):
+        type: file
+        accept: "image/png,image/jpeg"
+        required: true
+        label: Profile image
+    input(attachments):
+        type: file
+        accept: ".pdf"
+        multiple: true
+        label: Attachments
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('el.type = String(node.properties.type ?? "text")'));
+  assert.ok(html.includes('el.accept = node.properties.accept'));
+  assert.ok(html.includes('el.multiple = true'));
+  assert.ok(html.includes('const isFileInput = node.type === "input" && node.properties.type === "file"'));
+  assert.ok(html.includes('Array.from(el.files ?? []).map(file => file.name)'));
+  assert.ok(html.includes('node.properties.multiple === true ? names : (names[0] ?? "")'));
+  assert.ok(html.includes('if (node.type !== "select" && !isFileInput) el.value = textOf(node)'));
+});
