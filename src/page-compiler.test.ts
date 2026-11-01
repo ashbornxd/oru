@@ -255,6 +255,7 @@ page:
   assert.ok(html.includes('document.createElement(role === "heading" ? "h" + level : "p")'));
   assert.ok(html.includes('form.setAttribute("aria-label", String(node.properties.label ?? "Form"))'));
   assert.ok(html.includes('node.properties.label ?? node.properties.placeholder ?? node.binding ?? (node.type === "textarea" ? "Text area" : node.type === "select" ? "Select" : "Input")'));
+  assert.ok(html.includes("#oru-controls textarea:focus-visible,#oru-controls select:focus-visible"));
   assert.ok(html.includes('if (region.formId && !parent.isConnected) controls.append(parent)'));
 });
 
