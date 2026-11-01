@@ -1,4 +1,5 @@
 import { OruError } from "./ast.js";
+import { OruError } from "./ast.js";
 import type { OruPage, PageWidget } from "./project.js";
 import type { PageRoute } from "./routes.js";
 
@@ -32,6 +33,13 @@ function resolveWidget(widget: PageWidget, classes: OruPage["classes"]): PageWid
   }
   return { ...widget, properties, children: widget.children.map(child => resolveWidget(child, classes)) };
 }
+function validateLinks(widget: PageWidget, routes: Record<string, string>): void {
+  if (widget.type === "link") {
+    const route = String(widget.route ?? widget.properties.route ?? "");
+    if (!Object.prototype.hasOwnProperty.call(routes, route)) throw new OruError("Unknown internal route: " + route, widget.line);
+  }
+  for (const child of widget.children) validateLinks(child, routes);
+}
 function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: string): string {
   const payload = JSON.stringify({ page, routes, logic: page.logic }).replace(/</g, "\\u003c");
   return `
@@ -55,7 +63,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     if (handler && app) { try { app.call(String(handler)); } catch (error) { console.error("ORU click handler failed:", error); } persistGlobals(); render(); }
     if (node.type === "link") {
       const route = String(node.route ?? node.properties.route ?? "");
-      const target = data.routes[route] ?? route;
+      const target = Object.prototype.hasOwnProperty.call(data.routes, route) ? data.routes[route] : "";
       if (target) location.href = target;
     }
   };
@@ -193,7 +201,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       el.setAttribute("aria-label", textOf(node) || String(node.properties.placeholder ?? node.type));
       if (node.type === "link") {
         const route = String(node.route ?? node.properties.route ?? "");
-        el.href = data.routes[route] ?? route;
+        el.href = Object.prototype.hasOwnProperty.call(data.routes, route) ? data.routes[route] : "#";
       } else if (node.type === "input") {
         el.placeholder = String(node.properties.placeholder ?? "");
         el.type = String(node.properties.type ?? "text");
@@ -231,7 +239,7 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const depth = route.output.split("/").length - 1;
   const corePath = depth === 0 ? "./_oru/core.js" : "../".repeat(depth) + "_oru/core.js";
   const resolvedPage = { ...page, widgets: page.widgets.map(widget => resolveWidget(widget, page.classes)) };
-  const script = runtimeSource(resolvedPage, routes, corePath);
+  for (const widget of resolvedPage.widgets) validateLinks(widget, routes);\n  const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
 <head>
