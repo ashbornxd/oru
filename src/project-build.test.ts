@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { compileProject } from "./project-build.js";
-import { run } from "./core.js";
+import { run, runAsync } from "./core.js";
 
 test("compiles a multi-page project into safe static routes", async () => {
   const root = await mkdtemp(join(tmpdir(), "oru-project-"));
@@ -231,6 +231,12 @@ page:
     const html = files.get("index.html") ?? "";
     assert.ok(html.includes("async func loadGreeting()"));
     assert.ok(html.includes("async func initialize()"));
+    const payload = html.match(/const data = (\{[\s\S]*?\});\n  let initialGlobals/);
+    assert.ok(payload);
+    const runtime = JSON.parse(payload[1]!) as { logic: string };
+    const program = await runAsync(runtime.logic, { asyncFunctions: { getGreeting: async () => "Hello from module" } });
+    await program.callAsync("initialize");
+    assert.equal(program.getGlobals().greeting, "Hello from module");
   } finally {
     await rm(root, { recursive: true, force: true });
   }
