@@ -230,3 +230,30 @@ test("rejects button event handlers that do not exist", () => {
 `);
   assert.throws(() => compilePage(page, routeForPage("index.oru"), { index: "/" }), /on.hover must reference a function/);
 });
+
+
+test("exposes headings, form labels, and stable input accessible names", () => {
+  const page = parsePage(`logic:
+    state email = ""
+    func send():
+        print(email)
+page:
+    text("Create account"):
+        role: heading
+        level: 1
+    form:
+        label: Registration form
+        on.submit: send
+        input(email):
+            label: Email address
+            type: email
+        button("Submit")
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('<main id="oru-semantic"'));
+  assert.ok(html.includes('aria-live="polite"'));
+  assert.ok(html.includes('document.createElement(role === "heading" ? "h" + level : "p")'));
+  assert.ok(html.includes('form.setAttribute("aria-label", String(node.properties.label ?? "Form"))'));
+  assert.ok(html.includes('node.properties.label ?? node.properties.placeholder ?? node.binding ?? "Input"'));
+  assert.ok(html.includes('if (region.formId && !parent.isConnected) controls.append(parent)'));
+});
