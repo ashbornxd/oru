@@ -11,14 +11,14 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   column: new Set(["background", "padding", "gap", "width", "height", "mainAlign", "crossAlign"]),
   row: new Set(["background", "padding", "gap", "width", "height", "wrapAt", "mainAlign", "crossAlign"]),
   box: new Set(["background", "padding", "radius", "width", "height", "gap", "mainAlign", "crossAlign"]),
-  form: new Set(["background", "padding", "radius", "width", "height", "gap", "mainAlign", "crossAlign"]),
+  form: new Set(["background", "padding", "radius", "width", "height", "gap", "mainAlign", "crossAlign", "validationSummary"]),
   text: new Set(["color", "text.color", "size", "weight", "font", "line", "align", "role", "level"]),
   button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color", "text.color", "align"]),
   link: new Set(["color", "text.color", "size", "weight", "decoration", "underline"]),
   image: new Set(["width", "height", "fit", "radius"]),
-  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "accept", "multiple", "constraint", "validationMessage", "name", "text.color", "border.color", "label"]),
-  textarea: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "readOnly", "minLength", "maxLength", "validationMessage", "name", "text.color", "border.color", "label", "rows"]),
-  select: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "name", "placeholder", "text.color", "border.color", "label"]),
+  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "accept", "multiple", "constraint", "validationMessage", "matches", "name", "text.color", "border.color", "label"]),
+  textarea: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "readOnly", "minLength", "maxLength", "validationMessage", "matches", "name", "text.color", "border.color", "label", "rows"]),
+  select: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "name", "placeholder", "matches", "text.color", "border.color", "label"]),
   option: new Set([])
 };
 
@@ -49,6 +49,25 @@ function validateForms(widget: PageWidget, functions: Set<string>, insideForm = 
     const handler = widget.properties["on.submit"];
     if (typeof handler !== "string" || !functions.has(handler)) {
       throw new OruError("A form requires on.submit: name referencing a function in logic:.", widget.line);
+    }
+    if (widget.properties.validationSummary !== undefined && typeof widget.properties.validationSummary !== "boolean") {
+      throw new OruError("validationSummary must be true or false.", widget.line);
+    }
+    const fields: PageWidget[] = [];
+    const collectFields = (node: PageWidget): void => {
+      if (["input", "textarea", "select"].includes(node.type) && node.binding) fields.push(node);
+      node.children.forEach(collectFields);
+    };
+    collectFields(widget);
+    for (const field of fields) {
+      const target = field.properties.matches;
+      if (target === undefined) continue;
+      if (typeof target !== "string" || !target || target === field.binding || !fields.some(candidate => candidate.binding === target)) {
+        throw new OruError("matches must reference another bound input in the same form.", field.line);
+      }
+      if (field.type === "input" && field.properties.type === "file") {
+        throw new OruError("File inputs cannot use cross-field matching.", field.line);
+      }
     }
   }
   if (insideForm && widget.type === "button" && widget.properties["on.click"] !== undefined) {
@@ -343,6 +362,24 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       form.id = formIds.get(node);
       form.style.cssText = "position:absolute;inset:0;pointer-events:none;";
       form.setAttribute("aria-label", String(node.properties.label ?? "Form"));
+      if (node.properties.validationSummary === true) {
+        const firstRegion = regions.find(region => region.formId === form.id);
+        const summary = document.createElement("div");
+        summary.hidden = true;
+        summary.setAttribute("role", "alert");
+        summary.setAttribute("aria-live", "assertive");
+        summary.style.cssText = "position:absolute;left:" + (firstRegion?.x ?? 20) + "px;top:" + Math.max(8, (firstRegion?.y ?? 56) - 48) + "px;max-width:calc(100% - 40px);padding:10px;border:1px solid #b00020;background:#ffffff;color:#b00020;z-index:20;pointer-events:auto;font:14px system-ui;";
+        const updateSummary = () => {
+          const invalid = Array.from(form.elements).filter(control => !control.validity.valid);
+          summary.textContent = invalid.length
+            ? "Please correct: " + invalid.map(control => control.getAttribute("aria-label") || control.name || "field").join(", ")
+            : "";
+          summary.hidden = invalid.length === 0;
+        };
+        form.addEventListener("invalid", updateSummary, true);
+        form.addEventListener("submit", () => { summary.hidden = true; }, true);
+        form.append(summary);
+      }
       form.addEventListener("submit", event => {
         event.preventDefault();
         try {
@@ -353,6 +390,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       });
       forms.set(form.id, form);
     }
+    const controlElements = new Map();
     for (const [regionIndex, region] of regions.entries()) {
       const node = region.node;
       const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : node.type === "textarea" ? "textarea" : node.type === "select" ? "select" : "button");
@@ -476,6 +514,25 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       const parent = region.formId ? forms.get(region.formId) : controls;
       if (region.formId && !parent.isConnected) controls.append(parent);
       parent.append(el);
+      controlElements.set(node, el);
+    }
+    for (const region of regions) {
+      const targetName = region.node.properties.matches;
+      if (typeof targetName !== "string") continue;
+      const peerRegion = regions.find(candidate => candidate.formId === region.formId && candidate.node.binding === targetName);
+      const field = controlElements.get(region.node);
+      const peer = peerRegion ? controlElements.get(peerRegion.node) : null;
+      if (!field || !peer) continue;
+      const updateMatch = () => {
+        const mismatch = field.value !== "" && peer.value !== "" && field.value !== peer.value;
+        const message = String(region.node.properties.validationMessage ?? "Values do not match.");
+        field.setCustomValidity(mismatch ? message : "");
+      };
+      field.addEventListener("input", updateMatch);
+      field.addEventListener("change", updateMatch);
+      peer.addEventListener("input", updateMatch);
+      peer.addEventListener("change", updateMatch);
+      updateMatch();
     }
   }
   const controlNode = event => {
