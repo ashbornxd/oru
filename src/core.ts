@@ -311,7 +311,7 @@ class BreakSignal {}
 class ContinueSignal {}
 
 export interface RunOptions { output?: (value: OruValue) => void; maxSteps?: number; initialGlobals?: Record<string, OruValue> }
-export interface RunResult { output: OruValue[]; globals: Record<string, OruValue>; call(name: string, ...args: OruValue[]): OruValue; getGlobals(): Record<string, OruValue>; getGlobalState(): Record<string, OruValue> }
+export interface RunResult { output: OruValue[]; globals: Record<string, OruValue>; call(name: string, ...args: OruValue[]): OruValue; getGlobals(): Record<string, OruValue>; getGlobalState(): Record<string, OruValue>; set(name: string, value: OruValue): void }
 
 export function run(source: string, options: RunOptions = {}): RunResult {
   const statements = new StatementParser(prepareLines(source)).parse();
@@ -480,5 +480,5 @@ export function run(source: string, options: RunOptions = {}): RunResult {
     return null;
   };
   executeBlock(statements, global);
-  return { output, globals: allGlobals(), call: (name, ...args) => invokeFunction(name, args, 0), getGlobals: allGlobals, getGlobalState: () => Object.fromEntries(Object.entries(shared.snapshot()).filter(([name]) => globalNames.has(name))) };
+  return { output, globals: allGlobals(), call: (name, ...args) => invokeFunction(name, args, 0), getGlobals: allGlobals, getGlobalState: () => Object.fromEntries(Object.entries(shared.snapshot()).filter(([name]) => globalNames.has(name))), set: (name, value) => { if (!global.has(name)) throw new OruError("Unknown variable: " + name, 0); global.assign(name, value, 0); } };
 }
