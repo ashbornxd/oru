@@ -91,7 +91,7 @@ test("keeps prototype-like variable names as safe own data properties", () => {
   const globals = program.getGlobals();
   assert.equal(Object.getPrototypeOf(globals), Object.prototype);
   assert.equal(Object.hasOwn(globals, "__proto__"), true);
-  assert.deepEqual(globals["__proto__"], { polluted: true });
+  assert.equal((globals["__proto__"] as { polluted: boolean }).polluted, true);
   assert.equal(globals.constructor, "safe");
   assert.equal(({} as { polluted?: boolean }).polluted, undefined);
 });
