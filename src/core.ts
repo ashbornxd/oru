@@ -660,10 +660,27 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
       const value = args.map(x => typeof x === "string" ? x : JSON.stringify(x)).join(" ");
       output.push(value); options.output?.(value); return null;
     }
-    if (name === "len" && args.length === 1) {
+    if (name === "len") {
+      if (args.length !== 1) throw new OruError("len expects one argument.", line);
       const value = args[0]!;
       if (typeof value === "string" || Array.isArray(value)) return value.length;
       if (value && typeof value === "object") return Object.keys(value).length;
+      throw new OruError("len expects a string, list, or object.", line);
+    }
+    if (name === "range") {
+      if (args.length < 1 || args.length > 3 || args.some(value => typeof value !== "number" || !Number.isFinite(value))) {
+        throw new OruError("range expects one to three finite numbers.", line);
+      }
+      const start = args.length === 1 ? 0 : args[0] as number;
+      const end = args.length === 1 ? args[0] as number : args[1] as number;
+      const step = args.length === 3 ? args[2] as number : 1;
+      if (step === 0) throw new OruError("range step cannot be zero.", line);
+      const values: OruValue[] = [];
+      for (let value = start; step > 0 ? value < end : value > end; value += step) {
+        if (values.length >= 100_000) throw new OruError("range is too large.", line);
+        values.push(value);
+      }
+      return values;
     }
     const fn = functions.get(name);
     if (!fn) throw new OruError("Unknown function '" + name + "'.", line);
