@@ -56,3 +56,9 @@ test("keeps page-local state separate from a same-named global", () => {
   assert.equal(program.getGlobals().count, 0);
   assert.equal(program.getGlobalState().count, 8);
 });
+test("allows browser input to update a declared string state variable", () => {
+  const program = run("state email = pass");
+  program.set("email", "user@example.com");
+  assert.equal(program.getGlobals().email, "user@example.com");
+  assert.throws(() => program.set("missing", "value"), /Unknown variable/);
+});
