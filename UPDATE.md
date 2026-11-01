@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, text/textarea/select/file controls, button interaction states and image icons, responsive row wrapping and container alignment, scrollable pages, semantic text/image content, native keyboard-operable controls, baseline security headers, and Chromium integration tests. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: async and cross-field form validation, validation summaries, full WCAG conformance and assistive-technology testing, production-grade CSP without `unsafe-inline`, broader security and performance review, cross-browser/device testing, and final release validation.
+**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, text/textarea/select/file controls, cross-field form matching, accessible validation summaries, button interaction states and image icons, responsive row wrapping and container alignment, scrollable pages, semantic text/image content, native keyboard-operable controls, baseline security headers, and Playwright integration coverage for Chromium, Firefox, and WebKit. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: asynchronous form validation, full WCAG conformance and assistive-technology testing, production-grade CSP without `unsafe-inline`, broader security and performance review, real-device testing, and final release validation.
 
 ## Vision
 
@@ -622,3 +622,24 @@ Implemented on `oru-1.0.0-dev`:
 - Added compiler regression tests and documented the syntax and behavior.
 
 **Verification pending:** run the complete unit, build, and Chromium integration suites on this milestone before considering it verified. This does not complete the remaining accessibility, form-validation, security, or browser-compatibility work.
+
+
+### Milestone 26 — Cross-browser and responsive integration coverage
+
+Implemented on `oru-1.0.0-dev`:
+- Playwright now runs the browser suite in Chromium, Firefox, and WebKit.
+- Added a real browser layout check that verifies a wide row distributes fixed-width controls across a desktop viewport and switches to vertical flow at a narrow mobile viewport.
+- CI installs all three browser engines and runs the same integration suite against each.
+
+**Verification:** unit tests and TypeScript build passed for the latest implementation. Cross-browser integration verification is running on the current branch head; record the final result after completion.
+
+### Milestone 27 — Cross-field form validation and accessible summaries
+
+Implemented on `oru-1.0.0-dev`:
+- Bound `input`, `textarea`, and `select` controls inside a form may use `matches: otherBinding` to compare their value with another bound control in the same form.
+- A mismatch sets the browser Constraint Validation API custom validity message; `validationMessage` can customize the mismatch message.
+- Missing, unbound, self-referencing, and out-of-form targets are rejected during compilation. File inputs cannot use cross-field matching.
+- Forms accept `validationSummary: true`. When native validation blocks submission, ORU displays a visible summary naming invalid controls and exposes it as an assertive live region.
+- Added compiler tests, browser integration coverage, and documentation.
+
+**Verification pending:** complete the three-browser CI run for this milestone. Asynchronous validation remains open because it requires an explicit async execution model in the ORU language/runtime; it will not be simulated with synchronous handlers.
