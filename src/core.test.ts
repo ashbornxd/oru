@@ -337,3 +337,19 @@ async func finish():
   assert.equal(await program.callAsync("finish"), "complete");
   assert.equal(program.getGlobalState().status, "complete");
 });
+
+
+test("rejects async host capabilities that shadow built-ins or ORU functions", async () => {
+  await assert.rejects(
+    () => runAsync(`async func fetchValue():
+    return 1
+`, { asyncFunctions: { fetchValue: async () => 2 } }),
+    /Host capability 'fetchValue' conflicts with a built-in or ORU function/
+  );
+  await assert.rejects(
+    () => runAsync(`async func check():
+    return 1
+`, { asyncFunctions: { len: async () => 2 } }),
+    /Host capability 'len' conflicts with a built-in or ORU function/
+  );
+});
