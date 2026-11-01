@@ -24,7 +24,7 @@ async func showProfile():
 - Add `runAsync(source)` and `callAsync(name, ...args)`.
 - The synchronous API must reject calls to async functions and await expressions with a clear source-line error. It must never silently leak a Promise.
 - The async API may execute synchronous and asynchronous functions in one program.
-- Async host calls are explicitly registered capabilities; no arbitrary JavaScript evaluation, host globals, or unrestricted module loading. Async lists and call arguments evaluate left-to-right.
+- Async host calls are explicitly registered capabilities; names cannot shadow built-ins or ORU functions. No arbitrary JavaScript evaluation, host globals, or unrestricted module loading is exposed. Async lists and call arguments evaluate left-to-right.
 - Promise values are runtime-only and cannot be stored in ORU lists, objects, or state.
 - Awaited statements execute sequentially. Parallel execution is not implicit.
 - Async execution preserves step limits, type checks, state/global semantics, and statement-level source locations for expression failures.
