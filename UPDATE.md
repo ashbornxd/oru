@@ -595,3 +595,15 @@ Implemented on `oru-1.0.0-dev`:
 - The CSP still permits inline scripts/styles because the current generated runtime uses inline code and dynamic inline styles. A nonce/hash-based policy remains future work.
 
 **Still incomplete:** advanced responsive layout primitives, async/cross-field form validation, full WCAG conformance, production-grade CSP/nonces, comprehensive security review, and real-browser integration tests. Run the CI suite after this milestone before treating it as verified.
+
+
+### Milestone 24 — Chromium integration test harness
+
+Added on `oru-1.0.0-dev`:
+- Added Playwright with a Chromium browser suite.
+- The suite builds a temporary ORU project, serves its generated output, and exercises native file selection, required form validation/submission, CSP response headers, and a mobile-width overflow check.
+- CI installs Chromium and runs the browser suite after unit tests and the TypeScript build.
+- Updated contributor instructions with the browser test command.
+- Fixed file-input state updates to redraw the Canvas and announce the filename without rebuilding native controls, preserving the browser's selected `FileList` so native required validation and form submission still work.
+
+**Verification pending:** the new Chromium workflow must complete successfully before this milestone is considered verified.
