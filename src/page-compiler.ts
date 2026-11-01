@@ -153,7 +153,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     if ((bg || node.type === "button") && ["box", "column", "row", "form", "button"].includes(node.type)) {
       ctx.fillStyle = String(bg ?? "#eeeeee");
       const radius = Math.max(0, px(p.radius, 0));
-      ctx.beginPath(); ctx.roundRect(x, y, w, h, radius); ctx.fill();
+      ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.fill();
     }
     if (node.type === "text" || node.type === "button" || node.type === "link") {
       const size = px(p.size, 18);
@@ -342,8 +342,8 @@ body{overflow-x:hidden}canvas{display:block;max-width:100%;touch-action:manipula
 #oru-controls{position:absolute;top:0;left:0;width:100%;pointer-events:none}
 #oru-controls>*{pointer-events:auto}
 .oru-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-#oru-controls>button:focus-visible,#oru-controls>a:focus-visible{opacity:1!important;outline:2px solid #2457d6;outline-offset:2px}
-#oru-controls>input:focus-visible{outline:2px solid #2457d6}
+#oru-controls button:focus-visible,#oru-controls a:focus-visible{opacity:1!important;outline:2px solid #2457d6;outline-offset:2px}
+#oru-controls input:focus-visible{outline:2px solid #2457d6}
 </style>
 </head>
 <body>
