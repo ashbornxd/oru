@@ -1,0 +1,73 @@
+from lib.theme import PageShell, HeroPanel, MutedText, ActionButton
+from lib.helpers import APP_VERSION, welcome, getGreeting
+
+metadata:
+    title: "ORU 1.0 Showcase"
+    description: "An interactive website built with the ORU 1.0 development language."
+    language: "en"
+
+logic:
+    global demoVisits = 0
+    state greeting = "Press the button to run an async function."
+    state welcomeMessage = welcome("web builder")
+    func countVisit():
+        global demoVisits = demoVisits + 1
+    async func loadGreeting():
+        result = await getGreeting()
+        greeting = result
+
+page:
+    column:
+        class: PageShell
+        text("ORU / LANGUAGE PREVIEW"):
+            class: MutedText
+        row:
+            wrapAt: 680
+            mainAlign: spaceBetween
+            crossAlign: center
+            text("Build for the web."):
+                size: 38
+                weight: 700
+            text(APP_VERSION):
+                class: MutedText
+        box:
+            class: HeroPanel
+            image("assets/oru-mark.svg", "ORU geometric mark"):
+                width: 76
+                height: 76
+            text("One language. A whole website."):
+                size: 28
+                weight: 700
+            text("ORU combines a readable language core with a browser page compiler, a Canvas renderer, and native semantic controls.")
+            button("Run async greeting"):
+                class: ActionButton
+                icon: "assets/arrow.svg"
+                alt: "Arrow"
+                hover.background: #193eae
+                active.background: #122f88
+                on.click: loadGreeting
+            text(greeting)
+        row:
+            wrapAt: 620
+            mainAlign: spaceBetween
+            crossAlign: center
+            box:
+                class: HeroPanel
+                text("Session visits")
+                text(demoVisits):
+                    size: 32
+                    weight: 700
+                button("Count this visit"):
+                    class: ActionButton
+                    on.click: countVisit
+            box:
+                class: HeroPanel
+                text("Imported function")
+                text(welcomeMessage)
+                text(APP_VERSION)
+        row:
+            wrapAt: 620
+            mainAlign: spaceBetween
+            crossAlign: center
+            link("Open language lab", "lab")
+            link("Try native form controls", "contact")

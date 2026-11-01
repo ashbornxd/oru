@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Planning — no 1.0 implementation decisions are final unless recorded below.
+**Status:** Feature implementation and automated verification are complete on `oru-1.0.0-dev`; release approval is still pending. Implemented: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive bindings, session-scoped global state, reusable style classes, named sync/async module imports, forms and validation, responsive layout, semantic DOM controls, baseline security headers, and async browser event handling. Latest branch-head CI (commit `934c89d`) passed Node 20, 22, and 24, including `npm audit --audit-level=high`, unit tests, TypeScript build, package dry-run, and Playwright tests in Chromium, Firefox, and WebKit. Remaining release gates: WCAG/assistive-technology review, independent security and performance review, real-device testing, and final release validation. These checks are not represented as completed.
 
 ## Vision
 
@@ -69,6 +69,7 @@ Add decisions below in chronological order. Include the date, the decision, its 
 | 2026-11-01 | User-defined functions | ORU 1.0 will support user-defined functions declared with the `func` keyword. | Gives developers reusable logic and a foundation for structuring applications. Function parameter syntax, return syntax, scope, overloads, and typing rules remain to be designed. |
 | 2026-11-01 | Conditional logic | ORU 1.0 will support `if`, `elif`, and `else` conditional branches. | Enables programs to make decisions based on values and application state. Condition expression rules, block syntax, truthiness, and type requirements remain to be designed. |
 | 2026-11-01 | Loops | ORU 1.0 will support both `for` loops and `while` loops. | `for` supports iteration over collections or ranges; `while` repeats while a condition holds. Exact syntax, range support, iteration behavior, and loop control (`break`/`continue`) remain to be designed. |
+| 2026-11-01 | Loop control | ORU 1.0 will support `break` and `continue` inside loops. | `break` exits the nearest enclosing loop; `continue` skips to the next iteration of the nearest enclosing loop. Use outside a loop must be a compile-time error. |
 | 2026-11-01 | Collection type scope | Keep the initial collection types to `list` and dictionary/object values; tuples are out of scope for ORU 1.0's initial type set. | Keeps the type system focused and avoids adding another collection model before real use cases justify it. Tuples can be reconsidered in a later version. |
 | 2026-11-01 | Collection scope | Keep `list` and dictionary/object as the only built-in collection types planned for ORU 1.0; do not add tuples as a separate built-in type for this release. | Keeps the initial type system focused. Additional collection types can be considered in a later version if real use cases justify them. |
 | 2026-11-01 | Collection type scope | Keep the initial collection types limited to lists and dictionary/object values. Tuples are not included in ORU 1.0. | Keeps the initial type system focused; additional collection types can be considered in a later version if there is a clear need. |
@@ -103,7 +104,8 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Still to design:** Inference details, operators, expressions, functions, control flow, input conversion, and error timing. Do not assume Python's existing `pass` semantics.
 - **Agreed:** User-defined functions use the `func` keyword. Their parameter and return syntax, scope, and typing rules remain to be designed.
 - **Agreed:** Conditional logic uses `if`, `elif`, and `else`. Condition evaluation and block semantics remain to be designed.
-- **Agreed:** Include both `for` and `while` loops. Their exact syntax, iteration rules, and loop-control behavior remain to be designed.
+- **Agreed:** Include both `for` and `while` loops. Their exact syntax and iteration rules remain to be designed.
+- **Agreed:** Include `break` and `continue` for loop control. They apply to the nearest enclosing loop and are errors outside loops.
 - Core syntax, values, expressions, variables, functions, control flow, and errors.
 - **Agreed file/page model:** One `.oru` file defines one page; each file has its own metadata such as title and description. The rules for routing and mapping filenames to URLs remain open.
 - Pages, reusable components, properties/arguments, slots or composition.
@@ -163,3 +165,592 @@ Milestones are provisional planning stages, not promises or fixed dates.
 - If a decision changes, record the new decision and mark the old one as superseded instead of erasing history.
 - Before implementing ORU 1.0.0, review this file and turn the approved decisions into a formal language specification and implementation roadmap.
 - Once ORU 1.0.0 ships, remove this temporary file or archive its final decisions into permanent project documentation.
+
+
+## Implementation progress
+
+### Milestone 1 — Language core foundation
+
+**Implemented on `oru-1.0.0-dev` (initial development slice):**
+- Indentation-aware statement parsing and expression parsing.
+- String, number, boolean, list, and dictionary/object literals.
+- Inferred variable types, uninitialized `pass`, and incompatible reassignment errors.
+- Arithmetic, comparison, and logical expressions.
+- Functions with parameters, return values, and lexical closures.
+- `if`, `elif`, `else`, `for`, `while`, `break`, and `continue`.
+- List/string iteration, object property access, and collection indexing.
+- Initial `print`, `len`, and `range` built-ins.
+- Execution limits and initial automated tests.
+
+**Not yet implemented:** module/import loading, page-file semantics, global and page-local reactive state, widgets, Canvas 2D rendering, browser event handling, form validation/security, browser interoperability, CLI execution of general-purpose scripts, and production diagnostics.
+
+### Provisional implementation semantics
+
+These details are implemented as the first coherent baseline, but remain open to review and refinement:
+- Use four spaces per indentation level; tabs and inconsistent indentation are errors.
+- Use `true` and `false` for booleans; `pass` represents an uninitialized variable declaration.
+- Initial operators: arithmetic (`+`, `-`, `*`, `/`, `//`, `%`, `**`), comparisons, and logical (`and`, `or`, `not`, `!`).
+- `+` adds numbers or joins strings; arithmetic operators otherwise require numbers.
+- Conditions treat `false`, `pass`, zero, and the empty string as false; other values are true.
+- Functions use `func name(parameters):` and `return`; parameters are local and functions can read enclosing variables.
+- `for` iterates lists and strings; `range` creates numeric lists.
+- `break` exits the nearest loop; `continue` skips to its next iteration.
+- Initial built-ins are `print`, `len`, and `range`.
+- Execution is bounded by a configurable statement/iteration limit to prevent accidental runaway loops.
+- Object/list mutation and assignment to nested properties or indexes are not implemented yet.
+
+
+### Decisions made for the completion pass (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Project entry | A project contains `oru.config` and one or more `.oru` page files; `index.oru` is the default route. | The CLI discovers pages from the project root and maps relative paths to browser routes. |
+| Route output | `index.oru` maps to `/`; `about.oru` maps to `/about`; `pages/help.oru` maps to `/pages/help`. | Page references use extensionless relative paths; route traversal and duplicate routes are build errors. |
+| Page metadata | A page begins with `metadata:` and indented `title:`, `description:`, and optional `language:` fields, followed by `page:`. | Metadata is separated from the widget tree and emitted into the browser document shell. |
+| UI tree | UI is declared under `page:` using nested `column`, `row`, `box`, and `text` widgets. | Widget/property parsing is distinct from general-purpose statements, sharing the same expression evaluator. |
+| Styling | Widget properties use `property: value`; reusable style classes are named declarations and applied with `class: Name`. | Style values are validated against widget/property definitions and inherited only where explicitly supported. |
+| Navigation | `link("route")` is a navigation widget; route names are extensionless project-relative paths. | The runtime handles internal navigation without a full page reload and supports browser back/forward. |
+| Events | Event properties use `on.click: functionName`; event handlers are ordinary `func` functions. | Event dispatch calls the language runtime and schedules a reactive render. |
+| State | `state name = value` declares page-local state; `global name = value` declares app-wide state. | State values are observable, type-stable, and persist for the current browser session; durable storage is not implicit. |
+| Imports | `import module.path` imports a module; `from module.path import Name` imports named exports. | Imports resolve relative to the importing file, must stay inside the project, and cycles are rejected initially. |
+| Renderer | ORU renders its own widget tree to Canvas 2D, with a hidden accessible DOM layer for keyboard, focus, and assistive technology support. | Canvas remains the visual backend without sacrificing basic browser accessibility. |
+| Browser boundary | ORU exposes a small explicit browser API for navigation, clipboard, and network requests; raw arbitrary JavaScript execution is not a language feature. | Browser capabilities are permission- and context-aware rather than silently injected into every script. |
+| Build model | ORU 1.0 is a client-side browser application compiler/runtime; server APIs and database hosting are outside the 1.0 compiler scope. | Applications may call external APIs, but secrets and privileged operations must remain on a separately secured backend. |
+| Entry page | Every buildable project must contain `index.oru`, which maps to `/`. | Gives the dev server and static build a deterministic entry point. |
+
+
+| Project configuration | `oru.config` is a required UTF-8 text file at the project root, with a single `name: "Project Name"` field for 1.0. | The CLI validates the project identity and reserves this file for future explicit settings; unknown fields are errors rather than silently ignored. |
+
+
+| Page logic | A page may contain one optional `logic:` block between metadata and `page:`. Its indented contents use the general ORU language syntax. | The page's logic is initialized once when that page loads. |
+| Click handlers | A button may declare `on.click: functionName`; the named function must be defined in that page's `logic:` block. | Activating the button calls the named ORU function through the interpreter. |
+| Browser interpreter delivery | The build emits the ORU interpreter and its error module under `_oru/` and loads them as a local ES module. | Nested pages use relative module paths and do not depend on a remote runtime host. |
+
+
+| Page-local state | Declare reactive page state inside `logic:` with `state name = value`; later assignments must retain the inferred type. | Each page has an isolated state environment created when its page runtime loads. |
+| UI value binding | Use an unquoted identifier as a widget content argument, such as `text(count)` or `button(label)`, to bind displayed content to a page variable. Quoted arguments remain static text. | After a click handler completes, the renderer refreshes and reads current values from the interpreter. This initial binding form supports a single variable name, not arbitrary expressions. |
+
+
+| Cross-page global state | Declare shared values with `global name = value` in a page's `logic:` block. A previously stored value takes precedence over the declaration's initial value. | Values are serialized for the current browser tab session and are shared across pages in that session; they are not durable application storage. |
+
+
+| Local style classes | Use `class name:` for a reusable page style and `class: name` on a widget to apply it. Direct widget properties take precedence over class properties. | The first implementation supports page-local classes; sharing them between files is a later step. |
+
+
+| Style class imports | Use `from module.path import className` for named style classes or `import module.path` to import a module namespace. Module paths resolve relative to the importing page file; a leading `../` moves to its parent directory. | A module is another `.oru` page file. Its declared style classes are available to import; import cycles and name collisions are build errors. Function imports are not part of this first class-import slice. |
+
+
+| Input binding | `input(name)` binds an input to a page variable; `input("Placeholder")` remains a placeholder-only input. The bound variable must be a string-compatible page or global value. | The value is written back when the input changes, then bound UI content is refreshed. Native browser constraints cover required, minimum/maximum length, and letters/numbers patterns. |
+
+### Completion roadmap
+
+1. Harden the core interpreter: source locations, assignment/mutation, predictable scopes, diagnostics, and test coverage.
+2. Implement project/page parsing, metadata, widget trees, style classes, and route validation.
+3. Implement safe module resolution and exports.
+4. Implement reactive local/global state and event dispatch.
+5. Implement Canvas 2D layout, text, shapes, images, hit testing, navigation, and accessible DOM semantics.
+6. Integrate the CLI project workflow, development server, production build, and asset handling.
+7. Add documentation, examples, compatibility tests, security review, and release checklist.
+
+These decisions define the implementation direction for this completion pass. Any syntax refinement must be recorded here before its implementation.
+
+
+### Milestone 2 — Page-file parser foundation
+
+Implemented on `oru-1.0.0-dev`:
+- Added `src/project.ts`, a separate parser for one-page-per-file source.
+- Parses optional `metadata:` fields (`title`, `description`, `language`) and a required `page:` block.
+- Parses nested `column`, `row`, `box`, `text`, `button`, `link`, `image`, and `input` widgets.
+- Parses widget properties using colon syntax and validates indentation, duplicate fields, and unknown widgets.
+- Added parser tests in `src/project.test.ts` and syntax documentation in `docs/page-files.md`.
+- Added the existing `oru eval` command to CLI help.
+
+Remaining: route discovery, project configuration, imports, expression binding, page compilation, and Canvas runtime output. The parser is not yet a complete page compiler.
+
+
+### Milestone 2 continued — Route mapping
+
+Implemented on `oru-1.0.0-dev`:
+- Added `src/routes.ts` to map `index.oru` to `/`, `about.oru` to `/about`, and nested pages to matching extensionless routes.
+- Maps each route to a safe static output path and rejects absolute paths, traversal segments, invalid names, and non-`.oru` sources.
+- Requires `index.oru` and rejects duplicate source paths or route collisions.
+- Added route tests in `src/routes.test.ts`.
+
+
+### Decisions for the first end-to-end browser runtime slice (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Browser output | Compile each page into a static HTML shell that loads an embedded ORU Canvas 2D runtime and serialized page tree. | No separate runtime download or bundler is required for the first release; generated output remains deployable as static files. |
+| Layout model | Use deterministic vertical/horizontal flow for column/row, intrinsic sizing for text, and explicit width/height constraints where supplied. | The first renderer favors predictable responsive layouts over a full CSS-like layout engine. |
+| Interaction model | Use Canvas hit regions for pointer activation and a parallel semantic DOM tree for keyboard and assistive-technology interaction. | Buttons, links, and inputs must remain operable without a pointer; the DOM layer mirrors the visual widget order. |
+| Input safety | Treat all text as data, escape metadata and attributes, and never evaluate property strings as JavaScript. | Event names resolve only to registered ORU functions; arbitrary code injection through page values is not supported. |
+| Navigation | Internal links use the History API and route table; browser back/forward re-renders the matching page. | Static hosting must provide a fallback to the generated entry shell for extensionless routes. |
+| Initial renderer scope | Support column, row, box, text, button, link, image, and input widgets; unsupported advanced styling fails with a useful build error rather than silently pretending to work. | Forms, global reactive state, imported classes, and full expression binding remain subsequent integration milestones. |
+
+The first runtime slice is deliberately a vertical end-to-end milestone, not the final 1.0 feature set. Any limitations discovered during implementation must be reflected in the docs and tests.
+
+
+### Milestone 3 — First end-to-end page build and Canvas runtime
+
+Implemented on `oru-1.0.0-dev`:
+- Added `oru.config` validation with the initial `name: "Project Name"` format.
+- Added recursive page discovery and multi-page project compilation.
+- Connected `oru build` and `oru run dev` to the new page-file compiler.
+- Added extensionless route output: root page to `index.html`, nested pages to route `index.html` files.
+- Added a browser page shell with a Canvas 2D renderer for basic text, columns, rows, boxes, images, links, buttons, and inputs.
+- Added a parallel semantic DOM control layer for focusable controls.
+- Updated the starter project to use `oru.config` and `index.oru`.
+- Added project compiler and page compiler tests; updated the 1.0 page documentation and README.
+- Fixed leaf widget parsing so simple widgets such as `text("Hello")` do not require a trailing colon.
+
+**Known limitations still open:** the renderer is a basic first slice. ORU-language event functions are not connected to controls; state and reactivity, module imports, reusable style classes, full form validation/submission, robust responsive layout, complete accessibility, asset URL hardening, and broad browser/security tests remain unfinished. The current UI should be treated as experimental.
+
+
+### Milestone 4 — Page-local logic and click handlers
+
+Implemented on `oru-1.0.0-dev`:
+- Added an optional `logic:` block to page files; its contents are parsed as general ORU code.
+- Exposed callable functions and live global snapshots from the core interpreter.
+- Connected button `on.click: functionName` properties to functions declared in that page's logic block.
+- Added local browser module imports for the ORU interpreter and its error type; the project build packages these files under `_oru/` only when page logic is used.
+- Added tests for function invocation, page logic compilation, and nested-route interpreter paths.
+
+**Still missing:** reactive state declarations and bindings, global state, modules/imports, reusable style-class semantics, full form handling, and complete renderer/accessibility/security validation. Calling a handler currently runs ORU code and can produce console output; changing a variable does not yet automatically update text or layout.
+
+
+### Milestone 5 — Page-local state and simple reactive bindings
+
+Implemented on `oru-1.0.0-dev`:
+- Page logic supports `state name = value` declarations using the core interpreter's type-stable variable behavior.
+- `text(name)` and `button(name)` accept an unquoted variable identifier as a content binding; quoted values remain static text.
+- Button handlers trigger a page redraw after execution, and the renderer reads the current interpreter globals for bound content.
+- Added parser and compiler tests for variable bindings and handler-driven updates.
+
+**Scope boundary:** this is synchronous, page-local re-rendering after an event handler. Cross-page global state, arbitrary expression bindings, async updates, imports, and other 1.0 systems remain incomplete.
+
+### Milestone 4 — Page-local state and event-driven rendering
+
+Implemented on `oru-1.0.0-dev`:
+- Page files may contain a `logic:` block between metadata and `page:`.
+- Page-local state declarations use `state name = value` and are executed by the core interpreter.
+- Button widgets support `on.click: functionName`; handlers invoke functions defined in the page logic block.
+- Text and button widgets can bind displayed values with identifier arguments such as `text(count)` and `button(count)`.
+- After a click handler runs, the Canvas renderer redraws bound values from the interpreter's current globals.
+- The build includes the interpreter locally under `_oru/core.js`; generated pages do not fetch a remote runtime.
+- Function assignment updates captured lexical variables, allowing event handlers to mutate page state.
+- Input widgets use native browser input controls with password masking, required, length, and letters/numbers pattern constraints.
+- CI currently verifies TypeScript compilation and the test suite on the development branch.
+
+Still open for a complete 1.0 release: cross-page global state, imports/modules, reusable style classes, richer expression bindings, form submission lifecycle, full keyboard/screen-reader parity, responsive layout and sizing rules, image loading/error handling, security review, and browser-level integration tests.
+
+### Milestone 6 — Cross-page session global state
+
+Implemented on `oru-1.0.0-dev`:
+- Added `global name = value` declarations to the core language.
+- Added optional initial global values to interpreter startup and a dedicated global-state snapshot API.
+- Separated page-local `state` variables from shared global variables so same-named values do not overwrite each other.
+- The browser runtime restores shared values from the current tab session and saves them after button handlers run.
+- Global initializers only apply when a shared value does not already exist, so navigation does not reset it.
+- Added tests for global state restoration and local/global name isolation.
+
+**Still incomplete:** asynchronous state updates, persistence beyond the current tab session, richer expression bindings, modules/imports, style classes, form workflows, and full accessibility/security/browser validation.
+
+
+### Milestone 7 — Page-local reusable style classes
+
+Implemented on `oru-1.0.0-dev`:
+- Added top-level `class name:` declarations with indented style properties.
+- Added widget application through `class: name`.
+- The compiler validates that a class exists and that its properties are supported by the target widget type.
+- Direct widget properties override class defaults.
+- Added tests for style class parsing, application, and incompatible properties.
+
+**Still incomplete:** importing classes across files, module loading, richer expression bindings, full form workflows, and the remaining runtime/accessibility/security work.
+
+
+### Milestone 8 — Cross-file style class imports
+
+Implemented on `oru-1.0.0-dev`:
+- Added named imports with `from module.path import className`.
+- Added namespace imports with `import module.path`; imported classes are referenced as `namespace.className`.
+- Module paths resolve relative to the importing page file and point to another `.oru` page.
+- Imports can be chained; circular imports, missing modules/classes, and class name collisions produce build errors.
+- Added project build tests for named imports, namespace imports, and circular import rejection.
+
+**Scope boundary:** this first import milestone shares style classes only. General-purpose function/module imports and external package imports remain unfinished.
+
+
+### Milestone 9 — Style imports and route validation
+
+- Named and namespace style-class imports are parsed and resolved across `.oru` page modules.
+- Import resolution rejects missing modules/classes, duplicate names, project traversal, and circular imports.
+- Internal links are checked against the project's route table at compile time; unresolved links fail the build rather than becoming arbitrary external navigation.
+- Added tests for import resolution, cycles, and invalid internal routes.
+- Fixed a duplicate compiler import discovered by CI. The latest verification for commit `9cfac475e2ea13a9f1ff0cc928b79270f619e5ee` passed both `npm test` and `npm run build`; subsequent documentation and route-test commits are awaiting a fresh CI run.
+
+**Remaining before ORU 1.0:** general-purpose module/function imports, richer expression bindings, full form submission and validation, responsive layout, accessibility parity, asset/security hardening, and browser-level integration tests. Do not publish or merge as a release yet.
+
+### Milestone 10 — Bound inputs and native constraints
+
+Implemented on `oru-1.0.0-dev`:
+- Added `input(name)` bindings to declared page or global variables.
+- Added a core interpreter setter that preserves variable type checks.
+- Input changes update the ORU variable and refresh bound UI content.
+- Existing native constraints now cover input type, required, minimum/maximum length, and letters/numbers patterns.
+- Password inputs are masked in the Canvas layer and must bind to page-local state.
+- Added tests for input state updates and generated native constraints.
+
+**Still incomplete:** form submission workflows, custom validation messages, file inputs, async updates, and comprehensive accessibility/browser testing.
+
+
+### Decision — Native form lifecycle (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Forms | Add a built-in `form:` container widget. A form may declare `on.submit: functionName`; buttons nested in that form submit it by default. | The browser's native constraint validation runs before the ORU submit handler. Invalid forms do not invoke the handler. A valid submission prevents a page reload, calls the named ORU function, persists session globals, and refreshes the page. Inputs remain bound to ORU state through `input(name)`. Forms do not imply a backend or transmit data automatically. |
+
+
+
+### Milestone 11 — Native form submission
+
+Implemented on `oru-1.0.0-dev`:
+- Added the `form:` container widget.
+- Forms require `on.submit: functionName` referencing a function declared in the page's `logic:` block.
+- Buttons inside forms submit the form by default; click handlers on those buttons are rejected to avoid ambiguous event behavior.
+- The browser's native validation runs before submission. Invalid forms do not invoke the ORU handler.
+- Successful submission prevents a page reload, invokes the ORU function, persists session globals, and refreshes the UI.
+- Bound inputs now synchronize state while typing without re-rendering and interrupting focus.
+- Added parser/compiler tests and form documentation.
+
+**Still incomplete:** server-side submission is intentionally outside the browser compiler; advanced form controls, custom validation messages, file inputs, async form workflows, responsive layout, accessibility parity, security hardening, and browser integration tests remain open.
+
+
+### Decision — Named logic imports (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Logic modules | Extend the existing `from module import name` syntax to import top-level functions and plain values from another `.oru` file, in addition to style classes. A module export is a top-level `func name(...):` declaration or a top-level `name = value` declaration. | Imported declarations are composed into the importing page's logic before its own logic. Imports are explicit and named. Page-local `state`/`global` declarations and executable top-level statements are not importable exports. Namespace imports remain style-class-only in 1.0; named imports avoid implicit symbol leakage and keep the runtime simple. |
+
+
+
+### Milestone 12 — Responsive and accessible browser rendering
+
+Implemented on `oru-1.0.0-dev`:
+- Rows switch to a vertical layout below 560px by default; a row can override the threshold with `wrapAt`.
+- Canvas height is calculated from measured page content so long pages scroll instead of being clipped at the viewport height.
+- Images are cached and trigger a redraw when loaded; `fit: contain` and `fit: cover` are supported.
+- Canvas content is hidden from assistive technology and a visually hidden semantic tree exposes text and image alternatives.
+- Native DOM buttons, links, inputs, and forms remain keyboard-operable; focus styles work for controls nested in forms.
+- Added native input constraints including disabled/read-only, min/max/step, pattern, autocomplete, and name.
+- Added tests for responsive layout, scroll sizing, semantic content, and native constraints.
+
+**Still incomplete:** full WCAG conformance, richer layout/alignment/positioning, custom breakpoints/layout primitives, custom validation messages, and real browser/screen-reader testing.
+
+### Milestone 13 — Named function and value imports
+
+Implemented on `oru-1.0.0-dev`:
+- `from module import name` now imports named top-level functions and plain values in addition to style classes.
+- Imported declarations are composed before the importing page's own logic, so functions can be called and values can be used in state initialization and UI bindings.
+- Imports reject missing exports, state/global exports, ambiguous class/logic names, and collisions with local or previously imported declarations.
+- Modules continue to be ordinary `.oru` page files; namespace imports remain style-class-only in 1.0.
+- Added project build tests for successful function/value imports and invalid imports.
+
+**Still incomplete:** namespace logic imports, external package imports, module-level immutable constants, and cyclic dependency diagnostics beyond the existing cycle rejection.
+
+### Milestone 14 — Reactive input updates
+
+- Bound inputs update the interpreter on each input event.
+- The renderer redraws dependent text and other widgets immediately while restoring the focused input and caret position.
+- Numeric and range inputs preserve number-typed state; empty numeric values do not overwrite the last valid state.
+- Input redraws retain form ownership and do not interrupt normal typing.
+
+**Verification note:** the latest responsive, import, and reactive-input changes require a fresh GitHub Actions run before they can be called verified. No npm 1.0 release has been published.
+
+
+### Decision — Project image asset policy (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Image sources | Local images must be regular files inside the project's `assets/` directory. Remote images may use HTTPS only. | Reject path traversal, missing local files, symbolic links, HTTP, data, and file URLs. HTTPS images are fetched by the visitor's browser. This limits accidental local-file exposure and avoids copying symlink targets into production output. |
+
+### Milestone 15 — Project asset and dev-server hardening
+
+Implemented on `oru-1.0.0-dev`:
+- Validate local image paths and confirm referenced assets exist as regular files under `assets/`.
+- Reject symbolic links and special filesystem entries in the assets tree, including a symlinked assets root.
+- Permit HTTPS remote images while rejecting credential-bearing URLs and non-HTTPS schemes.
+- Make project creation fail safely when the target directory already exists and clean up partial scaffolds.
+- Queue rebuilds during rapid file changes and rebuild when assets change.
+- Restrict the dev server to GET/HEAD, add MIME types for common assets, and set basic response security headers.
+- Added asset validation tests.
+
+**Still incomplete:** full threat-model review, CSP and deployment-header guidance, file-size budgets, asset optimization, external package integrity, browser integration tests, and full release verification.
+
+
+### Milestone 16 — Core state and object safety fixes
+
+Implemented on `oru-1.0.0-dev`:
+- Fixed nested `global name = value` statements so they update an existing shared value inside functions and loops.
+- Preserved top-level global initializers so restored session values are not overwritten on navigation.
+- Created object literals with a null prototype and restricted property/index access to own keys, preventing inherited JavaScript properties from leaking into ORU objects.
+- Added tests for nested global updates, restored-state behavior, and prototype-key isolation.
+
+**Still incomplete:** deeper type checking for nested collections, mutable collection operations, improved source-line diagnostics for expression runtime errors, and a broader interpreter security review.
+
+
+### Decision — Button interaction model (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Button states | Buttons support `on.click`, `on.hover`, `on.active`, and `on.leave` handlers, plus state-specific background and text colors. | State handlers reference named page logic functions. Native DOM controls forward pointer events to the Canvas renderer. A button can be disabled and can display a local/HTTPS icon with an accessible alternative label. |
+
+### Milestone 17 — Button states and icon support
+
+Implemented on `oru-1.0.0-dev`:
+- Added button hover, active, disabled visual states and text colors.
+- Added `on.hover`, `on.active`, and `on.leave` named event handlers; click handlers remain supported.
+- Event handlers are validated against functions in page logic at build time.
+- Buttons can display an image icon with an accessible `alt` label.
+- Button icon assets follow the same safe local/HTTPS asset policy as image widgets.
+- Added tests for state styling, event handlers, and icon asset validation.
+
+**Still incomplete:** nested button content/slots, keyboard-specific focus styling in the Canvas visual layer, advanced animation/transitions, and browser interaction testing.
+
+
+### Milestone 18 — Semantic headings and accessible form controls
+
+Implemented on `oru-1.0.0-dev`:
+- Semantic text nodes can expose heading levels 1–6.
+- Form widgets accept an accessible label.
+- Inputs accept a stable accessible label, independent of their changing value.
+- Icon-only buttons use their `alt` text as the control name.
+- The semantic page region uses a polite live region so reactive text changes can be announced.
+- Form controls are inserted in page order, improving keyboard tab sequence across forms and standalone controls.
+- Added tests for semantic headings, labels, and control order.
+
+**Still incomplete:** exact screen-reader reading order between noninteractive text and interactive controls, comprehensive keyboard-only testing, focus management after navigation, and full WCAG conformance.
+
+
+### Milestone 12 — Custom native validation messages
+
+**Implemented on `oru-1.0.0-dev`:**
+- Inputs accept an optional `validationMessage` string.
+- When native browser validation rejects an input, ORU applies the custom message with the browser's Constraint Validation API.
+- Editing the field clears the custom message so validation can run again.
+- Added compiler output tests and documented the property.
+
+**Still open:** richer input widgets, async validation, cross-field validation, and validation summaries.
+
+
+### Milestone 19 — Multiline text inputs
+
+Implemented on `oru-1.0.0-dev`:
+- Added the `textarea(name)` widget for multiline text bound to a declared ORU state/global variable (password values remain restricted to page-local state through the existing input safety check).
+- Added configurable placeholder, accessible label, row count, height, required, disabled, read-only, length constraints, and name properties.
+- The Canvas layer draws the multiline value and the native textarea overlay handles editing, focus, keyboard input, and form submission.
+- Added a compiler test and documented the widget.
+
+**Still incomplete:** select/dropdown controls, file inputs, async and cross-field validation, and full browser integration testing.
+
+
+### Milestone 20 — Native select controls
+
+Implemented on `oru-1.0.0-dev`:
+- Added `select(name)` bound to a declared string state variable.
+- Added nested `option("Visible label")` entries, with an optional distinct `value:` property.
+- The Canvas layer displays the selected value while a native accessible HTML select handles keyboard, pointer, and mobile selection.
+- Selection changes update the bound ORU state; native required and disabled behavior is supported.
+- Added a compiler test and documented the syntax.
+
+**Still incomplete:** file inputs, async and cross-field validation, and browser integration testing. This commit has not yet been run through CI.
+
+
+### Milestone 21 — Renderer regression-test repair
+
+The select-control implementation exposed stale compiler assertions that no longer matched the semantic DOM renderer's actual output. Updated the assertions to verify the current image alternative-text fallback, input-attribute dispatch, accessible control-label fallback, and select element creation branch. The earlier CI failure was caused by these stale expectations, not by TypeScript compilation. A fresh CI run is still required to confirm the fixes.
+
+
+### Milestone 22 — Required select placeholders
+
+**Verification: GitHub Actions CI passed on 2026-11-01** (install, `npm test`, and `npm run build`).
+
+- Added optional `placeholder:` support to select controls.
+- The placeholder is emitted as a disabled, empty-value option and is selected only while the bound state is empty.
+- This lets native browser `required` validation correctly reject an untouched dropdown.
+- Canvas preview text shows the placeholder while no value is selected.
+- Added a compiler regression test and updated page syntax documentation.
+- Automated tests and TypeScript build pass on the current development-branch head (`e929f02`).
+
+
+### Milestone 23 — Native file selection and development-server headers
+
+Implemented on `oru-1.0.0-dev`:
+- Native `input:` widgets support `type: file`, `accept:`, `multiple:`, `required:`, `disabled:`, and accessible labels.
+- Single selection binds the filename as a string; multiple selection binds a list of filenames.
+- File objects and file bytes are deliberately not copied into ORU state. This feature does not upload files.
+- File inputs avoid assigning the browser-protected `value` property and use the native `change` event.
+- Added compiler regression coverage and documented the exact metadata-only behavior.
+- The development server now sends baseline CSP, frame, MIME-sniffing, referrer, and permissions headers on success and error responses.
+- The CSP still permits inline scripts/styles because the current generated runtime uses inline code and dynamic inline styles. A nonce/hash-based policy remains future work.
+
+**Still incomplete:** advanced responsive layout primitives, async/cross-field form validation, full WCAG conformance, production-grade CSP/nonces, comprehensive security review, and real-browser integration tests. Run the CI suite after this milestone before treating it as verified.
+
+
+### Milestone 24 — Chromium integration test harness
+
+Added on `oru-1.0.0-dev`:
+- Added Playwright with a Chromium browser suite.
+- The suite builds a temporary ORU project, serves its generated output, and exercises native file selection, required form validation/submission, CSP response headers, and a mobile-width overflow check.
+- CI installs Chromium and runs the browser suite after unit tests and the TypeScript build.
+- Updated contributor instructions with the browser test command.
+- Fixed file-input state updates to redraw the Canvas and announce the filename without rebuilding native controls, preserving the browser's selected `FileList` so native required validation and form submission still work.
+
+**Verification: GitHub Actions passed on 2026-11-01** (unit tests, TypeScript build, Chromium install, and browser integration test). The browser suite verifies that a selected file remains in the native FileList, browser-required validation blocks empty submission, valid submission reaches the ORU handler, CSP headers are present, and a 390px viewport has no horizontal overflow.
+
+The browser syntax check also caught a generated-runtime escaping bug: a newline separator in the renderer's multiline text code was being emitted as a literal newline inside a JavaScript string. The compiler template now escapes it correctly, and the generated runtime is syntax-checked before Chromium launches.
+
+
+### Milestone 25 — Responsive container alignment
+
+Implemented on `oru-1.0.0-dev`:
+- Added a consistent `mainAlign` property for `row`, `column`, `box`, and `form`: `start`, `center`, `end`, `spaceBetween`, and `spaceAround`.
+- Added `crossAlign`: `start`, `center`, `end`, and `stretch`.
+- Alignment follows the active flow direction. A `row` uses horizontal flow above its `wrapAt` threshold and vertical flow below it; the other container widgets use vertical flow.
+- Available free space is distributed without shrinking child widgets. Oversized content remains scrollable.
+- Invalid alignment values fail during compilation.
+- Added compiler regression tests and documented the syntax and behavior.
+
+**Verification pending:** run the complete unit, build, and Chromium integration suites on this milestone before considering it verified. This does not complete the remaining accessibility, form-validation, security, or browser-compatibility work.
+
+
+### Milestone 26 — Cross-browser and responsive integration coverage
+
+Implemented on `oru-1.0.0-dev`:
+- Playwright now runs the browser suite in Chromium, Firefox, and WebKit.
+- Added a real browser layout check that verifies a wide row distributes fixed-width controls across a desktop viewport and switches to vertical flow at a narrow mobile viewport.
+- CI installs all three browser engines and runs the same integration suite against each.
+
+**Verification:** GitHub Actions run `41303802788` passed unit tests, the TypeScript build, and the complete Playwright suite in Chromium, Firefox, and WebKit.
+
+### Milestone 27 — Cross-field form validation and accessible summaries
+
+Implemented on `oru-1.0.0-dev`:
+- Bound `input`, `textarea`, and `select` controls inside a form may use `matches: otherBinding` to compare their value with another bound control in the same form.
+- A mismatch sets the browser Constraint Validation API custom validity message; `validationMessage` can customize the mismatch message.
+- Missing, unbound, self-referencing, and out-of-form targets are rejected during compilation. File inputs cannot use cross-field matching.
+- Forms accept `validationSummary: true`. When native validation blocks submission, ORU displays a visible summary naming invalid controls and exposes it as an assertive live region.
+- Added compiler tests, browser integration coverage, and documentation.
+
+**Verification:** GitHub Actions run `41303802788` passed unit tests, the TypeScript build, and browser integration tests in Chromium, Firefox, and WebKit. Asynchronous validation remains open because it requires an explicit async execution model in the ORU language/runtime; it will not be simulated with synchronous handlers.
+
+
+### Milestone 28 — Hash-based Content Security Policy
+
+Implemented on `oru-1.0.0-dev`:
+- Added per-document CSP generation using SHA-256 hashes of the exact generated inline module script and stylesheet.
+- Removed `unsafe-inline` from both `script-src` and `style-src`; inline event-handler attributes and inline style attributes are explicitly disabled.
+- Kept local generated runtime modules available through `script-src 'self'` and HTTPS image loading through the restricted `img-src` policy.
+- The development server now calculates a policy from each served HTML document instead of applying one unsafe shared policy.
+- `oru build` emits a Cloudflare Pages-compatible `_headers` file with route-specific CSP and baseline security headers.
+- Added unit tests for CSP hash correctness and route-specific static header generation, plus browser tests that execute the app under the strict policy in Chromium, Firefox, and WebKit.
+
+**Verification pending:** the newest branch-head CI run must pass after these changes. This closes the earlier inline-script/style CSP gap; it does not substitute for a full independent security audit.
+
+
+### Milestone 29 — Keyboard accessibility and strict CSP verification
+
+Implemented on `oru-1.0.0-dev`:
+- The native control layer is exposed as a labelled accessibility group.
+- Added browser integration checks for sequential Tab navigation and visible keyboard focus.
+- Strict per-page CSP now disables inline script handlers and inline style attributes while allowing only the exact generated inline module and stylesheet hashes.
+- Static build output includes route-specific Cloudflare Pages `_headers` rules; unit tests verify root and nested routes receive distinct policies.
+
+**Verification:** GitHub Actions run `41304768998` passed all unit tests, TypeScript build, and Playwright tests in Chromium, Firefox, and WebKit, including keyboard navigation, visible focus, strict CSP, file selection, form validation, and responsive layout.
+
+**Not yet release-ready:** asynchronous execution remains unimplemented. Full WCAG conformance and assistive-technology evaluation, independent security/performance review, and real-device testing are also outstanding.
+
+
+### Milestone 30 — Security hardening, package contents, and release CI
+
+Implemented on `oru-1.0.0-dev`:
+- Environment snapshots now use null-prototype records, preventing names such as `__proto__` from mutating the snapshot object's prototype.
+- Added regression coverage for prototype-like variable names.
+- Restricted the npm package file allowlist to the compiled runtime, documentation, examples, README, and license.
+- Expanded CI to Node.js 20, 22, and 24.
+- Added a high-severity npm audit gate and an npm package dry-run check before the cross-browser Playwright suite.
+
+**Verification: GitHub Actions run `41309470666` passed all three Node.js matrix jobs.** Each job completed dependency installation, `npm audit --audit-level=high`, all unit tests, TypeScript build, `npm pack --dry-run`, browser installation, and Playwright tests in Chromium, Firefox, and WebKit.
+
+**Release status remains blocked:** an explicit async execution model and async browser workflows have not been designed or implemented. Full WCAG/assistive-technology review, independent security and performance review, real-device testing, and final release validation remain required. Automated CI success is not a production certification.
+
+
+### Decision — Asynchronous execution model (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Async syntax | Use `async func name(...):` and `await expression`. | The existing synchronous `run()` and `call()` APIs remain compatible. A separate `runAsync()` / `callAsync()` API handles async programs. Await is restricted to async functions; host async capabilities must be explicitly registered. |
+| Execution order | Awaited statements execute sequentially. | No implicit parallel execution; async event handlers finish before state persistence and rerender. |
+
+The full runtime contract and required test matrix are recorded in `docs/async-execution.md`.
+
+**Implementation status:** specification approved; parser, interpreter, and browser runtime support are not yet implemented. No release claim is made.
+
+
+### Milestone 31 — Initial asynchronous interpreter
+
+Implemented on `oru-1.0.0-dev`:
+- Parser accepts `async func name(...):` while preserving existing `func` syntax.
+- Expression parser recognizes `await expression`.
+- Added `runAsync(source, options)` and `callAsync(name, ...args)` without changing the synchronous `run()` / `call()` API.
+- Added explicit host capability registration through `asyncFunctions`; async host results are awaited by the interpreter.
+- Async execution supports local/state/global assignment, conditionals, loops, function calls, returns, and execution-step limits.
+- Sync calls to async functions fail explicitly rather than leaking Promise values.
+- Added regression tests for async host calls, nested async functions, sequential awaits, state updates, sync compatibility, and invalid top-level await.
+
+**Not yet release-complete:** browser event handlers are still synchronous; rejected async event handlers are not yet routed to the page error UI. Full async parser/runtime edge-case testing, accessibility, independent security/performance review, real-device testing, and release validation remain open. CI must pass on the new branch head before this milestone is considered verified.
+
+
+### Milestone 32 — Async browser event integration
+
+Implemented on `oru-1.0.0-dev`:
+- The generated browser runtime now initializes pages through `runAsync()`.
+- Click, form-submit, hover, leave, and active handlers use `callAsync()`; state persistence and rerender happen only after handler completion.
+- Rejected async handlers are logged and displayed through an accessible `role="alert"` banner.
+- Browser integration coverage includes async click completion, state rerendering, and accessible error reporting.
+- Updated compiler expectations to verify the async runtime import.
+
+**Verification:** the latest branch-head CI run `41326490207` passed all Node 20/22/24 jobs, including the full Chromium, Firefox, and WebKit Playwright suite. Manual accessibility, external security/performance, real-device, and release reviews remain open.
+
+
+### Milestone 33 — Async runtime compatibility matrix
+
+Implemented on `oru-1.0.0-dev`:
+- Added mixed synchronous/asynchronous function-call coverage.
+- Added nested awaited call-argument and grouped-expression coverage.
+- Added early-return-after-await global-state persistence coverage.
+- Expanded the async execution guide with the tested compatibility matrix and explicit manual-review boundaries.
+
+**Verification:** the latest branch-head CI run `41326490207` passed the complete Node 20/22/24 matrix, including Chromium, Firefox, and WebKit.
+
+**Release blockers remain:** the current CI result must pass on the final head; WCAG and assistive-technology review, independent security/performance review, and physical-device testing cannot be replaced by automated tests.
+
+
+### Milestone 34 — Async capability namespace safety
+
+Implemented on `oru-1.0.0-dev`:
+- Reject async host capability names that collide with built-ins (`print`, `len`, `range`) or declared ORU functions.
+- Added regression tests for both user-function and built-in collisions.
+- Documented the explicit capability namespace rule.
+
+**Verification:** latest branch-head CI run `41326490207` passed the full Node and browser matrix.
+
+
+### Milestone 35 — Async functions across modules
+
+Implemented on `oru-1.0.0-dev`:
+- Named module imports now recognize top-level `async func` declarations as exports, alongside synchronous functions.
+- Added an integration test that compiles a page importing an async function, executes the generated logic with an explicit async host capability, awaits the imported function, and verifies the resulting state.
+- Documented asynchronous module imports and updated the README's async verification status.
+
+**Verification:** latest branch-head CI run `41326490207` passed. Manual accessibility, independent security/performance, and physical-device release gates remain.

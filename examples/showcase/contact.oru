@@ -1,0 +1,80 @@
+from lib.theme import PageShell, HeroPanel, MutedText, ActionButton, FieldStyle
+
+metadata:
+    title: "ORU Native Controls"
+    description: "Test native browser form controls and validation."
+    language: "en"
+
+logic:
+    state email = ""
+    state topic = "website"
+    state message = ""
+    state attachment = ""
+    state password = ""
+    state confirmation = ""
+    state status = "This form runs locally. Nothing is sent."
+    func validateDemo():
+        if len(email) > 3 and len(message) >= 8:
+            status = "Form passed validation. No data was sent."
+        else:
+            status = "Complete the required fields and try again."
+
+page:
+    column:
+        class: PageShell
+        text("NATIVE CONTROLS"):
+            class: MutedText
+        text("A real browser form, powered by ORU."):
+            size: 32
+            weight: 700
+        box:
+            class: HeroPanel
+            form:
+                on.submit: validateDemo
+                validationSummary: true
+                input(email):
+                    type: email
+                    required: true
+                    autocomplete: email
+                    label: Email address
+                    class: FieldStyle
+                select(topic):
+                    required: true
+                    label: What are you building?
+                    placeholder: "Choose a project type"
+                    class: FieldStyle
+                    option("Website"):
+                        value: "website"
+                    option("Browser application"):
+                        value: "browser-app"
+                    option("Experiment"):
+                        value: "experiment"
+                textarea(message):
+                    required: true
+                    minLength: 8
+                    maxLength: 400
+                    rows: 5
+                    label: Project description
+                    class: FieldStyle
+                input(password):
+                    type: password
+                    required: true
+                    label: Demo passphrase
+                    class: FieldStyle
+                input(confirmation):
+                    type: password
+                    required: true
+                    matches: password
+                    validationMessage: "Passphrases must match."
+                    label: Confirm passphrase
+                    class: FieldStyle
+                input(attachment):
+                    type: file
+                    accept: ".png,.jpg,.jpeg,.pdf"
+                    label: Optional attachment (filename only)
+                    class: FieldStyle
+                button("Validate demo form"):
+                    class: ActionButton
+            text(status)
+            text(attachment)
+        link("Back home", "index")
