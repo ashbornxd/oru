@@ -107,6 +107,10 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
       if (sawLogic || sawPage) throw new OruError("logic must appear once before page.", line.number);
       sawLogic = true; section = "logic"; continue;
     }
+    if (line.indent === 0 && line.text === "logic:") {
+      if (section === "page" || logicLines.length) throw new OruError("logic: must appear once before page:.", line.number);
+      section = "logic"; continue;
+    }
     if (line.indent === 0 && line.text === "page:") {
       if (sawPage) throw new OruError("A .oru file can define exactly one page.", line.number);
       sawPage = true; section = "page"; continue;
