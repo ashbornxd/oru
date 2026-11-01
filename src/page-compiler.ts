@@ -13,10 +13,10 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   box: new Set(["background", "padding", "radius", "width", "height", "gap"]),
   form: new Set(["background", "padding", "radius", "width", "height", "gap"]),
   text: new Set(["color", "size", "weight", "font", "line", "align"]),
-  button: new Set(["color", "background", "size", "weight", "radius", "padding", "width"]),
+  button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled"]),
   link: new Set(["color", "size", "weight", "decoration"]),
   image: new Set(["width", "height", "fit", "radius"]),
-  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type"])
+  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "name"])
 };
 
 function resolveWidget(widget: PageWidget, classes: OruPage["classes"]): PageWidget {
@@ -89,6 +89,8 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
   const canvas = document.querySelector("canvas");
   const ctx = canvas.getContext("2d");
   const controls = document.getElementById("oru-controls");
+  const semantic = document.getElementById("oru-semantic");
+  const imageCache = new Map();
   const formIds = new Map();
   const formNodes = [];
   const collectForms = node => { if (node.type === "form") { formIds.set(node, "oru-form-" + (formNodes.length + 1)); formNodes.push(node); } node.children.forEach(collectForms); };
@@ -129,7 +131,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     if (type === "image") return { width, height: px(p.height, 180), lines: [] };
     if (type === "input") return { width, height: px(p.height, 44), lines: [] };
     if (type === "row" || type === "column") {
-      const horizontal = type === "row";
+      const horizontal = type === "row" && width >= px(p.wrapAt, 560);
       const available = Math.max(40, width - padding * 2 - (horizontal ? gap * Math.max(0, node.children.length - 1) : 0));
       const childWidth = horizontal && node.children.length ? available / node.children.length : available;
       const children = node.children.map(child => measure(child, childWidth));
@@ -148,8 +150,8 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     const w = Math.min(maxWidth, px(p.width, box.width));
     const h = px(p.height, box.height);
     const bg = p.background ?? p.color;
-    if (bg && ["box", "column", "row", "form"].includes(node.type)) {
-      ctx.fillStyle = String(bg);
+    if ((bg || node.type === "button") && ["box", "column", "row", "form", "button"].includes(node.type)) {
+      ctx.fillStyle = String(bg ?? "#eeeeee");
       const radius = Math.max(0, px(p.radius, 0));
       ctx.beginPath(); ctx.roundRect(x, y, w, h, radius); ctx.fill();
     }
@@ -165,13 +167,30 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       return { width: w, height: h };
     }
     if (node.type === "image") {
-      const image = new Image();
-      image.onload = () => { ctx.drawImage(image, x, y, w, h); };
-      image.src = String(p.src ?? "");
+      const source = String(p.src ?? "");
+      let image = imageCache.get(source);
+      if (!image) {
+        image = new Image();
+        image.onload = () => render();
+        image.onerror = () => console.error("ORU image could not be loaded:", source);
+        imageCache.set(source, image);
+        image.src = source;
+      }
+      if (image.complete && image.naturalWidth > 0) {
+        const fit = String(p.fit ?? "cover");
+        const scale = fit === "contain" ? Math.min(w / image.naturalWidth, h / image.naturalHeight) : Math.max(w / image.naturalWidth, h / image.naturalHeight);
+        const drawWidth = image.naturalWidth * scale, drawHeight = image.naturalHeight * scale;
+        ctx.save();
+        ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+        ctx.drawImage(image, x + (w - drawWidth) / 2, y + (h - drawHeight) / 2, drawWidth, drawHeight);
+        ctx.restore();
+      }
       regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
     if (node.type === "input") {
+      ctx.fillStyle = color(node, "background", "#ffffff");
+      ctx.fillRect(x, y, w, h);
       ctx.strokeStyle = color(node, "border.color", "#999999");
       ctx.strokeRect(x, y, w, h);
       const inputValue = textOf(node);
@@ -182,7 +201,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
-    const horizontal = node.type === "row";
+    const horizontal = node.type === "row" && w >= px(p.wrapAt, 560);
     let cursor = horizontal ? x + padding : y + padding;
     const available = Math.max(40, w - padding * 2 - (horizontal ? gap * Math.max(0, node.children.length - 1) : 0));
     const childWidth = horizontal && node.children.length ? available / node.children.length : available;
@@ -197,9 +216,12 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     const width = Math.max(280, document.documentElement.clientWidth);
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.floor(width * dpr);
-    canvas.height = Math.floor(Math.max(window.innerHeight, 600) * dpr);
     canvas.style.width = width + "px";
-    canvas.style.height = Math.max(window.innerHeight, 600) + "px";
+    const contentHeight = data.page.widgets.reduce((height, widget) => height + measure(widget, width - 40).height + 12, 24);
+    const pageHeight = Math.max(window.innerHeight, 600, contentHeight + 24);
+    canvas.height = Math.ceil(pageHeight * dpr);
+    canvas.style.height = pageHeight + "px";
+    controls.style.height = pageHeight + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, canvas.height / dpr);
     regions = [];
@@ -210,6 +232,13 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       cursorY += size.height + 12;
     }
     controls.replaceChildren();
+    semantic.replaceChildren();
+    const addSemantic = (node, parent) => {
+      if (node.type === "text") { const item = document.createElement("p"); item.textContent = textOf(node); parent.append(item); }
+      if (node.type === "image") { const item = document.createElement("img"); item.alt = String(node.text ?? ""); item.src = String(node.properties.src ?? ""); parent.append(item); }
+      node.children.forEach(child => addSemantic(child, parent));
+    };
+    data.page.widgets.forEach(node => addSemantic(node, semantic));
     const forms = new Map();
     for (const node of formNodes) {
       const form = document.createElement("form");
@@ -250,10 +279,14 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         el.type = String(node.properties.type ?? "text");
         el.autocomplete = String(node.properties.autocomplete ?? (el.type === "password" ? "current-password" : "on"));
         if (node.properties.required === true) el.required = true;
+        if (node.properties.disabled === true) el.disabled = true;
+        if (node.properties.readOnly === true) el.readOnly = true;
         if (node.properties.constraint === "numbers") el.pattern = "[0-9]+";
-        if (node.properties.constraint === "letters") el.pattern = "[A-Za-z]+";
-        if (node.properties.maxLength !== undefined) el.maxLength = Number(node.properties.maxLength);
-        if (node.properties.minLength !== undefined) el.minLength = Number(node.properties.minLength);
+        else if (node.properties.constraint === "letters") el.pattern = "[A-Za-z]+";
+        else if (typeof node.properties.pattern === "string") el.pattern = node.properties.pattern;
+        for (const key of ["min", "max", "step", "maxLength", "minLength", "name"]) {
+          if (node.properties[key] !== undefined) el[key] = node.properties[key];
+        }
         if (node.binding && app) {
           el.value = textOf(node);
           el.addEventListener("input", () => {
@@ -263,6 +296,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         }
       } else {
         el.type = region.formId ? "submit" : "button";
+        if (node.properties.disabled === true) el.disabled = true;
         if (!region.formId) el.addEventListener("click", () => activate(node));
       }
       if (node.type === "link") el.addEventListener("click", event => { event.preventDefault(); activate(node); });
@@ -305,14 +339,16 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
 <style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,sans-serif;background:#fff;color:#202124}
 body{overflow-x:hidden}canvas{display:block;max-width:100%;touch-action:manipulation}
-#oru-controls{position:absolute;inset:0;pointer-events:none}
+#oru-controls{position:absolute;top:0;left:0;width:100%;pointer-events:none}
 #oru-controls>*{pointer-events:auto}
+.oru-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 #oru-controls>button:focus-visible,#oru-controls>a:focus-visible{opacity:1!important;outline:2px solid #2457d6;outline-offset:2px}
 #oru-controls>input:focus-visible{outline:2px solid #2457d6}
 </style>
 </head>
 <body>
-<canvas role="img" aria-label="${title}"></canvas>
+<canvas aria-hidden="true"></canvas>
+<div id="oru-semantic" class="oru-sr-only"></div>
 <div id="oru-controls" aria-label="Page controls"></div>
 <script type="module">${script}</script>
 </body>
