@@ -1,4 +1,4 @@
-import { readFile, readdir } from "node:fs/promises";
+import { lstat, readFile, readdir } from "node:fs/promises";
 import { dirname, join, normalize, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { OruError } from "./ast.js";
@@ -29,6 +29,48 @@ async function validateConfig(root: string): Promise<void> {
   if (lines.length !== 1) throw new OruError('oru.config must contain exactly one field: name: "Project Name".');
   const match = lines[0]!.match(/^name\s*:\s*(["'])(.{1,64})\1$/);
   if (!match) throw new OruError('Invalid oru.config. Expected name: "Project Name".');
+}
+
+async function validateAssetTree(root: string): Promise<void> {
+  const assetRoot = join(root, "assets");
+  let entries;
+  try {
+    entries = await readdir(assetRoot, { withFileTypes: true });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+    throw error;
+  }
+  const inspect = async (directory: string, children: typeof entries): Promise<void> => {
+    for (const entry of children) {
+      const path = join(directory, entry.name);
+      if (entry.isSymbolicLink()) throw new OruError("Asset directories cannot contain symbolic links: " + relative(root, path) + ".");
+      if (entry.isDirectory()) await inspect(path, await readdir(path, { withFileTypes: true }));
+      else if (!entry.isFile()) throw new OruError("Unsupported asset entry: " + relative(root, path) + ".");
+    }
+  };
+  await inspect(assetRoot, entries);
+}
+
+async function validateWidgetAssets(widget: ReturnType<typeof parsePage>["widgets"][number], root: string): Promise<void> {
+  if (widget.type === "image") {
+    const source = String(widget.properties.src ?? "");
+    if (/^https:\/\//i.test(source)) {
+      let url: URL;
+      try { url = new URL(source); } catch { throw new OruError("Invalid remote image URL.", widget.line); }
+      if (url.username || url.password) throw new OruError("Remote image URLs cannot contain credentials.", widget.line);
+    } else {
+      if (!source.startsWith("assets/") || source.includes("\\") || source.split("/").some(part => !part || part === "." || part === "..")) {
+        throw new OruError('Image sources must be inside assets/ or use an HTTPS URL: "' + source + '".', widget.line);
+      }
+      const path = resolve(root, source);
+      const assetRoot = resolve(root, "assets");
+      if (!path.startsWith(assetRoot + sep)) throw new OruError("Image source leaves the assets directory.", widget.line);
+      let info;
+      try { info = await lstat(path); } catch { throw new OruError("Image asset was not found: " + source + ".", widget.line); }
+      if (!info.isFile()) throw new OruError("Image asset must be a regular file: " + source + ".", widget.line);
+    }
+  }
+  for (const child of widget.children) await validateWidgetAssets(child, root);
 }
 
 type LogicDeclaration = { source: string; exportable: boolean };
@@ -71,6 +113,8 @@ export async function compileProject(projectDirectory = "."): Promise<Map<string
   for (const source of sources) {
     parsed.set(source, parsePage(await readFile(join(root, source), "utf8"), source));
   }
+  await validateAssetTree(root);
+  for (const page of parsed.values()) for (const widget of page.widgets) await validateWidgetAssets(widget, root);
   const routeMap: Record<string, string> = Object.create(null) as Record<string, string>;
   for (const page of routeTable.values()) {
     routeMap[page.source.slice(0, -4)] = page.route;
