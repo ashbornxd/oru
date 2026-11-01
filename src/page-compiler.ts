@@ -152,7 +152,9 @@ import { run } from "${corePath}";
         el.autocomplete = el.type === "password" ? "current-password" : "on";
       } else {
         el.type = "button";
+        el.addEventListener("click", () => activate(node));
       }
+      if (node.type === "link") el.addEventListener("click", event => { event.preventDefault(); activate(node); });
       controls.append(el);
     }
   }
@@ -161,11 +163,7 @@ import { run } from "${corePath}";
     const x = event.clientX - rect.left, y = event.clientY - rect.top;
     const hit = regions.find(item => x >= item.x && x <= item.x + item.w && y >= item.y && y <= item.y + item.h);
     if (!hit) return;
-    if (hit.node.type === "link") {
-      const route = String(hit.node.route ?? hit.node.properties.route ?? "");
-      const target = data.routes[route] ?? route;
-      if (target) location.href = target;
-    }
+    if (hit.node.type === "button" || hit.node.type === "link") activate(hit.node);
   });
   window.addEventListener("resize", render);
   render();
