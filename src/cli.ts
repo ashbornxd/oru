@@ -3,15 +3,17 @@ import { createServer } from "node:http";
 import { watch } from "node:fs";
 import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
-import { compile } from "./compiler.js";
+import { compileProject } from "./project-build.js";
 import { run as runLanguage } from "./core.js";
 
 const VERSION = "1.0.0-dev.0";
-const STARTER = `title = "My website"
-
-page index:
-    section:
-        heading("Hello, ORU!")
+const STARTER = `metadata:
+    title: "My website"
+    description: "A website built with ORU."
+page:
+    column:
+        text("Hello, ORU!"):
+            size: 32
         text("Your website starts here.")
 `;
 
@@ -57,8 +59,9 @@ async function createProject(name: string): Promise<void> {
     if (error instanceof Error && error.message.includes("already contains")) throw error;
   }
 
-  await writeFile(join(target, "main.oru"), STARTER, { flag: "wx" });
-  console.log(`Created ${name}/main.oru`);
+  await writeFile(join(target, "oru.config"), `name: "${name}"\n`, { flag: "wx" });
+  await writeFile(join(target, "index.oru"), STARTER, { flag: "wx" });
+  console.log(`Created ${name}/ with oru.config and index.oru`);
   console.log(`Next: cd ${name} && oru run dev`);
 }
 
@@ -86,13 +89,14 @@ async function evaluateFile(input: string): Promise<void> {
   runLanguage(source, { output: value => console.log(typeof value === "string" ? value : JSON.stringify(value)) });
 }
 
-async function build(input = "main.oru", output = "dist"): Promise<void> {
-  const source = await readFile(resolve(input), "utf8");
-  const result = compile(source);
+async function build(output = "dist"): Promise<void> {
+  const files = await compileProject(".");
   const outputRoot = await cleanOutput(output);
 
-  for (const [filename, content] of result.files) {
-    await writeFile(join(outputRoot, filename), content, "utf8");
+  for (const [filename, content] of files) {
+    const target = join(outputRoot, filename);
+    await mkdir(join(target, ".."), { recursive: true });
+    await writeFile(target, content, "utf8");
   }
 
   try {
@@ -102,7 +106,7 @@ async function build(input = "main.oru", output = "dist"): Promise<void> {
     // Assets are optional.
   }
 
-  console.log(`Built ${result.files.size} page(s) → ${output}/`);
+  console.log(`Built ${files.size} page(s) → ${output}/`);
 }
 
 const mimeTypes: Record<string, string> = {
@@ -133,7 +137,7 @@ async function runDev(port: number): Promise<void> {
     if (building) return;
     building = true;
     try {
-      await build(input, "dist");
+      await build("dist");
       console.log("Ready for preview.");
     } catch (error) {
       console.error(error instanceof Error ? error.message : error);
@@ -160,10 +164,12 @@ async function runDev(port: number): Promise<void> {
     }
   }).listen(port, "127.0.0.1", () => {
     console.log(`ORU dev server → http://localhost:${port}`);
-    console.log("Watching main.oru for changes. Press Ctrl+C to stop.");
+    console.log("Watching ORU project files for changes. Press Ctrl+C to stop.");
   });
 
-  watch(input, () => void rebuild());
+  watch(resolve("."), { recursive: true }, (_event, filename) => {
+    if (filename && (String(filename).endsWith(".oru") || String(filename) === "oru.config")) void rebuild();
+  });
 }
 
 async function main(): Promise<void> {
@@ -189,7 +195,7 @@ async function main(): Promise<void> {
   }
 
   if (command === "build") {
-    await build("main.oru", option(args, "--out", "dist"));
+    await build(option(args, "--out", "dist"));
     return;
   }
 
