@@ -146,7 +146,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       return { width, height: Math.max(type === "button" && p.icon ? 44 : 24, lines.length * px(p.line, px(p.size, 18) * 1.4) + padding * 2), lines };
     }
     if (type === "image") return { width, height: px(p.height, 180), lines: [] };
-    if (type === "input") return { width, height: px(p.height, 44), lines: [] };
+    if (type === "input" || type === "textarea") return { width, height: px(p.height, type === "textarea" ? Math.max(88, px(p.rows, 4) * 22) : 44), lines: [] };
     if (type === "row" || type === "column") {
       const horizontal = type === "row" && width >= px(p.wrapAt, 560);
       const available = Math.max(40, width - padding * 2 - (horizontal ? gap * Math.max(0, node.children.length - 1) : 0));
@@ -233,17 +233,18 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
-    if (node.type === "input") {
+    if (node.type === "input" || node.type === "textarea") {
       ctx.fillStyle = color(node, "background", "#ffffff");
       const radius = Math.max(0, px(p.radius, 0));
       ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.fill();
       ctx.strokeStyle = color(node, "border.color", "#999999");
       ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.stroke();
       const inputValue = textOf(node);
-      const visibleValue = p.type === "password" ? "•".repeat(inputValue.length) : inputValue;
+      const visibleValue = node.type === "input" && p.type === "password" ? "•".repeat(inputValue.length) : inputValue;
       ctx.fillStyle = visibleValue ? color(node, "text.color", "#202124") : "#777777";
       ctx.font = px(p.size, 14) + "px system-ui";
-      ctx.fillText(visibleValue || String(p.placeholder ?? ""), x + 10, y + 14);
+      const displayText = visibleValue || String(p.placeholder ?? "");
+      displayText.split("\n").slice(0, node.type === "textarea" ? Math.max(1, Math.floor((h - 20) / 20)) : 1).forEach((line, index) => ctx.fillText(line, x + 10, y + 14 + index * 20, w - 20));
       regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
@@ -317,7 +318,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : node.type === "textarea" ? "textarea" : "button");
       el.dataset.oruControl = String(regionIndex);
       el.style.cssText = "position:absolute;overflow:hidden;left:" + region.x + "px;top:" + region.y + "px;width:" + region.w + "px;height:" + region.h + "px;pointer-events:auto;";
-      if (node.type === "input") {
+      if (node.type === "input" || node.type === "textarea") {
         el.style.opacity = "1";
         el.style.background = "transparent";
         el.style.border = "0";
@@ -334,23 +335,29 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         el.style.appearance = "none";
         el.style.cursor = "pointer";
       }
-      const accessibleLabel = node.type === "input"
-        ? node.properties.label ?? node.properties.placeholder ?? node.binding ?? "Input"
+      const accessibleLabel = node.type === "input" || node.type === "textarea"
+        ? node.properties.label ?? node.properties.placeholder ?? node.binding ?? (node.type === "textarea" ? "Text area" : "Input")
         : textOf(node) || node.properties.alt || node.type;
       el.setAttribute("aria-label", String(accessibleLabel));
       if (node.type === "link") {
         const route = String(node.route ?? node.properties.route ?? "");
         el.href = Object.prototype.hasOwnProperty.call(data.routes, route) ? data.routes[route] : "#";
-      } else if (node.type === "input") {
+      } else if (node.type === "input" || node.type === "textarea") {
         el.placeholder = String(node.properties.placeholder ?? "");
-        el.type = String(node.properties.type ?? "text");
-        el.autocomplete = String(node.properties.autocomplete ?? (el.type === "password" ? "current-password" : "on"));
+        if (node.type === "input") {
+          el.type = String(node.properties.type ?? "text");
+          el.autocomplete = String(node.properties.autocomplete ?? (el.type === "password" ? "current-password" : "on"));
+        } else {
+          el.rows = Number(node.properties.rows ?? 4);
+          el.style.resize = "none";
+          el.style.whiteSpace = "pre-wrap";
+        }
         if (node.properties.required === true) el.required = true;
         if (node.properties.disabled === true) el.disabled = true;
         if (node.properties.readOnly === true) el.readOnly = true;
-        if (node.properties.constraint === "numbers") el.pattern = "[0-9]+";
-        else if (node.properties.constraint === "letters") el.pattern = "[A-Za-z]+";
-        else if (typeof node.properties.pattern === "string") el.pattern = node.properties.pattern;
+        if (node.type === "input" && node.properties.constraint === "numbers") el.pattern = "[0-9]+";
+        else if (node.type === "input" && node.properties.constraint === "letters") el.pattern = "[A-Za-z]+";
+        else if (node.type === "input" && typeof node.properties.pattern === "string") el.pattern = node.properties.pattern;
         if (typeof node.properties.validationMessage === "string" && node.properties.validationMessage.length > 0) {
           const message = String(node.properties.validationMessage);
           el.addEventListener("invalid", () => el.setCustomValidity(message));
