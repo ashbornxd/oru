@@ -169,7 +169,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       const children = node.children.map(child => measure(child, childWidth));
       const main = children.reduce((sum, item) => sum + (horizontal ? item.width : item.height), 0) + gap * Math.max(0, children.length - 1);
       const cross = children.reduce((m, item) => Math.max(m, horizontal ? item.height : item.width), 0);
-      return { width: horizontal ? Math.min(width, main + padding * 2) : width, height: (horizontal ? cross : main) + padding * 2, lines: [] };
+      return { width, height: (horizontal ? cross : main) + padding * 2, lines: [] };
     }
     const children = node.children.map(child => measure(child, Math.max(40, width - padding * 2)));
     return { width, height: px(p.height, children.reduce((sum, item) => sum + item.height, 0) + padding * 2), lines: [] };
@@ -293,7 +293,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       const childX = horizontal ? cursor : x + padding + crossOffset;
       const childY = horizontal ? y + padding + crossOffset : cursor;
       const childMaxWidth = horizontal ? childWidth : crossAlign === "stretch" ? available : childBox.width;
-      const stretchedHeight = horizontal && crossAlign === "stretch" ? crossExtent : undefined;
+      const stretchedHeight = horizontal && crossAlign === "stretch" && item.node.properties.height === undefined ? crossExtent : undefined;
       draw(item.node, childX, childY, childMaxWidth, formId, stretchedHeight);
       cursor += (horizontal ? childBox.width : childBox.height) + itemGap;
     }
