@@ -93,5 +93,5 @@ test("native file selection keeps the FileList for required form submission", as
   await expect(page.locator("#oru-semantic")).toContainText("Selected: sample.txt");
   await page.getByRole("button", { name: "Send" }).click();
   await expect(page.locator("#oru-semantic")).toContainText("true");
-  await expect(page.locator("html")).toHaveJSProperty("scrollWidth", 390);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
