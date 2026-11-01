@@ -90,6 +90,33 @@ Initial widgets: `column`, `row`, `box`, `text`, `button`, `link`, `image`, and 
 
 Widget properties use `:`, not `=`. Values currently parse as strings, numbers, or booleans. Color values and size units remain strings for the renderer.
 
+## Reusable style classes and imports
+
+Declare a reusable page-local style class before `logic:` and `page:`:
+
+```oru
+class navText:
+    color: #222222
+    size: 20
+
+page:
+    text("Welcome"):
+        class: navText
+```
+
+Direct widget properties override class defaults. Share classes from another `.oru` file with a named import or namespace import:
+
+```oru
+from theme import navText
+# or: import theme
+
+page:
+    text("Welcome"):
+        class: navText
+```
+
+With `import theme`, refer to the class as `theme.navText`. Module paths resolve relative to the importing page. Imported files are `.oru` pages, so they also contain a `page:` block. Circular imports, missing modules/classes, and class-name collisions are build errors. Only style classes are imported today; functions and values are not yet importable.
+
 ## Links
 
 Links use a label and an extensionless project-relative route:
