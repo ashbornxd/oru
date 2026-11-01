@@ -148,3 +148,58 @@ test("keeps core collection builtins available in async programs", async () => {
   assert.equal(await program.callAsync("total"), 3);
   await assert.rejects(() => runAsync("async func bad():\n    return range(1, 2, 0)\nbad()").then(x => x.callAsync("bad")), /range step cannot be zero/);
 });
+
+
+test("awaits host calls sequentially and preserves their order", async () => {
+  const order: number[] = [];
+  const program = await runAsync(`async func load():
+    first = await fetchValue(1)
+    second = await fetchValue(2)
+    return first + second
+`, {
+    asyncFunctions: {
+      fetchValue: async (value) => {
+        await Promise.resolve();
+        order.push(Number(value));
+        return Number(value);
+      }
+    }
+  });
+  assert.equal(await program.callAsync("load"), 3);
+  assert.deepEqual(order, [1, 2]);
+});
+
+test("propagates rejected host promises without corrupting state", async () => {
+  const program = await runAsync(`state status = "idle"
+async func refresh():
+    status = await fetchStatus()
+`, {
+    asyncFunctions: {
+      fetchStatus: async () => { throw new Error("network unavailable"); }
+    }
+  });
+  await assert.rejects(() => program.callAsync("refresh"), /network unavailable/);
+  assert.equal(program.getGlobals().status, "idle");
+});
+
+test("enforces execution limits across asynchronous functions", async () => {
+  const program = await runAsync(`async func repeat():
+    count = 0
+    while count < 10:
+        count = count + 1
+`, { maxSteps: 5 });
+  await assert.rejects(() => program.callAsync("repeat"), /Execution step limit exceeded|Loop iteration limit exceeded/);
+});
+
+test("allows awaited host calls in async loops and conditionals", async () => {
+  const program = await runAsync(`state total = 0
+async func accumulate():
+    for item in [1, 2, 3]:
+        value = await fetchValue(item)
+        if value > 1:
+            total = total + value
+    return total
+`, { asyncFunctions: { fetchValue: async value => Number(value) } });
+  assert.equal(await program.callAsync("accumulate"), 5);
+  assert.equal(program.getGlobals().total, 5);
+});
