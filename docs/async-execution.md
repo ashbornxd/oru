@@ -1,6 +1,6 @@
 # ORU asynchronous execution
 
-Status: approved language direction for ORU 1.0.0; implementation in progress.
+Status: initial interpreter implementation committed; browser event integration and full compatibility verification remain in progress.
 
 ## Syntax
 
@@ -28,7 +28,7 @@ async func showProfile():
 - Promise values are runtime-only and cannot be stored in ORU lists, objects, or state.
 - Awaited statements execute sequentially. Parallel execution is not implicit.
 - Async execution preserves step limits, type checks, state/global semantics, and useful source locations.
-- Browser event handlers await completion before persisting global state and rendering. Rejections are caught and reported without unhandled promise rejections.
+- Browser event handlers must await completion before persisting global state and rendering. Rejections must be caught and reported without unhandled promise rejections. This integration is not yet implemented.
 
 ## Required verification
 
@@ -37,3 +37,9 @@ Parser tests: async declarations, await precedence and grouping, invalid await p
 Runtime tests: host promises, async-to-async calls, return values, rejected promises, step limits, and page/global state after suspension.
 
 Browser tests: async click and form handlers, state persistence after completion, repeated interactions, and rejected handler reporting.
+
+## Current implementation boundary
+
+The first interpreter implementation exposes `runAsync(source, options)` and `callAsync(name, ...args)`. Host capabilities are supplied through the explicit `asyncFunctions` option. It supports async function declarations, sequential awaitable calls, return values, local/global/state assignments, conditionals, loops, and the existing execution-step ceiling. The legacy `run()` / `call()` path remains synchronous and gives an explicit error if an async function is invoked there.
+
+The first implementation is not yet release-complete: browser event dispatch does not yet await handlers, async errors are not yet surfaced through the page runtime, and the full parser/runtime edge-case matrix still needs verification.
