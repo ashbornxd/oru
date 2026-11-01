@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, button hover/active/disabled states and image icons, responsive row wrapping, scrollable pages, and a semantic text/image layer with native keyboard-operable controls. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: advanced form controls (file inputs; select controls are implemented), advanced layout primitives, full WCAG conformance, broader security review, browser integration testing, and final release validation.
+**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, text/textarea/select/file controls, button interaction states and image icons, responsive row wrapping and container alignment, scrollable pages, semantic text/image content, native keyboard-operable controls, baseline security headers, and Chromium integration tests. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: async and cross-field form validation, validation summaries, full WCAG conformance and assistive-technology testing, production-grade CSP without `unsafe-inline`, broader security and performance review, cross-browser/device testing, and final release validation.
 
 ## Vision
 
@@ -609,3 +609,16 @@ Added on `oru-1.0.0-dev`:
 **Verification: GitHub Actions passed on 2026-11-01** (unit tests, TypeScript build, Chromium install, and browser integration test). The browser suite verifies that a selected file remains in the native FileList, browser-required validation blocks empty submission, valid submission reaches the ORU handler, CSP headers are present, and a 390px viewport has no horizontal overflow.
 
 The browser syntax check also caught a generated-runtime escaping bug: a newline separator in the renderer's multiline text code was being emitted as a literal newline inside a JavaScript string. The compiler template now escapes it correctly, and the generated runtime is syntax-checked before Chromium launches.
+
+
+### Milestone 25 — Responsive container alignment
+
+Implemented on `oru-1.0.0-dev`:
+- Added a consistent `mainAlign` property for `row`, `column`, `box`, and `form`: `start`, `center`, `end`, `spaceBetween`, and `spaceAround`.
+- Added `crossAlign`: `start`, `center`, `end`, and `stretch`.
+- Alignment follows the active flow direction. A `row` uses horizontal flow above its `wrapAt` threshold and vertical flow below it; the other container widgets use vertical flow.
+- Available free space is distributed without shrinking child widgets. Oversized content remains scrollable.
+- Invalid alignment values fail during compilation.
+- Added compiler regression tests and documented the syntax and behavior.
+
+**Verification pending:** run the complete unit, build, and Chromium integration suites on this milestone before considering it verified. This does not complete the remaining accessibility, form-validation, security, or browser-compatibility work.
