@@ -80,6 +80,7 @@ page about:
 
 - [Published 0.3 language basics](docs/language-basics.md)
 - [ORU 1.0 language core development spec](docs/core-language.md)
+- [ORU 1.0 page-file syntax (development)](docs/page-files.md)
 
 The 1.0 core interpreter is an early development milestone; it is not yet the complete page, UI, state, module, or browser runtime.
 
