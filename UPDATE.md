@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. The core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic, click handlers, and basic reactive page-local bindings are implemented on `oru-1.0.0-dev`. Cross-page global state, modules/imports, reusable style classes, complete forms, advanced responsive layout, accessibility parity, and comprehensive browser/security testing remain open.
+**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and click handlers, basic reactive bindings, session-scoped cross-page global state, reusable style classes, and cross-file style-class imports. Still open: general-purpose function/value modules, full form workflows, advanced responsive layout, accessibility parity, asset/security hardening, and comprehensive browser integration testing.
 
 ## Vision
 
