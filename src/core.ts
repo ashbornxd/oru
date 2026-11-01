@@ -422,16 +422,15 @@ export function run(source: string, options: RunOptions = {}): RunResult {
     }
   }
   function displayValue(value: OruValue): string { return typeof value === "string" ? value : JSON.stringify(value); }
-  const executeBlock = (body: Statement[], env: Environment, inFunction = false, inLoop = false): void => {
+  const executeBlock = (body: Statement[], env: Environment, inFunction = false, inLoop = false, topLevel = false): void => {
     for (const statement of body) {
       if (++steps > maxSteps) throw new OruError("Execution step limit exceeded.", statement.line);
       switch (statement.kind) {
         case "assign": env.assign(statement.name, evalExpr(statement.value, env), statement.line); break;
         case "global": {
           globalNames.add(statement.name);
-          const value = evalExpr(statement.value, env);
-          if (!shared.has(statement.name)) shared.declare(statement.name, value, statement.line);
-          else if (inFunction) shared.assign(statement.name, value, statement.line);
+          if (!shared.has(statement.name)) shared.declare(statement.name, evalExpr(statement.value, env), statement.line);
+          else if (!topLevel) shared.assign(statement.name, evalExpr(statement.value, env), statement.line);
           break;
         }
         case "state": env.declare(statement.name, evalExpr(statement.value, env), statement.line); break;
@@ -486,6 +485,6 @@ export function run(source: string, options: RunOptions = {}): RunResult {
     catch (signal) { if (signal instanceof ReturnSignal) return signal.value; throw signal; }
     return null;
   };
-  executeBlock(statements, global);
+  executeBlock(statements, global, false, false, true);
   return { output, globals: allGlobals(), call: (name, ...args) => invokeFunction(name, args, 0), getGlobals: allGlobals, getGlobalState: () => Object.fromEntries(Object.entries(shared.snapshot()).filter(([name]) => globalNames.has(name))), set: (name, value) => { if (!global.has(name)) throw new OruError("Unknown variable: " + name, 0); global.assign(name, value, 0); } };
 }
