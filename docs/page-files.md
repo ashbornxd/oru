@@ -83,7 +83,7 @@ page:
 
 ## Page-local style classes
 
-Define a class with `class name:` before the logic and page blocks. Give it indented style properties, then apply it to a widget with `class: name`. Widget properties override class defaults. The compiler rejects unknown classes and style properties that do not match the widget type. Import a named class with `from theme import navText`, or import a namespace with `import theme` and apply `class: theme.navText`. Module paths are resolved relative to the importing page file. Imported modules are other `.oru` page files; circular imports and name collisions are rejected.
+Define a class with `class name:` before the logic and page blocks. Give it indented style properties, then apply it to a widget with `class: name`. Widget properties override class defaults. The compiler rejects unknown classes and style properties that do not match the widget type. Import a named class with `from theme import navText`, or import a namespace with `import theme` and apply `class: theme.navText`. Module paths are resolved relative to the importing page file. Imported modules are other `.oru` page files; circular imports and name collisions are rejected. Named imports support both `func` and `async func` declarations, and imported asynchronous functions can be awaited by the importing page's asynchronous logic.
 
 ## Page logic and events
 
