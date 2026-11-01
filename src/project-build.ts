@@ -31,6 +31,37 @@ async function validateConfig(root: string): Promise<void> {
   if (!match) throw new OruError('Invalid oru.config. Expected name: "Project Name".');
 }
 
+type LogicDeclaration = { source: string; exportable: boolean };
+
+function logicDeclarations(logic: string): Map<string, LogicDeclaration> {
+  const lines = logic.split("\n");
+  const declarations = new Map<string, LogicDeclaration>();
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index]!;
+    if (!line.trim()) continue;
+    const indent = line.length - line.trimStart().length;
+    if (indent !== 0) continue;
+    const functionMatch = line.match(/^func\\s+([A-Za-z_]\\w*)\\s*\\(/);
+    const stateMatch = line.match(/^(?:state|global)\\s+([A-Za-z_]\\w*)\\s*=/);
+    const valueMatch = line.match(/^([A-Za-z_]\\w*)\\s*=\\s*.+$/);
+    const name = functionMatch?.[1] ?? stateMatch?.[1] ?? valueMatch?.[1];
+    if (!name) continue;
+    const start = index;
+    if (functionMatch) {
+      while (index + 1 < lines.length) {
+        const next = lines[index + 1]!;
+        if (next.trim() && next.length - next.trimStart().length === 0) break;
+        index++;
+      }
+    }
+    declarations.set(name, {
+      source: lines.slice(start, index + 1).join("\n"),
+      exportable: Boolean(functionMatch || valueMatch)
+    });
+  }
+  return declarations;
+}
+
 export async function compileProject(projectDirectory = "."): Promise<Map<string, string>> {
   const root = resolve(projectDirectory);
   await validateConfig(root);
@@ -50,22 +81,38 @@ export async function compileProject(projectDirectory = "."): Promise<Map<string
   const resolvePage = (source: string): ReturnType<typeof parsePage> => {
     const cached = resolved.get(source);
     if (cached) return cached;
-    if (resolving.has(source)) throw new OruError("Circular style import detected at " + source + ".");
+    if (resolving.has(source)) throw new OruError("Circular ORU module import detected at " + source + ".");
     const page = parsed.get(source);
     if (!page) throw new OruError("Imported ORU module was not found: " + source + ".");
     resolving.add(source);
     const classes = { ...page.classes };
+    const importedLogic: string[] = [];
+    const localDeclarations = logicDeclarations(page.logic);
+    const importedNames = new Set<string>();
     for (const item of page.imports) {
       const modulePath = item.module.replaceAll(".", "/") + ".oru";
       const target = normalize(join(dirname(source), modulePath)).split(sep).join("/");
       if (target === ".." || target.startsWith("../")) throw new OruError("Import path leaves the project: " + item.module + ".");
       const modulePage = resolvePage(target);
       if (item.kind === "named") {
+        const exports = logicDeclarations(modulePage.logic);
         for (const name of item.names) {
           const styles = modulePage.classes[name];
-          if (!styles) throw new OruError("Style class " + name + " was not exported by " + item.module + ".");
-          if (classes[name]) throw new OruError("Imported style class conflicts with local class: " + name + ".");
-          classes[name] = styles;
+          const declaration = exports.get(name);
+          if (styles && declaration) throw new OruError("Import name is ambiguous between a style class and logic export: " + name + ".");
+          if (styles) {
+            if (classes[name]) throw new OruError("Imported style class conflicts with local class: " + name + ".");
+            classes[name] = styles;
+            continue;
+          }
+          if (!declaration || !declaration.exportable) {
+            throw new OruError("Name " + name + " was not exported by " + item.module + ". Import only top-level functions and plain values.");
+          }
+          if (localDeclarations.has(name) || importedNames.has(name)) {
+            throw new OruError("Imported logic name conflicts with an existing declaration: " + name + ".");
+          }
+          importedNames.add(name);
+          importedLogic.push(declaration.source);
         }
       } else {
         for (const [name, styles] of Object.entries(modulePage.classes)) {
@@ -76,7 +123,8 @@ export async function compileProject(projectDirectory = "."): Promise<Map<string
       }
     }
     resolving.delete(source);
-    const result = { ...page, classes, imports: [] };
+    const logic = [...importedLogic, page.logic].filter(part => part.trim()).join("\n");
+    const result = { ...page, classes, logic, imports: [] };
     resolved.set(source, result);
     return result;
   };
