@@ -399,3 +399,60 @@ test("rejects unsupported container alignment values", () => {
 `);
   assert.throws(() => compilePage(cross, routeForPage("index.oru"), { index: "/" }), /crossAlign must be/);
 });
+
+
+test("supports cross-field matching and accessible form validation summaries", () => {
+  const page = parsePage(`logic:
+    state password = ""
+    state confirmPassword = ""
+    func verify():
+        print("verified")
+page:
+    form:
+        on.submit: verify
+        validationSummary: true
+        input(password):
+            type: password
+            required: true
+            label: Password
+        input(confirmPassword):
+            type: password
+            required: true
+            matches: password
+            validationMessage: "Passwords must match."
+            label: Confirm password
+        button("Verify")
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('field.setCustomValidity(mismatch ? message : "")'));
+  assert.ok(html.includes('summary.setAttribute("role", "alert")'));
+  assert.ok(html.includes('form.addEventListener("invalid", updateSummary, true)'));
+  assert.ok(html.includes('node.properties.validationSummary === true'));
+});
+
+test("rejects cross-field references that are not bound in the same form", () => {
+  const page = parsePage(`logic:
+    state confirmPassword = ""
+    func verify():
+        print("verified")
+page:
+    form:
+        on.submit: verify
+        input(confirmPassword):
+            matches: missing
+`);
+  assert.throws(() => compilePage(page, routeForPage("index.oru"), { index: "/" }), /matches must reference another bound input/);
+});
+
+test("rejects non-boolean validation summary settings", () => {
+  const page = parsePage(`logic:
+    func verify():
+        print("verified")
+page:
+    form:
+        on.submit: verify
+        validationSummary: "yes"
+        button("Verify")
+`);
+  assert.throws(() => compilePage(page, routeForPage("index.oru"), { index: "/" }), /validationSummary must be true or false/);
+});
