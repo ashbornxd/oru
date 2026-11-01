@@ -115,12 +115,12 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
     if (line.indent === 0 && (sawLogic || sawPage) && (line.text.startsWith("import ") || line.text.startsWith("from "))) {
       throw new OruError("Imports must appear before logic and page.", line.number);
     }
-    const fromImport = line.indent === 0 ? line.text.match(/^from\\s+([A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*)\\s+import\\s+([A-Za-z_]\\w*(?:\\s*,\\s*[A-Za-z_]\\w*)*)$/) : null;
+    const fromImport = line.indent === 0 ? line.text.match(/^from\s+([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\s+import\s+([A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*)$/) : null;
     if (fromImport) {
       imports.push({ kind: "named", module: fromImport[1]!, names: fromImport[2]!.split(",").map(name => name.trim()) });
       continue;
     }
-    const namespaceImport = line.indent === 0 ? line.text.match(/^import\\s+([A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*)$/) : null;
+    const namespaceImport = line.indent === 0 ? line.text.match(/^import\s+([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)$/) : null;
     if (namespaceImport) {
       const modulePath = namespaceImport[1]!;
       const alias = modulePath.split(".").at(-1)!;
