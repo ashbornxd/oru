@@ -87,9 +87,9 @@ The 1.0 interpreter currently includes:
 
 ## Browser runtime status
 
-The 1.0 development branch now has a first end-to-end page compiler and Canvas 2D browser renderer, with basic text, layout, image, link, button, and input presentation plus a semantic DOM control layer.
+The 1.0 development branch now has a first end-to-end page compiler and Canvas 2D browser renderer, with basic text, layout, image, link, button, and input presentation plus a semantic DOM control layer. Page-local `logic:` functions, button click handlers, and simple reactive `text(name)` / `button(name)` bindings are implemented.
 
-**ORU 1.0 is not feature-complete or production-ready yet.** Reactive state and UI bindings, module imports, reusable style classes, complete form validation, advanced responsive layout, full accessibility behavior, and comprehensive security/browser testing remain in progress.
+**ORU 1.0 is not feature-complete or production-ready yet.** Cross-page global state, richer expression bindings, module imports, reusable style classes, complete form validation, advanced responsive layout, full accessibility behavior, and comprehensive security/browser testing remain in progress.
 
 ## Documentation
 
