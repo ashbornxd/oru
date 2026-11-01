@@ -109,7 +109,7 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
       if (sawMetadata || sawClass || sawLogic || sawPage) throw new OruError("metadata must appear once before classes, logic, and page.", line.number);
       sawMetadata = true; section = "metadata"; continue;
     }
-    const classHeader = line.indent === 0 ? line.text.match(/^class\\s+([A-Za-z_]\\w*)\\s*:\\s*$/) : null;
+    const classHeader = line.indent === 0 ? line.text.match(/^class\s+([A-Za-z_]\w*)\s*:\s*$/) : null;
     if (classHeader) {
       if (sawLogic || sawPage) throw new OruError("Style classes must be declared before logic and page.", line.number);
       activeClass = classHeader[1]!;
@@ -128,7 +128,7 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
     if (!section) throw new OruError("Start the file with metadata:, a class declaration, logic:, or page:.", line.number);
     if (section === "class") {
       if (line.indent !== 4) throw new OruError("Style class properties must be indented once.", line.number);
-      const field = line.text.match(/^([A-Za-z_]\\w*)\\s*:\\s*(.+)$/);
+      const field = line.text.match(/^([A-Za-z_]\w*)\s*:\s*(.+)$/);
       if (!field) throw new OruError("Expected a style property in the form name: value.", line.number);
       const key = field[1]!;
       if (key in classes[activeClass]!) throw new OruError("Style property is defined twice: " + key, line.number);
