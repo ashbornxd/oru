@@ -12,3 +12,16 @@ test("emits an accessible Canvas page shell with safely escaped metadata", () =>
   assert.match(html, /oru-controls/);
   assert.match(html, /Continue/);\n  assert.match(html, /import \\{ run \\} from "\.\\/_oru\\/core\\.js"/);\n  assert.match(html, /app\\.call/);
 });
+test("loads page logic and wires button click handlers", () => {
+  const page = parsePage(`logic:
+    func save():
+        print("saved")
+page:
+    button("Save"):
+        on.click: save
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.match(html, /import \\{ run \\} from ".+_oru\\/core\\.js"/);
+  assert.match(html, /app\\.call\\(String\\(handler\\)\\)/);
+  assert.match(html, /type="module"/);
+});
