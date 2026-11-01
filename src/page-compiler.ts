@@ -19,7 +19,7 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
 };
 
 function resolveWidget(widget: PageWidget, classes: OruPage["classes"]): PageWidget {
-  const properties = { ...widget.properties };
+  let properties = { ...widget.properties };
   const className = properties.class;
   if (className !== undefined) {
     if (typeof className !== "string" || !classes[className]) throw new OruError("Unknown style class: " + String(className), widget.line);
@@ -27,7 +27,7 @@ function resolveWidget(widget: PageWidget, classes: OruPage["classes"]): PageWid
     for (const key of Object.keys(styles)) {
       if (!classProperties[widget.type].has(key)) throw new OruError("Style class property " + key + " is not supported by " + widget.type + ".", widget.line);
     }
-    Object.assign(properties, styles);
+    properties = { ...styles, ...properties };
     delete properties.class;
   }
   return { ...widget, properties, children: widget.children.map(child => resolveWidget(child, classes)) };
