@@ -92,7 +92,9 @@ page:
 `);
   assert.equal(page.widgets[0]?.binding, "email");
   const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
-  assert.ok(html.includes("app.set(node.binding, el.value)"));
+  assert.ok(html.includes("app.set(node.binding, value)"));
+  assert.ok(html.includes("replacement.focus()"));
+  assert.ok(html.includes("replacement.setSelectionRange(start, end)"));
   assert.ok(html.includes("el.required = true"));
 });
 
