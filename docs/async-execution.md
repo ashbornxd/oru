@@ -1,6 +1,6 @@
 # ORU asynchronous execution
 
-Status: initial interpreter implementation committed; browser event integration and full compatibility verification remain in progress.
+Status: async interpreter and browser event integration implemented; full compatibility and release verification remain in progress.
 
 ## Syntax
 
@@ -28,7 +28,7 @@ async func showProfile():
 - Promise values are runtime-only and cannot be stored in ORU lists, objects, or state.
 - Awaited statements execute sequentially. Parallel execution is not implicit.
 - Async execution preserves step limits, type checks, state/global semantics, and useful source locations.
-- Browser event handlers must await completion before persisting global state and rendering. Rejections must be caught and reported without unhandled promise rejections. This integration is not yet implemented.
+- Browser event handlers must await completion before persisting global state and rendering. Rejections must be caught and reported without unhandled promise rejections. Async click, form-submit, hover, leave, and active event handlers now await completion before persisting global state and rerendering. Rejected handlers are logged and surfaced through an accessible alert banner.
 
 ## Required verification
 
