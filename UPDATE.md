@@ -226,6 +226,10 @@ These details are implemented as the first coherent baseline, but remain open to
 | Click handlers | A button may declare `on.click: functionName`; the named function must be defined in that page's `logic:` block. | Activating the button calls the named ORU function through the interpreter. |
 | Browser interpreter delivery | The build emits the ORU interpreter and its error module under `_oru/` and loads them as a local ES module. | Nested pages use relative module paths and do not depend on a remote runtime host. |
 
+
+| Page-local state | Declare reactive page state inside `logic:` with `state name = value`; later assignments must retain the inferred type. | Each page has an isolated state environment created when its page runtime loads. |
+| UI value binding | Use an unquoted identifier as a widget content argument, such as `text(count)` or `button(label)`, to bind displayed content to a page variable. Quoted arguments remain static text. | After a click handler completes, the renderer refreshes and reads current values from the interpreter. This initial binding form supports a single variable name, not arbitrary expressions. |
+
 ### Completion roadmap
 
 1. Harden the core interpreter: source locations, assignment/mutation, predictable scopes, diagnostics, and test coverage.
