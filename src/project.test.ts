@@ -43,3 +43,18 @@ test("parses leaf widgets, image sources, and input placeholders", () => {
   assert.equal(column.children[1]?.text, "Logo");
   assert.equal(column.children[2]?.properties.placeholder, "Email");
 });
+
+test("parses page-local logic and event properties", () => {
+  const page = parsePage(`metadata:
+    title: "Counter"
+logic:
+    func increment():
+        print("clicked")
+page:
+    button("Increment"):
+        on.click: increment
+`);
+  assert.match(page.logic, /func increment/);
+  assert.match(page.logic, /print\("clicked"\)/);
+  assert.equal(page.widgets[0]?.properties["on.click"], "increment");
+});
