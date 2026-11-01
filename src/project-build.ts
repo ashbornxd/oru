@@ -1,5 +1,5 @@
 import { lstat, readFile, readdir } from "node:fs/promises";
-import type { Dirent } from "node:fs";
+import type { Dirent, Stats } from "node:fs";
 import { dirname, join, normalize, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { OruError } from "./ast.js";
@@ -34,7 +34,7 @@ async function validateConfig(root: string): Promise<void> {
 
 async function validateAssetTree(root: string): Promise<void> {
   const assetRoot = join(root, "assets");
-  let rootInfo;
+  let rootInfo: Stats;
   try {
     rootInfo = await lstat(assetRoot);
   } catch (error) {
@@ -70,7 +70,7 @@ async function validateWidgetAssets(widget: ReturnType<typeof parsePage>["widget
       const path = resolve(root, source);
       const assetRoot = resolve(root, "assets");
       if (!path.startsWith(assetRoot + sep)) throw new OruError("Image source leaves the assets directory.", widget.line);
-      let info;
+      let info: Stats;
       try { info = await lstat(path); } catch { throw new OruError("Image asset was not found: " + source + ".", widget.line); }
       if (!info.isFile()) throw new OruError("Image asset must be a regular file: " + source + ".", widget.line);
     }
