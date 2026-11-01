@@ -17,7 +17,9 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   link: new Set(["color", "text.color", "size", "weight", "decoration", "underline"]),
   image: new Set(["width", "height", "fit", "radius"]),
   input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "validationMessage", "name", "text.color", "border.color", "label"]),
-  textarea: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "readOnly", "minLength", "maxLength", "validationMessage", "name", "text.color", "border.color", "label", "rows"])
+  textarea: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "readOnly", "minLength", "maxLength", "validationMessage", "name", "text.color", "border.color", "label", "rows"]),
+  select: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "name", "text.color", "border.color", "label"]),
+  option: new Set([])
 };
 
 function resolveWidget(widget: PageWidget, classes: OruPage["classes"]): PageWidget {
@@ -146,7 +148,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       return { width, height: Math.max(type === "button" && p.icon ? 44 : 24, lines.length * px(p.line, px(p.size, 18) * 1.4) + padding * 2), lines };
     }
     if (type === "image") return { width, height: px(p.height, 180), lines: [] };
-    if (type === "input" || type === "textarea") return { width, height: px(p.height, type === "textarea" ? Math.max(88, px(p.rows, 4) * 22) : 44), lines: [] };
+    if (type === "input" || type === "textarea" || type === "select") return { width, height: px(p.height, type === "textarea" ? Math.max(88, px(p.rows, 4) * 22) : 44), lines: [] };
     if (type === "row" || type === "column") {
       const horizontal = type === "row" && width >= px(p.wrapAt, 560);
       const available = Math.max(40, width - padding * 2 - (horizontal ? gap * Math.max(0, node.children.length - 1) : 0));
@@ -240,7 +242,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       ctx.strokeStyle = color(node, "border.color", "#999999");
       ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.stroke();
       const inputValue = textOf(node);
-      const visibleValue = node.type === "input" && p.type === "password" ? "•".repeat(inputValue.length) : inputValue;
+      const selectedValue = node.type === "select" ? (node.children.find(option => option.type === "option")?.text ?? "") : inputValue;\n      const visibleValue = node.type === "input" && p.type === "password" ? "•".repeat(inputValue.length) : node.type === "select" ? (inputValue || selectedValue) : inputValue;
       ctx.fillStyle = visibleValue ? color(node, "text.color", "#202124") : "#777777";
       ctx.font = px(p.size, 14) + "px system-ui";
       const displayText = visibleValue || String(p.placeholder ?? "");
@@ -315,7 +317,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     }
     for (const [regionIndex, region] of regions.entries()) {
       const node = region.node;
-      const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : node.type === "textarea" ? "textarea" : "button");
+      const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : node.type === "textarea" ? "textarea" : node.type === "select" ? "select" : "button");
       el.dataset.oruControl = String(regionIndex);
       el.style.cssText = "position:absolute;overflow:hidden;left:" + region.x + "px;top:" + region.y + "px;width:" + region.w + "px;height:" + region.h + "px;pointer-events:auto;";
       if (node.type === "input" || node.type === "textarea") {
@@ -335,7 +337,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         el.style.appearance = "none";
         el.style.cursor = "pointer";
       }
-      const accessibleLabel = node.type === "input" || node.type === "textarea"
+      const accessibleLabel = node.type === "input" || node.type === "textarea" || node.type === "select"
         ? node.properties.label ?? node.properties.placeholder ?? node.binding ?? (node.type === "textarea" ? "Text area" : "Input")
         : textOf(node) || node.properties.alt || node.type;
       el.setAttribute("aria-label", String(accessibleLabel));
@@ -358,13 +360,13 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         if (node.type === "input" && node.properties.constraint === "numbers") el.pattern = "[0-9]+";
         else if (node.type === "input" && node.properties.constraint === "letters") el.pattern = "[A-Za-z]+";
         else if (node.type === "input" && typeof node.properties.pattern === "string") el.pattern = node.properties.pattern;
-        if (typeof node.properties.validationMessage === "string" && node.properties.validationMessage.length > 0) {
+        if (node.type !== "select" && typeof node.properties.validationMessage === "string" && node.properties.validationMessage.length > 0) {
           const message = String(node.properties.validationMessage);
           el.addEventListener("invalid", () => el.setCustomValidity(message));
           el.addEventListener("input", () => el.setCustomValidity(""));
           el.addEventListener("change", () => el.setCustomValidity(""));
         }
-        for (const key of (node.type === "input" ? ["min", "max", "step", "maxLength", "minLength", "name"] : ["maxLength", "minLength", "name"])) {
+        for (const key of (node.type === "input" ? ["min", "max", "step", "maxLength", "minLength", "name"] : node.type === "textarea" ? ["maxLength", "minLength", "name"] : ["name"])) {
           if (node.properties[key] !== undefined) el[key] = node.properties[key];
         }
         if (node.binding && app) {
@@ -373,7 +375,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
             try {
               const start = el.selectionStart, end = el.selectionEnd;
               const current = app.getGlobals()[node.binding];
-              const numeric = typeof current === "number" || (current === undefined && ["number", "range"].includes(el.type));
+              const numeric = node.type !== "select" && (typeof current === "number" || (current === undefined && ["number", "range"].includes(el.type)));
               const value = numeric ? (el.value === "" ? null : Number(el.value)) : el.value;
               if (value === null || (typeof value === "number" && !Number.isFinite(value))) return;
               app.set(node.binding, value);
