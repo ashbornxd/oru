@@ -27,7 +27,7 @@ async func showProfile():
 - Async host calls are explicitly registered capabilities; no arbitrary JavaScript evaluation, host globals, or unrestricted module loading. Async lists and call arguments evaluate left-to-right.
 - Promise values are runtime-only and cannot be stored in ORU lists, objects, or state.
 - Awaited statements execute sequentially. Parallel execution is not implicit.
-- Async execution preserves step limits, type checks, state/global semantics, and useful source locations.
+- Async execution preserves step limits, type checks, state/global semantics, and statement-level source locations for expression failures.
 - Browser event handlers must await completion before persisting global state and rendering. Rejections must be caught and reported without unhandled promise rejections. Async click, form-submit, hover, leave, and active event handlers now await completion before persisting global state and rerendering. Rejected handlers are logged and surfaced through an accessible alert banner.
 
 ## Required verification
