@@ -198,3 +198,33 @@ These details are implemented as the first coherent baseline, but remain open to
 - Initial built-ins are `print`, `len`, and `range`.
 - Execution is bounded by a configurable statement/iteration limit to prevent accidental runaway loops.
 - Object/list mutation and assignment to nested properties or indexes are not implemented yet.
+
+
+### Decisions made for the completion pass (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Project entry | A project contains `oru.config` and one or more `.oru` page files; `index.oru` is the default route. | The CLI discovers pages from the project root and maps relative paths to browser routes. |
+| Route output | `index.oru` maps to `/`; `about.oru` maps to `/about`; `pages/help.oru` maps to `/pages/help`. | Page references use extensionless relative paths; route traversal and duplicate routes are build errors. |
+| Page metadata | A page begins with `metadata:` and indented `title:`, `description:`, and optional `language:` fields, followed by `page:`. | Metadata is separated from the widget tree and emitted into the browser document shell. |
+| UI tree | UI is declared under `page:` using nested `column`, `row`, `box`, and `text` widgets. | Widget/property parsing is distinct from general-purpose statements, sharing the same expression evaluator. |
+| Styling | Widget properties use `property: value`; reusable style classes are named declarations and applied with `class: Name`. | Style values are validated against widget/property definitions and inherited only where explicitly supported. |
+| Navigation | `link("route")` is a navigation widget; route names are extensionless project-relative paths. | The runtime handles internal navigation without a full page reload and supports browser back/forward. |
+| Events | Event properties use `on.click: functionName`; event handlers are ordinary `func` functions. | Event dispatch calls the language runtime and schedules a reactive render. |
+| State | `state name = value` declares page-local state; `global name = value` declares app-wide state. | State values are observable, type-stable, and persist for the current browser session; durable storage is not implicit. |
+| Imports | `import module.path` imports a module; `from module.path import Name` imports named exports. | Imports resolve relative to the importing file, must stay inside the project, and cycles are rejected initially. |
+| Renderer | ORU renders its own widget tree to Canvas 2D, with a hidden accessible DOM layer for keyboard, focus, and assistive technology support. | Canvas remains the visual backend without sacrificing basic browser accessibility. |
+| Browser boundary | ORU exposes a small explicit browser API for navigation, clipboard, and network requests; raw arbitrary JavaScript execution is not a language feature. | Browser capabilities are permission- and context-aware rather than silently injected into every script. |
+| Build model | ORU 1.0 is a client-side browser application compiler/runtime; server APIs and database hosting are outside the 1.0 compiler scope. | Applications may call external APIs, but secrets and privileged operations must remain on a separately secured backend. |
+
+### Completion roadmap
+
+1. Harden the core interpreter: source locations, assignment/mutation, predictable scopes, diagnostics, and test coverage.
+2. Implement project/page parsing, metadata, widget trees, style classes, and route validation.
+3. Implement safe module resolution and exports.
+4. Implement reactive local/global state and event dispatch.
+5. Implement Canvas 2D layout, text, shapes, images, hit testing, navigation, and accessible DOM semantics.
+6. Integrate the CLI project workflow, development server, production build, and asset handling.
+7. Add documentation, examples, compatibility tests, security review, and release checklist.
+
+These decisions define the implementation direction for this completion pass. Any syntax refinement must be recorded here before its implementation.
