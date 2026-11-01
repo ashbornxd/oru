@@ -1,4 +1,5 @@
 import { lstat, readFile, readdir } from "node:fs/promises";
+import type { Dirent } from "node:fs";
 import { dirname, join, normalize, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { OruError } from "./ast.js";
@@ -33,14 +34,14 @@ async function validateConfig(root: string): Promise<void> {
 
 async function validateAssetTree(root: string): Promise<void> {
   const assetRoot = join(root, "assets");
-  let entries;
+  let entries: Dirent[];
   try {
     entries = await readdir(assetRoot, { withFileTypes: true });
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
     throw error;
   }
-  const inspect = async (directory: string, children: typeof entries): Promise<void> => {
+  const inspect = async (directory: string, children: Dirent[]): Promise<void> => {
     for (const entry of children) {
       const path = join(directory, entry.name);
       if (entry.isSymbolicLink()) throw new OruError("Asset directories cannot contain symbolic links: " + relative(root, path) + ".");
