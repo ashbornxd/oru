@@ -28,3 +28,9 @@ test("rejects loop control outside loops and enforces execution limits", () => {
   assert.throws(() => run("break"), /only be used inside a loop/);
   assert.throws(() => run("while true:\n    print(1)", { maxSteps: 10 }), /limit exceeded/);
 });
+
+test("exposes page functions for event-driven invocation", () => {
+  const program = run('count = 1\nfunc increment(amount):\n    count = count + amount\n    return count');
+  assert.equal(program.call("increment", 2), 3);
+  assert.equal(program.getGlobals().count, 3);
+});
