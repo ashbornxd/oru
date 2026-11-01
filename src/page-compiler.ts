@@ -297,7 +297,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
               if (value !== null) app.set(node.binding, value);
               persistGlobals();
               render();
-              const replacement = controls.querySelector("[data-oru-control=\"" + regionIndex + "\"]");
+              const replacement = controls.querySelector("[data-oru-control=\\\"" + regionIndex + "\\\"]");
               if (replacement) {
                 replacement.focus();
                 if (typeof start === "number" && typeof end === "number" && typeof replacement.setSelectionRange === "function") replacement.setSelectionRange(start, end);
