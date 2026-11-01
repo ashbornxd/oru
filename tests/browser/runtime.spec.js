@@ -15,12 +15,18 @@ test.beforeAll(async () => {
   await writeFile(join(root, "index.oru"), `logic:
     state selected = ""
     state submitted = false
+    state passwordValue = ""
+    state confirmation = ""
+    state verified = false
     func submit():
         submitted = true
+    func verify():
+        verified = true
 page:
     column:
         text(selected)
         text(submitted)
+        text(verified)
         row:
             wrapAt: 600
             mainAlign: spaceBetween
@@ -38,6 +44,21 @@ page:
                 required: true
                 label: Choose a file
             button("Send")
+        form:
+            label: Password verification
+            on.submit: verify
+            validationSummary: true
+            input(passwordValue):
+                type: password
+                required: true
+                label: Password
+            input(confirmation):
+                type: password
+                required: true
+                matches: passwordValue
+                validationMessage: "Passwords must match."
+                label: Confirm password
+            button("Verify")
 `);
 
   const output = await compileProject(root);
@@ -138,5 +159,30 @@ test("reflows aligned controls across desktop and mobile widths", async ({ page 
     return Boolean(firstBox && secondBox && secondBox.y > firstBox.y);
   }).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+
+test("validates matching fields and announces a form error summary", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto(baseURL);
+
+  const password = page.getByLabel("Password");
+  const confirmation = page.getByLabel("Confirm password");
+  const verify = page.locator('#oru-controls button[aria-label="Verify"]');
+  await password.fill("correct-value");
+  await confirmation.fill("different-value");
+  await verify.click();
+
+  const summary = page.locator('#oru-controls [role="alert"]');
+  await expect(summary).toBeVisible();
+  await expect(summary).toContainText("Confirm password");
+  await expect(page.locator("#oru-semantic")).toContainText("false");
+
+  await confirmation.fill("correct-value");
+  await verify.click();
+  await expect(page.locator("#oru-semantic")).toContainText("true");
   expect(errors).toEqual([]);
 });
