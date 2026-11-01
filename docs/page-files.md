@@ -56,6 +56,8 @@ page:
 
 Use `state name = value` for page-local state. Bind a `text` or `button` label with an unquoted variable name, such as `text(count)`. After a click handler completes, the page redraws using the latest variable values. This initial binding supports a single variable name, not arbitrary expressions.
 
+Use `global name = value` for values shared by pages. ORU keeps these values in the current browser tab session and restores them when another page loads. Page-local `state` variables are not shared and start from their initial values on each page load.
+
 ## Widget tree
 
 The page body is a nested widget tree. Four spaces represent one nesting level.
@@ -111,7 +113,7 @@ The build writes static HTML files into `dist/` and copies an optional `assets/`
 
 The development compiler emits a browser page shell with a Canvas 2D renderer and a parallel semantic DOM layer for focusable controls. The initial renderer handles basic text, box, column, row, image, link, button, and input presentation. Page-local `logic:` blocks run through the ORU interpreter, and button `on.click` handlers invoke named ORU functions.
 
-This is an early vertical slice, not the finished ORU 1.0 runtime. Cross-page global state, modules/imports, reusable style classes, form submission/validation, advanced responsive layout, and full keyboard/assistive-technology behavior are not complete yet. Do not use it for production applications until those features and the security/browser test suites are finished.
+This is an early vertical slice, not the finished ORU 1.0 runtime. Modules/imports, reusable style classes, form submission/validation, advanced responsive layout, and full keyboard/assistive-technology behavior are not complete yet. Do not use it for production applications until those features and the security/browser test suites are finished.
 
 ## Reactive page-local state
 
