@@ -214,7 +214,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     for (const node of formNodes) {
       const form = document.createElement("form");
       form.id = formIds.get(node);
-      form.style.display = "contents";
+      form.style.cssText = "position:absolute;inset:0;pointer-events:none;";
       form.addEventListener("submit", event => {
         event.preventDefault();
         try {
@@ -256,8 +256,8 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         if (node.properties.minLength !== undefined) el.minLength = Number(node.properties.minLength);
         if (node.binding && app) {
           el.value = textOf(node);
-          el.addEventListener("change", () => {
-            try { app.set(node.binding, el.value); persistGlobals(); render(); }
+          el.addEventListener("input", () => {
+            try { app.set(node.binding, el.value); persistGlobals(); }
             catch (error) { console.error("ORU input binding failed:", error); }
           });
         }
