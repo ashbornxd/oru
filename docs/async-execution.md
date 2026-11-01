@@ -34,12 +34,25 @@ async func showProfile():
 
 Parser tests: async declarations, await precedence and grouping, invalid await placement.
 
-Runtime tests: host promises, async-to-async calls, return values, rejected promises, step limits, and page/global state after suspension.
+Runtime tests: host promises, async-to-async calls, mixed sync/async calls, nested call arguments and grouped awaits, left-to-right list/argument evaluation, logical short-circuiting, return values, early returns after suspension, rejected promises, step limits, source-line diagnostics, and restored page/global state.
 
 Browser tests: async click and form handlers, state persistence after completion, repeated interactions, and rejected handler reporting.
 
 ## Current implementation boundary
 
- The interpreter exposes `runAsync(source, options)` and `callAsync(name, ...args)`. Host capabilities are supplied through the explicit `asyncFunctions` option. It supports async function declarations, sequential awaitable calls, return values, local/global/state assignments, conditionals, loops, and the execution-step ceiling. Lists and function arguments evaluate left-to-right; awaits are not implicitly parallelized. The legacy `run()` / `call()` path remains synchronous and gives an explicit error if an async function is invoked there. The `oru eval <file>` CLI command uses the async interpreter, so local async functions can be executed from scripts.
+The interpreter exposes `runAsync(source, options)` and `callAsync(name, ...args)`. Host capabilities are supplied through the explicit `asyncFunctions` option. It supports async function declarations, sequential awaitable calls, return values, local/global/state assignments, conditionals, loops, and the execution-step ceiling. Lists and function arguments evaluate left-to-right; awaits are not implicitly parallelized. The legacy `run()` / `call()` path remains synchronous and gives an explicit error if an async function is invoked there. The `oru eval <file>` CLI command uses the async interpreter, so local async functions can be executed from scripts.
 
 Browser event dispatch awaits async handlers before persisting state and rerendering. Rejected handlers are caught and surfaced through an accessible alert. The remaining verification work is the full parser/runtime edge-case matrix, broader async form workflows, accessibility review, security/performance review, and real-device testing.
+
+
+## Expanded compatibility coverage
+
+The interpreter suite now covers:
+- Synchronous functions called from asynchronous functions, and asynchronous functions awaited through nested calls.
+- Await expressions inside call arguments and grouped arithmetic expressions.
+- Sequential list items and function arguments, plus short-circuit behavior for `and` and `or`.
+- Global restoration, nested global writes, early returns after suspension, rejected host promises, and statement-line diagnostics.
+
+The Playwright suite covers asynchronous form submission and click completion, state persistence before rerender, and accessible reporting of rejected handlers.
+
+These automated tests are necessary but do not certify WCAG conformance, screen-reader behavior, security, performance, or real-device compatibility. Those still require independent/manual review before a stable 1.0 release.
