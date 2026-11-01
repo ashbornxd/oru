@@ -170,5 +170,5 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
   for (const [name, properties] of Object.entries(classes)) {
     if (Object.keys(properties).length === 0) throw new OruError("Style class is empty: " + name);
   }
-  return { metadata, widgets, logic: logicLines.join("\n"), sourcePath };
+  return { metadata, classes, widgets, logic: logicLines.join("\n"), sourcePath };
 }
