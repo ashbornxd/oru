@@ -74,7 +74,10 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Agreed variable behavior:** `name = pass` declares an uninitialized variable. Its type is inferred from the first non-`pass` value assigned to it. Later assignments must match that established type; incompatible assignments produce an error. Reading the variable before its first value is assigned produces an error.
 - **Agreed file/page model:** Each `.oru` file contains exactly one page, and each page file can define its own metadata such as title and description.
 - **Agreed page references:** Refer to a page using its relative file path without the `.oru` extension: `index`, `help`, or `pages/help`.
-- **Still to design:** The exact navigation syntax and how these page references map to browser URLs.
+- **Agreed UI composition direction:** Build page content with a nested, declarative widget tree inspired by Flutter, but with ORU's own syntax and API.
+- **Agreed comment syntax direction:** Use triple double quotes (`\"\"\" ... \"\"\"`) for comments. Exact placement and multiline parsing rules remain open.
+- **Illustrative syntax proposal (not a complete specification):** The user's example establishes the intended feel: `page:` contains layout widgets such as `column` and `row`; widgets may have optional names; properties are indented under widgets; text and links can be nested; and triple-quoted notes can appear inline to explain behavior.
+- **Still to design:** Exact navigation syntax and URL mapping; widget/property grammar; asset path syntax; class/style definitions; units and color literal rules; and the behavior/semantics of `anchor`.
 - **Illustrative example:** `name = pass`, then `name = "kunal"` establishes it as a string; `name = 20` afterward is a type error.
 - **Superseded proposal:** Explicit declarations such as `string name = pass` are no longer the chosen variable syntax.
 - **Still to design:** Exact type set, inference rules, operators, expressions, functions, control flow, input conversion, and error timing. Do not assume Python's existing `pass` semantics.
