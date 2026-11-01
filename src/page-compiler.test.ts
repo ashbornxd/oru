@@ -150,3 +150,43 @@ page:
 `);
   assert.throws(() => compilePage(click, routeForPage("index.oru"), { index: "/" }), /use on.submit/);
 });
+
+
+test("builds a scrollable responsive page and accessible semantic content", () => {
+  const page = parsePage(`page:
+    column:
+        text("Accessible title")
+        row:
+            text("Left")
+            text("Right")
+        image("assets/logo.png", "ORU logo")
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('<canvas aria-hidden="true"></canvas>'));
+  assert.ok(html.includes('id="oru-semantic"'));
+  assert.ok(html.includes('item.textContent = textOf(node)'));
+  assert.ok(html.includes('item.alt = String(node.text ?? "")'));
+  assert.ok(html.includes('const contentHeight = data.page.widgets.reduce'));
+  assert.ok(html.includes('controls.style.height = pageHeight + "px"'));
+  assert.ok(html.includes('width >= px(p.wrapAt, 560)'));
+});
+
+test("supports native input constraints and disabled controls", () => {
+  const page = parsePage(`logic:
+    state age = ""
+page:
+    input(age):
+        type: number
+        required: true
+        min: 1
+        max: 99
+        step: 1
+        disabled: true
+    button("Continue"):
+        disabled: true
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('el.disabled = true'));
+  assert.ok(html.includes('el[key] = node.properties[key]'));
+  assert.ok(html.includes('for (const key of ["min", "max", "step", "maxLength", "minLength", "name"])'));
+});
