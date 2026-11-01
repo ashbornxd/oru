@@ -167,5 +167,8 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
   }
   if (!sawPage) throw new OruError("Every .oru file must contain a page: block.");
   if (widgets.length === 0) throw new OruError("A page must contain at least one widget.");
+  for (const [name, properties] of Object.entries(classes)) {
+    if (Object.keys(properties).length === 0) throw new OruError("Style class is empty: " + name);
+  }
   return { metadata, widgets, logic: logicLines.join("\n"), sourcePath };
 }
