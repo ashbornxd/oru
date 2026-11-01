@@ -269,4 +269,9 @@ test("does not overwrite supplied globals in nested top-level control flow", asy
     global theme = "default"
 `, { initialGlobals: { theme: "custom" } });
   assert.equal(program.getGlobalState().theme, "custom");
+
+  const loop = await runAsync(`for item in [1, 2]:\n    global theme = "default"\n`, {
+    initialGlobals: { theme: "custom" }
+  });
+  assert.equal(loop.getGlobalState().theme, "custom");
 });
