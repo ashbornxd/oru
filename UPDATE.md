@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and click handlers, basic reactive bindings, session-scoped cross-page global state, reusable style classes, cross-file style-class imports, and native form submission with browser constraint validation. Still open: general-purpose function/value modules, advanced form controls, responsive layout, accessibility parity, asset/security hardening, and comprehensive browser integration testing.
+**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, responsive row wrapping, scrollable pages, and a semantic text/image layer with native keyboard-operable controls. Still open: advanced form controls and custom validation, advanced layout primitives, full WCAG conformance, asset/security hardening, browser integration testing, and final release validation.
 
 ## Vision
 
@@ -432,3 +432,37 @@ Implemented on `oru-1.0.0-dev`:
 |---|---|---|
 | Logic modules | Extend the existing `from module import name` syntax to import top-level functions and plain values from another `.oru` file, in addition to style classes. A module export is a top-level `func name(...):` declaration or a top-level `name = value` declaration. | Imported declarations are composed into the importing page's logic before its own logic. Imports are explicit and named. Page-local `state`/`global` declarations and executable top-level statements are not importable exports. Namespace imports remain style-class-only in 1.0; named imports avoid implicit symbol leakage and keep the runtime simple. |
 
+
+
+### Milestone 12 — Responsive and accessible browser rendering
+
+Implemented on `oru-1.0.0-dev`:
+- Rows switch to a vertical layout below 560px by default; a row can override the threshold with `wrapAt`.
+- Canvas height is calculated from measured page content so long pages scroll instead of being clipped at the viewport height.
+- Images are cached and trigger a redraw when loaded; `fit: contain` and `fit: cover` are supported.
+- Canvas content is hidden from assistive technology and a visually hidden semantic tree exposes text and image alternatives.
+- Native DOM buttons, links, inputs, and forms remain keyboard-operable; focus styles work for controls nested in forms.
+- Added native input constraints including disabled/read-only, min/max/step, pattern, autocomplete, and name.
+- Added tests for responsive layout, scroll sizing, semantic content, and native constraints.
+
+**Still incomplete:** full WCAG conformance, richer layout/alignment/positioning, custom breakpoints/layout primitives, custom validation messages, and real browser/screen-reader testing.
+
+### Milestone 13 — Named function and value imports
+
+Implemented on `oru-1.0.0-dev`:
+- `from module import name` now imports named top-level functions and plain values in addition to style classes.
+- Imported declarations are composed before the importing page's own logic, so functions can be called and values can be used in state initialization and UI bindings.
+- Imports reject missing exports, state/global exports, ambiguous class/logic names, and collisions with local or previously imported declarations.
+- Modules continue to be ordinary `.oru` page files; namespace imports remain style-class-only in 1.0.
+- Added project build tests for successful function/value imports and invalid imports.
+
+**Still incomplete:** namespace logic imports, external package imports, module-level immutable constants, and cyclic dependency diagnostics beyond the existing cycle rejection.
+
+### Milestone 14 — Reactive input updates
+
+- Bound inputs update the interpreter on each input event.
+- The renderer redraws dependent text and other widgets immediately while restoring the focused input and caret position.
+- Numeric and range inputs preserve number-typed state; empty numeric values do not overwrite the last valid state.
+- Input redraws retain form ownership and do not interrupt normal typing.
+
+**Verification note:** the latest responsive, import, and reactive-input changes require a fresh GitHub Actions run before they can be called verified. No npm 1.0 release has been published.
