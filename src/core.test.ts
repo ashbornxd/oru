@@ -327,13 +327,13 @@ test("awaits nested call arguments and grouped expressions correctly", async () 
   assert.equal(await program.callAsync("calculate"), 11);
 });
 
-test("preserves state when an async function returns early after awaiting", async () => {
-  const program = await runAsync(`state status = "idle"
+test("preserves global state when an async function returns early after awaiting", async () => {
+  const program = await runAsync(`global status = "idle"
 async func finish():
-    status = await getStatus()
+    global status = await getStatus()
     return status
-    status = "unreachable"
+    global status = "unreachable"
 `, { asyncFunctions: { getStatus: async () => "complete" } });
   assert.equal(await program.callAsync("finish"), "complete");
-  assert.equal(program.getGlobalState().status, undefined);
+  assert.equal(program.getGlobalState().status, "complete");
 });
