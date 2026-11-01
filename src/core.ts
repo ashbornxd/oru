@@ -287,7 +287,7 @@ class BreakSignal {}
 class ContinueSignal {}
 
 export interface RunOptions { output?: (value: OruValue) => void; maxSteps?: number }
-export interface RunResult { output: OruValue[]; globals: Record<string, OruValue> }
+export interface RunResult { output: OruValue[]; globals: Record<string, OruValue>; call(name: string, ...args: OruValue[]): OruValue; getGlobals(): Record<string, OruValue> }
 
 export function run(source: string, options: RunOptions = {}): RunResult {
   const statements = new StatementParser(prepareLines(source)).parse();
@@ -447,5 +447,5 @@ export function run(source: string, options: RunOptions = {}): RunResult {
     return null;
   };
   executeBlock(statements, global);
-  return { output, globals: global.snapshot() };
+  return { output, globals: global.snapshot(), call: (name, ...args) => invokeFunction(name, args, 0), getGlobals: () => global.snapshot() };
 }
