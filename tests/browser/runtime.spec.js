@@ -209,8 +209,8 @@ test("validates matching fields and announces a form error summary", async ({ pa
 test("keeps native controls keyboard reachable with visible focus and a labelled group", async ({ page }) => {
   await page.goto(baseURL);
   const group = page.getByRole("group", { name: "Page controls" });
-  const first = page.locator('#oru-controls button[aria-label="First"]');
-  const second = page.locator('#oru-controls button[aria-label="Second"]');
+  const first = page.locator('#oru-controls button[aria-label="Async action"]');
+  const second = page.locator('#oru-controls button[aria-label="Fail action"]');
   await expect(group).toHaveCount(1);
   await page.keyboard.press("Tab");
   await expect(first).toBeFocused();
