@@ -282,7 +282,9 @@ class Environment {
     return this.values.has(name) || Boolean(this.parent?.has(name));
   }
   snapshot(): Record<string, OruValue> {
-    const result: Record<string, OruValue> = {};
+    // A null-prototype record keeps user-controlled names such as "__proto__"
+    // as ordinary data instead of invoking Object.prototype setters.
+    const result = Object.create(null) as Record<string, OruValue>;
     for (const [name, binding] of this.values) if (binding.initialized) result[name] = binding.value!;
     return result;
   }
