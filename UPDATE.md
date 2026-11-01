@@ -289,3 +289,15 @@ Implemented on `oru-1.0.0-dev`:
 - Fixed leaf widget parsing so simple widgets such as `text("Hello")` do not require a trailing colon.
 
 **Known limitations still open:** the renderer is a basic first slice. ORU-language event functions are not connected to controls; state and reactivity, module imports, reusable style classes, full form validation/submission, robust responsive layout, complete accessibility, asset URL hardening, and broad browser/security tests remain unfinished. The current UI should be treated as experimental.
+
+
+### Milestone 4 — Page-local logic and click handlers
+
+Implemented on `oru-1.0.0-dev`:
+- Added an optional `logic:` block to page files; its contents are parsed as general ORU code.
+- Exposed callable functions and live global snapshots from the core interpreter.
+- Connected button `on.click: functionName` properties to functions declared in that page's logic block.
+- Added local browser module imports for the ORU interpreter and its error type; the project build packages these files under `_oru/` only when page logic is used.
+- Added tests for function invocation, page logic compilation, and nested-route interpreter paths.
+
+**Still missing:** reactive state declarations and bindings, global state, modules/imports, reusable style-class semantics, full form handling, and complete renderer/accessibility/security validation. Calling a handler currently runs ORU code and can produce console output; changing a variable does not yet automatically update text or layout.
