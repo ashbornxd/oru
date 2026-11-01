@@ -55,6 +55,7 @@ Add decisions below in chronological order. Include the date, the decision, its 
 | --- | --- | --- | --- |
 | 2026-11-01 | Runtime target | ORU 1.0 applications must run in ordinary web browsers. A separate ORU desktop/mobile runtime is not required for 1.0. | Browser reach is the delivery target. The ORU runtime and renderer will execute within the browser, with compatibility across major browsers as a requirement. |
 | 2026-11-01 | Renderer backend | Use Canvas 2D as the drawing backend for the ORU 1.0 renderer. | It provides a simpler foundation for a UI-focused renderer: text, shapes, images, layouts, and interactions. Keep the renderer architecture modular so a different backend, potentially WebGL, can be explored later if justified. |
+| 2026-11-01 | Uninitialized variables | A variable declared with `pass` has no value until it is explicitly assigned. Reading it before assignment must produce a clear runtime error. | Avoids silently inventing default values and makes missing data easier to detect. The exact type-checking and compile-time versus runtime diagnostics still need design. |
 
 ## Open planning areas
 
