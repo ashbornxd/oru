@@ -10,6 +10,8 @@ logic:
     state topic = "website"
     state message = ""
     state attachment = ""
+    state password = ""
+    state confirmation = ""
     state status = "This form runs locally. Nothing is sent."
     func validateDemo():
         if len(email) > 3 and len(message) >= 8:
@@ -50,8 +52,21 @@ page:
                 textarea(message):
                     required: true
                     minLength: 8
+                    maxLength: 400
                     rows: 5
                     label: Project description
+                    class: FieldStyle
+                input(password):
+                    type: password
+                    required: true
+                    label: Demo passphrase
+                    class: FieldStyle
+                input(confirmation):
+                    type: password
+                    required: true
+                    matches: password
+                    validationMessage: "Passphrases must match."
+                    label: Confirm passphrase
                     class: FieldStyle
                 input(attachment):
                     type: file
