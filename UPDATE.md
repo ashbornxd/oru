@@ -52,7 +52,7 @@ Add decisions below in chronological order. Include the date, the decision, its 
 
 | Date | Area | Agreed decision | Reason / consequences |
 | --- | --- | --- | --- |
-| — | — | No decisions yet. | Planning has just started. |
+| 2026-11-01 | Runtime target | ORU 1.0 websites must run in ordinary web browsers, rather than requiring a separate ORU desktop/mobile runtime. | Browser compatibility is a core requirement. ORU will provide its own rendering model inside the browser; the exact rendering backend and browser support matrix remain to be designed. |
 
 ## Open planning areas
 
@@ -76,6 +76,8 @@ Work through these together. An item is not a decision until we explicitly agree
 - Accessibility and internationalization.
 
 ### 4. Runtime and architecture
+- **Agreed:** ORU 1.0 applications target ordinary web browsers; a separate non-browser runtime is not a 1.0 requirement.
+- **Direction to design:** ORU should own its UI rendering model instead of translating its interface into HTML/CSS layouts. A browser-supported drawing backend (for example, Canvas 2D or WebGL) is a possible implementation, not yet a final technical decision.
 - Compiler output and browser runtime responsibilities.
 - Whether ORU is static-only, full-stack, or supports a clearly defined combination.
 - Build targets, development server, production server/hosting expectations.
