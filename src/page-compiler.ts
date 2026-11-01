@@ -13,8 +13,8 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   box: new Set(["background", "padding", "radius", "width", "height", "gap"]),
   form: new Set(["background", "padding", "radius", "width", "height", "gap"]),
   text: new Set(["color", "size", "weight", "font", "line", "align"]),
-  button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled"]),
-  link: new Set(["color", "size", "weight", "decoration"]),
+  button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color"]),
+  link: new Set(["color", "size", "weight", "decoration", "underline"]),
   image: new Set(["width", "height", "fit", "radius"]),
   input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "name"])
 };
@@ -52,6 +52,17 @@ function validateForms(widget: PageWidget, functions: Set<string>, insideForm = 
     throw new OruError("Buttons inside a form submit the form; use on.submit on the form instead.", widget.line);
   }
   for (const child of widget.children) validateForms(child, functions, insideForm || widget.type === "form");
+}
+function validateEvents(widget: PageWidget, functions: Set<string>): void {
+  if (widget.type === "button" || widget.type === "link") {
+    for (const event of ["on.click", "on.hover", "on.active", "on.leave"]) {
+      const handler = widget.properties[event];
+      if (handler !== undefined && (typeof handler !== "string" || !functions.has(handler))) {
+        throw new OruError(event + " must reference a function declared in logic:.", widget.line);
+      }
+    }
+  }
+  for (const child of widget.children) validateEvents(child, functions);
 }
 function validateBindings(widget: PageWidget, declared: Set<string>, globals: Set<string>): void {
   if (widget.binding && !declared.has(widget.binding)) throw new OruError("Bound widget variable must be declared with state or global: " + widget.binding, widget.line);
@@ -96,6 +107,8 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
   const collectForms = node => { if (node.type === "form") { formIds.set(node, "oru-form-" + (formNodes.length + 1)); formNodes.push(node); } node.children.forEach(collectForms); };
   data.page.widgets.forEach(collectForms);
   let regions = [];
+  let hoveredNode = null;
+  let activeNode = null;
   const px = (value, fallback) => {
     if (typeof value === "number") return value;
     if (typeof value !== "string") return fallback;
@@ -117,16 +130,17 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     const gap = px(p.gap, 12);
     if (type === "text" || type === "button" || type === "link") {
       ctx.font = (p.weight ?? "400") + " " + px(p.size, 18) + "px " + (p.font ?? "system-ui");
+      const iconSpace = type === "button" && p.icon ? 28 : 0;
       const words = textOf(node).split(/\\s+/);
       let line = "", lines = [];
       for (const word of words) {
         const next = line ? line + " " + word : word;
-        if (ctx.measureText(next).width > Math.max(40, width - padding * 2) && line) {
+        if (ctx.measureText(next).width > Math.max(40, width - padding * 2 - iconSpace) && line) {
           lines.push(line); line = word;
         } else line = next;
       }
       if (line) lines.push(line);
-      return { width, height: Math.max(24, lines.length * px(p.line, px(p.size, 18) * 1.4) + padding * 2), lines };
+      return { width, height: Math.max(type === "button" && p.icon ? 44 : 24, lines.length * px(p.line, px(p.size, 18) * 1.4) + padding * 2), lines };
     }
     if (type === "image") return { width, height: px(p.height, 180), lines: [] };
     if (type === "input") return { width, height: px(p.height, 44), lines: [] };
@@ -149,7 +163,14 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     const padding = px(p.padding, 0), gap = px(p.gap, 12);
     const w = Math.min(maxWidth, px(p.width, box.width));
     const h = px(p.height, box.height);
-    const bg = p.background ?? p.color;
+    const disabled = node.type === "button" && p.disabled === true;
+    const baseBackground = p.background ?? (node.type === "button" ? "#eeeeee" : p.color);
+    const bg = node.type === "button"
+      ? disabled ? p["disabled.background"] ?? "#e5e5e5"
+        : node === activeNode ? p["active.background"] ?? baseBackground
+        : node === hoveredNode ? p["hover.background"] ?? baseBackground
+        : baseBackground
+      : baseBackground;
     if ((bg || node.type === "button") && ["box", "column", "row", "form", "button"].includes(node.type)) {
       ctx.fillStyle = String(bg ?? "#eeeeee");
       const radius = Math.max(0, px(p.radius, 0));
@@ -158,11 +179,29 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     if (node.type === "text" || node.type === "button" || node.type === "link") {
       const size = px(p.size, 18);
       ctx.font = (p.weight ?? (node.type === "button" ? "600" : "400")) + " " + size + "px " + (p.font ?? "system-ui");
-      ctx.fillStyle = color(node, "text.color", color(node, "color", "#202124"));
+      const defaultTextColor = disabled ? "#777777" : "#202124";
+      const textColor = node.type === "button"
+        ? disabled ? p["disabled.color"] ?? defaultTextColor
+          : node === activeNode ? p["active.color"] ?? color(node, "text.color", color(node, "color", defaultTextColor))
+          : node === hoveredNode ? p["hover.color"] ?? color(node, "text.color", color(node, "color", defaultTextColor))
+          : color(node, "text.color", color(node, "color", defaultTextColor))
+        : color(node, "text.color", color(node, "color", defaultTextColor));
+      ctx.fillStyle = String(textColor);
       ctx.textBaseline = "top";
+      const iconSource = node.type === "button" ? String(p.icon ?? "") : "";
+      if (iconSource) {
+        let icon = imageCache.get(iconSource);
+        if (!icon) { icon = new Image(); icon.onload = () => render(); icon.onerror = () => console.error("ORU button icon could not be loaded:", iconSource); imageCache.set(iconSource, icon); icon.src = iconSource; }
+        if (icon.complete && icon.naturalWidth > 0) ctx.drawImage(icon, x + padding, y + padding, 20, 20);
+      }
+      const align = ["left", "center", "right"].includes(String(p.align)) ? String(p.align) : "left";
+      ctx.textAlign = align;
+      const textOffset = padding + (iconSource ? 28 : 0);
+      const textX = align === "center" ? x + w / 2 : align === "right" ? x + w - padding : x + textOffset;
       const lineHeight = px(p.line, size * 1.4);
-      box.lines.forEach((line, i) => ctx.fillText(line, x + padding, y + padding + i * lineHeight, Math.max(20, w - padding * 2)));
-      if (node.type === "link") ctx.fillRect(x + padding, y + h - 2, Math.min(w - padding * 2, ctx.measureText(textOf(node)).width), 1);
+      box.lines.forEach((line, i) => ctx.fillText(line, textX, y + padding + i * lineHeight, Math.max(20, w - padding * 2 - (iconSource ? 28 : 0))));
+      ctx.textAlign = "left";
+      if (node.type === "link" && p.underline !== false && p.decoration !== "none") ctx.fillRect(x + padding, y + h - 2, Math.min(w - padding * 2, ctx.measureText(textOf(node)).width), 1);
       if (node.type === "button" || node.type === "link") regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
@@ -271,7 +310,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       } else {
         el.style.opacity = ".001";
       }
-      el.setAttribute("aria-label", textOf(node) || String(node.properties.placeholder ?? node.type));
+      el.setAttribute("aria-label", textOf(node) || String(node.properties.alt ?? node.properties.placeholder ?? node.type));
       if (node.type === "link") {
         const route = String(node.route ?? node.properties.route ?? "");
         el.href = Object.prototype.hasOwnProperty.call(data.routes, route) ? data.routes[route] : "#";
@@ -341,7 +380,7 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const declaredBindings = new Set([...page.logic.matchAll(/^(?:(?:state|global)\s+)?([A-Za-z_]\w*)\s*=/gm)].map(match => match[1]!));
   const globalBindings = new Set([...page.logic.matchAll(/^global\s+([A-Za-z_]\w*)\s*=/gm)].map(match => match[1]!));
   const declaredFunctions = new Set([...page.logic.matchAll(/\bfunc\s+([A-Za-z_]\w*)\s*\(/g)].map(match => match[1]!));
-  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings, globalBindings); validateForms(widget, declaredFunctions); }
+  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings, globalBindings); validateForms(widget, declaredFunctions); validateEvents(widget, declaredFunctions); }
   const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
