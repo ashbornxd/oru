@@ -92,7 +92,9 @@ Work through these together. An item is not a decision until we explicitly agree
 - Imports, project organization, and code reuse.
 
 ### 3. Application capabilities
-- User interaction, events, forms, validation, and client-side state.
+- **Agreed direction:** Support UI events and interaction states, including button click, hover, active, and disabled states. Buttons may contain text or images.
+- **Agreed direction:** Provide form and input widgets for ordinary text and sensitive values such as passwords, with configurable constraints such as letters-only or numbers-only. Password inputs conceal entered characters; actual secure handling and validation rules must be designed explicitly.
+- User interaction, event syntax, forms, validation, and client-side state.
 - Data fetching, APIs, authentication integration, and server-side capabilities.
 - Routing, navigation, loading/error states, and application lifecycle.
 - Accessibility and internationalization.
