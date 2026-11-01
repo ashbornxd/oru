@@ -50,17 +50,14 @@ async function createProject(name: string): Promise<void> {
   }
 
   const target = resolve(name);
-  await mkdir(target, { recursive: true });
-
+  await mkdir(target);
   try {
-    await access(join(target, "oru.config"));
-    throw new Error(`"${name}" already contains an ORU project. Nothing was changed.`);
+    await writeFile(join(target, "oru.config"), `name: "${name}"\n`, { flag: "wx" });
+    await writeFile(join(target, "index.oru"), STARTER, { flag: "wx" });
   } catch (error) {
-    if (error instanceof Error && error.message.includes("already contains")) throw error;
+    await rm(target, { recursive: true, force: true });
+    throw error;
   }
-
-  await writeFile(join(target, "oru.config"), `name: "${name}"\n`, { flag: "wx" });
-  await writeFile(join(target, "index.oru"), STARTER, { flag: "wx" });
   console.log(`Created ${name}/ with oru.config and index.oru`);
   console.log(`Next: cd ${name} && oru run dev`);
 }
@@ -125,7 +122,16 @@ const mimeTypes: Record<string, string> = {
   ".ico": "image/x-icon",
   ".woff": "font/woff",
   ".woff2": "font/woff2",
-  ".ttf": "font/ttf"
+  ".ttf": "font/ttf",
+  ".otf": "font/otf",
+  ".avif": "image/avif",
+  ".bmp": "image/bmp",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".json": "application/json; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
+  ".pdf": "application/pdf",
+  ".wasm": "application/wasm"
 };
 
 async function runDev(port: number): Promise<void> {
@@ -134,18 +140,21 @@ async function runDev(port: number): Promise<void> {
   }
 
   let building = false;
+  let pendingBuild = false;
 
   const rebuild = async () => {
-    if (building) return;
+    if (building) { pendingBuild = true; return; }
     building = true;
-    try {
-      await build("dist");
-      console.log("Ready for preview.");
-    } catch (error) {
-      console.error(error instanceof Error ? error.message : error);
-    } finally {
-      building = false;
-    }
+    do {
+      pendingBuild = false;
+      try {
+        await build("dist");
+        console.log("Ready for preview.");
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+      }
+    } while (pendingBuild);
+    building = false;
   };
 
   await rebuild();
@@ -153,16 +162,21 @@ async function runDev(port: number): Promise<void> {
 
   createServer(async (request, response) => {
     try {
-      const pathname = decodeURIComponent((request.url ?? "/").split("?")[0] ?? "/");
+      if (request.method !== "GET" && request.method !== "HEAD") {
+        response.writeHead(405, { "content-type": "text/plain; charset=utf-8", "allow": "GET, HEAD", "x-content-type-options": "nosniff" });
+        response.end("Method not allowed");
+        return;
+      }
+      const pathname = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname);
       const cleanPath = pathname.split("/").filter(Boolean).join("/");
       const relativePath = !cleanPath ? "index.html" : cleanPath.includes(".") ? cleanPath : join(cleanPath, "index.html");
       const file = resolve(root, relativePath);
       if (file !== root && !file.startsWith(root + sep)) throw new Error("Invalid path");
       const data = await readFile(file);
-      response.writeHead(200, { "content-type": mimeTypes[extname(file)] ?? "application/octet-stream" });
-      response.end(data);
+      response.writeHead(200, { "content-type": mimeTypes[extname(file)] ?? "application/octet-stream", "x-content-type-options": "nosniff", "referrer-policy": "strict-origin-when-cross-origin" });
+      response.end(request.method === "HEAD" ? undefined : data);
     } catch {
-      response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+      response.writeHead(404, { "content-type": "text/plain; charset=utf-8", "x-content-type-options": "nosniff" });
       response.end("Not found");
     }
   }).listen(port, "127.0.0.1", () => {
