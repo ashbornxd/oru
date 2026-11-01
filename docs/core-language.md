@@ -80,4 +80,4 @@ Execution has a configurable statement/iteration limit to guard against accident
 
 ## Current implementation boundary
 
-The TypeScript core interpreter is available internally through `src/core.ts` and is covered by `src/core.test.ts`. It currently implements the language fundamentals above. This is not yet integrated with the per-file page model, imports, reactive state, browser APIs, or the Canvas 2D UI renderer. Those systems remain separate 1.0 milestones and must not be assumed to work yet.
+The TypeScript core interpreter is available through the package subpath `@ashbornxd/oru/language` and the CLI command `oru eval script.oru`. It is covered by `src/core.test.ts`. A script passed to `oru eval` must use the general-purpose language syntax in this document; it is not yet a page file. The core is not yet integrated with the per-file page model, imports, reactive state, browser APIs, or the Canvas 2D UI renderer. Those systems remain separate 1.0 milestones and must not be assumed to work yet.
