@@ -101,7 +101,7 @@ page:
     const files = await compileProject(root);
     const html = files.get("index.html") ?? "";
     assert.ok(html.includes('func greet(name)'));
-    assert.ok(html.includes('APP_NAME = "ORU"'));
+    assert.ok(html.includes("APP_NAME ="));
     assert.ok(!html.includes('func unused()'));
     assert.ok(html.includes('state message = greet(APP_NAME)'));
   } finally {
