@@ -78,15 +78,15 @@ test.afterAll(async () => {
 test("native file selection keeps the FileList for required form submission", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const runtimeErrors = [];
-  page.on("pageerror", error => runtimeErrors.push(error.message));
-  page.on("console", message => { if (message.type() === "error") runtimeErrors.push(message.text()); });
+  page.on("pageerror", error => runtimeErrors.push(error.stack ?? error.message));
+  page.on("console", message => { if (message.type() === "error") runtimeErrors.push(message.text() + " @ " + JSON.stringify(message.location())); });
   const response = await page.goto(baseURL);
   expect(response?.status()).toBe(200);
   expect(response?.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
 
   const file = page.getByLabel("Choose a file");
   const send = page.locator("#oru-controls button");
-  await expect(send, runtimeErrors.join("\\n")).toHaveCount(1);
+  await expect(send, runtimeErrors.join("\\n") || "No browser errors were captured").toHaveCount(1);
   expect(await send.getAttribute("aria-label")).toBe("Send");
   await send.click();
   await expect(page.locator("#oru-semantic")).toContainText("false");
