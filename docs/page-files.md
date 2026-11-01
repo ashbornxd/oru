@@ -102,6 +102,19 @@ page:
         input("Email address"):
 ```
 
+Buttons support `on.click`, `on.hover`, `on.active`, and `on.leave` handlers. State-specific colors can be set with `hover.background`, `active.background`, `disabled.background`, and their matching `.color` properties. Use `disabled: true` to disable a button. A button can show an icon from `assets/` with `icon: "assets/arrow.png"` and an accessible `alt` label.
+
+```oru
+logic:
+    func showHint():
+        print("Continue is ready")
+page:
+    button("Continue"):
+        hover.background: #dddddd
+        active.background: #bbbbbb
+        on.hover: showHint
+```
+
 Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `image`, and `input`.
 
 Widget properties use `:`, not `=`. Values currently parse as strings, numbers, or booleans. Color values and size units remain strings for the renderer.
