@@ -106,6 +106,8 @@ Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `imag
 
 Widget properties use `:`, not `=`. Values currently parse as strings, numbers, or booleans. Color values and size units remain strings for the renderer.
 
+Image sources must be regular files inside `assets/` or HTTPS URLs. The compiler rejects path traversal, missing local files, HTTP/data/file URLs, and symbolic links in the assets tree. HTTPS images are fetched directly by the visitor's browser.
+
 ## Reusable style classes and imports
 
 Declare a reusable page-local style class before `logic:` and `page:`:
