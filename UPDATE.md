@@ -573,9 +573,11 @@ The select-control implementation exposed stale compiler assertions that no long
 
 ### Milestone 22 — Required select placeholders
 
+**Verification: GitHub Actions CI passed on 2026-11-01** (install, `npm test`, and `npm run build`).
+
 - Added optional `placeholder:` support to select controls.
 - The placeholder is emitted as a disabled, empty-value option and is selected only while the bound state is empty.
 - This lets native browser `required` validation correctly reject an untouched dropdown.
 - Canvas preview text shows the placeholder while no value is selected.
 - Added a compiler regression test and updated page syntax documentation.
-- Automated tests/build have not yet been rerun for this milestone.
+- Automated tests and TypeScript build pass on the current development-branch head (`e929f02`).
