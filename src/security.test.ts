@@ -32,8 +32,8 @@ test("creates route-specific Cloudflare Pages headers for root and nested pages"
     ["_oru/core.js", "export const run = () => {};"]
   ]);
   const headers = staticHostingHeaders(files);
-  assert.ok(headers.startsWith("/\\n  Content-Security-Policy:"));
-  assert.ok(headers.includes("/docs/help\\n  Content-Security-Policy:"));
+  assert.ok(headers.startsWith("/" + String.fromCharCode(10) + "  Content-Security-Policy:"));
+  assert.ok(headers.includes("/docs/help" + String.fromCharCode(10) + "  Content-Security-Policy:"));
   assert.ok(headers.includes("X-Frame-Options: DENY"));
   assert.ok(headers.includes("Permissions-Policy: camera=(), microphone=(), geolocation=()"));
   assert.ok(!headers.includes("unsafe-inline"));
