@@ -334,3 +334,15 @@ Implemented on `oru-1.0.0-dev`:
 - CI currently verifies TypeScript compilation and the test suite on the development branch.
 
 Still open for a complete 1.0 release: cross-page global state, imports/modules, reusable style classes, richer expression bindings, form submission lifecycle, full keyboard/screen-reader parity, responsive layout and sizing rules, image loading/error handling, security review, and browser-level integration tests.
+
+### Milestone 6 — Cross-page session global state
+
+Implemented on `oru-1.0.0-dev`:
+- Added `global name = value` declarations to the core language.
+- Added optional initial global values to interpreter startup and a dedicated global-state snapshot API.
+- Separated page-local `state` variables from shared global variables so same-named values do not overwrite each other.
+- The browser runtime restores shared values from the current tab session and saves them after button handlers run.
+- Global initializers only apply when a shared value does not already exist, so navigation does not reset it.
+- Added tests for global state restoration and local/global name isolation.
+
+**Still incomplete:** asynchronous state updates, persistence beyond the current tab session, richer expression bindings, modules/imports, style classes, form workflows, and full accessibility/security/browser validation.
