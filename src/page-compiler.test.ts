@@ -257,3 +257,15 @@ page:
   assert.ok(html.includes('node.properties.label ?? node.properties.placeholder ?? node.binding ?? "Input"'));
   assert.ok(html.includes('if (region.formId && !parent.isConnected) controls.append(parent)'));
 });
+
+test("supports custom native validation messages on inputs", () => {
+  const page = parsePage(`page:
+    input("Email"):
+        type: email
+        required: true
+        validationMessage: "Please enter a valid email address."
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('el.setCustomValidity(message)'));
+  assert.ok(html.includes('node.properties.validationMessage'));
+});
