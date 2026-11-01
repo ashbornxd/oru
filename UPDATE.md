@@ -424,3 +424,11 @@ Implemented on `oru-1.0.0-dev`:
 - Added parser/compiler tests and form documentation.
 
 **Still incomplete:** server-side submission is intentionally outside the browser compiler; advanced form controls, custom validation messages, file inputs, async form workflows, responsive layout, accessibility parity, security hardening, and browser integration tests remain open.
+
+
+### Decision — Named logic imports (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Logic modules | Extend the existing `from module import name` syntax to import top-level functions and plain values from another `.oru` file, in addition to style classes. A module export is a top-level `func name(...):` declaration or a top-level `name = value` declaration. | Imported declarations are composed into the importing page's logic before its own logic. Imports are explicit and named. Page-local `state`/`global` declarations and executable top-level statements are not importable exports. Namespace imports remain style-class-only in 1.0; named imports avoid implicit symbol leakage and keep the runtime simple. |
+
