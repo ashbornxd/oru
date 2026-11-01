@@ -316,3 +316,18 @@ Implemented on `oru-1.0.0-dev`:
 - Added parser and compiler tests for variable bindings and handler-driven updates.
 
 **Scope boundary:** this is synchronous, page-local re-rendering after an event handler. Cross-page global state, arbitrary expression bindings, async updates, imports, and other 1.0 systems remain incomplete.
+
+### Milestone 4 — Page-local state and event-driven rendering
+
+Implemented on `oru-1.0.0-dev`:
+- Page files may contain a `logic:` block between metadata and `page:`.
+- Page-local state declarations use `state name = value` and are executed by the core interpreter.
+- Button widgets support `on.click: functionName`; handlers invoke functions defined in the page logic block.
+- Text and button widgets can bind displayed values with identifier arguments such as `text(count)` and `button(count)`.
+- After a click handler runs, the Canvas renderer redraws bound values from the interpreter's current globals.
+- The build includes the interpreter locally under `_oru/core.js`; generated pages do not fetch a remote runtime.
+- Function assignment updates captured lexical variables, allowing event handlers to mutate page state.
+- Input widgets use native browser input controls with password masking, required, length, and letters/numbers pattern constraints.
+- CI currently verifies TypeScript compilation and the test suite on the development branch.
+
+Still open for a complete 1.0 release: cross-page global state, imports/modules, reusable style classes, richer expression bindings, form submission lifecycle, full keyboard/screen-reader parity, responsive layout and sizing rules, image loading/error handling, security review, and browser-level integration tests.
