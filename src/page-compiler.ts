@@ -12,10 +12,21 @@ function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: 
 ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
 (() => {
   const data = ${payload};
-  const app = data.logic ? run(data.logic, { output: value => console.log(value) }) : null;
+  let initialGlobals = {};
+  try {
+    const saved = JSON.parse(sessionStorage.getItem("oru:globals") || "{}");
+    if (saved && typeof saved === "object" && !Array.isArray(saved)) initialGlobals = saved;
+  } catch { /* Start with an empty session state. */ }
+  const app = data.logic ? run(data.logic, { initialGlobals, output: value => console.log(value) }) : null;
+  const persistGlobals = () => {
+    if (!app) return;
+    try { sessionStorage.setItem("oru:globals", JSON.stringify(app.getGlobalState())); }
+    catch (error) { console.error("ORU global state could not be saved:", error); }
+  };
+  persistGlobals();
   const activate = node => {
     const handler = node.properties["on.click"];
-    if (handler && app) { try { app.call(String(handler)); } catch (error) { console.error("ORU click handler failed:", error); } render(); }
+    if (handler && app) { try { app.call(String(handler)); } catch (error) { console.error("ORU click handler failed:", error); } persistGlobals(); render(); }
     if (node.type === "link") {
       const route = String(node.route ?? node.properties.route ?? "");
       const target = data.routes[route] ?? route;
