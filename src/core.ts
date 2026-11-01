@@ -342,11 +342,19 @@ export function run(source: string, options: RunOptions = {}): RunResult {
           case "==": return equal(left, right);
           case "!=": return !equal(left, right);
           case "<": case "<=": case ">": case ">=":
-            if (typeof left !== typeof right || (typeof left !== "number" && typeof left !== "string")) throw new OruError("Values cannot be ordered.", 0);
-            if (expr.op === "<") return left < (right as never);
-            if (expr.op === "<=") return left <= (right as never);
-            if (expr.op === ">") return left > (right as never);
-            return left >= (right as never);
+            if (typeof left === "number" && typeof right === "number") {
+              if (expr.op === "<") return left < right;
+              if (expr.op === "<=") return left <= right;
+              if (expr.op === ">") return left > right;
+              return left >= right;
+            }
+            if (typeof left === "string" && typeof right === "string") {
+              if (expr.op === "<") return left < right;
+              if (expr.op === "<=") return left <= right;
+              if (expr.op === ">") return left > right;
+              return left >= right;
+            }
+            throw new OruError("Values cannot be ordered.", 0);
         }
         return null;
       }
@@ -354,7 +362,7 @@ export function run(source: string, options: RunOptions = {}): RunResult {
         const object = evalExpr(expr.object, env);
         if (!object || typeof object !== "object" || Array.isArray(object)) throw new OruError("Property access requires an object.", 0);
         if (!(expr.key in object)) throw new OruError("Unknown object key '" + expr.key + "'.", 0);
-        return object[expr.key]!;
+        return (object as Record<string, OruValue>)[expr.key]!;
       }
       case "index": {
         const object = evalExpr(expr.object, env);
