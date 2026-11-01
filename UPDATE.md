@@ -64,6 +64,7 @@ Add decisions below in chronological order. Include the date, the decision, its 
 | 2026-11-01 | Class imports | ORU must support importing reusable classes from other source files/modules. | Allows style classes and other class definitions to be shared instead of duplicated. Exact import syntax, module boundaries, export rules, and supported class kinds remain to be designed. |
 
 | 2026-11-01 | Core value types | ORU 1.0 will include `string`, `number`, `boolean`, and `list` as initial built-in value types. | Establishes a small, useful starting type system. Exact numeric behavior, list element typing, nested lists, and future types remain to be specified. |
+| 2026-11-01 | Dictionary/object values | ORU 1.0 will support dictionary/object values that store structured data as key-value pairs. | Enables structured records such as users and settings. Exact literal syntax, key rules, typing, mutation, and whether dictionaries and objects are one concept or distinct concepts remain to be designed. |
 
 ## Open planning areas
 
@@ -90,7 +91,7 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Still to design:** Exact navigation syntax and URL mapping; widget/property grammar; asset path syntax; class/style definitions; units and color literal rules; and the behavior/semantics of `anchor`.
 - **Illustrative example:** `name = pass`, then `name = "kunal"` establishes it as a string; `name = 20` afterward is a type error.
 - **Superseded proposal:** Explicit declarations such as `string name = pass` are no longer the chosen variable syntax.
-- **Agreed initial built-in types:** `string`, `number`, `boolean`, and `list`. Exact numeric behavior, list element typing, nested lists, and possible future types remain to be specified.
+- **Agreed initial built-in types:** `string`, `number`, `boolean`, and `list`. ORU 1.0 will also support dictionary/object values for key-value structured data. Exact numeric behavior, list element typing, nested lists, dictionary/object literal syntax, key rules, typing, mutation, and whether dictionaries and objects are one concept or distinct concepts remain to be specified.
 - **Still to design:** Inference details, operators, expressions, functions, control flow, input conversion, and error timing. Do not assume Python's existing `pass` semantics.
 - Core syntax, values, expressions, variables, functions, control flow, and errors.
 - **Agreed file/page model:** One `.oru` file defines one page; each file has its own metadata such as title and description. The rules for routing and mapping filenames to URLs remain open.
