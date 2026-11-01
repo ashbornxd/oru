@@ -721,3 +721,16 @@ Implemented on `oru-1.0.0-dev`:
 - Updated compiler expectations to verify the async runtime import.
 
 **Verification pending:** run the latest full CI matrix, including Chromium, Firefox, and WebKit, on the final branch head. Browser runtime host-capability configuration and comprehensive async semantics review remain open, along with accessibility, external security/performance review, real-device testing, and final release validation.
+
+
+### Milestone 33 — Async runtime compatibility matrix
+
+Implemented on `oru-1.0.0-dev`:
+- Added mixed synchronous/asynchronous function-call coverage.
+- Added nested awaited call-argument and grouped-expression coverage.
+- Added early-return-after-await global-state persistence coverage.
+- Expanded the async execution guide with the tested compatibility matrix and explicit manual-review boundaries.
+
+**Verification:** CI is running on the updated branch head. Earlier async runtime and browser integration commits passed the complete Node 20/22/24 matrix, including Chromium, Firefox, and WebKit.
+
+**Release blockers remain:** the current CI result must pass on the final head; WCAG and assistive-technology review, independent security/performance review, and physical-device testing cannot be replaced by automated tests.
