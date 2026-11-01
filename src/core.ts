@@ -12,6 +12,7 @@ type Expr =
 
 type Statement =
   | { kind: "assign"; name: string; value: Expr; line: number }
+  | { kind: "global"; name: string; value: Expr; line: number }
   | { kind: "func"; name: string; params: string[]; body: Statement[]; line: number }
   | { kind: "if"; branches: Array<{ condition: Expr | null; body: Statement[] }>; line: number }
   | { kind: "while"; condition: Expr; body: Statement[]; line: number }
@@ -232,6 +233,8 @@ class StatementParser {
     if (match) return { kind: "return", value: match[1] ? parseExpr(match[1], line.line) : undefined, line: line.line };
     if (line.text === "break") return { kind: "break", line: line.line };
     if (line.text === "continue") return { kind: "continue", line: line.line };
+    match = line.text.match(/^global\s+([A-Za-z_]\w*)\s*=\s*(.+)$/);
+    if (match) return { kind: "global", name: match[1]!, value: parseExpr(match[2]!, line.line), line: line.line };
     match = line.text.match(/^(?:state\s+)?([A-Za-z_]\w*)\s*=\s*(.+)$/);
     if (match) return { kind: "assign", name: match[1]!, value: parseExpr(match[2]!, line.line), line: line.line };
     if (line.text.endsWith(":")) throw new OruError("Unknown block statement.", line.line);
@@ -304,8 +307,8 @@ class ReturnSignal { constructor(readonly value: OruValue) {} }
 class BreakSignal {}
 class ContinueSignal {}
 
-export interface RunOptions { output?: (value: OruValue) => void; maxSteps?: number }
-export interface RunResult { output: OruValue[]; globals: Record<string, OruValue>; call(name: string, ...args: OruValue[]): OruValue; getGlobals(): Record<string, OruValue> }
+export interface RunOptions { output?: (value: OruValue) => void; maxSteps?: number; initialGlobals?: Record<string, OruValue> }
+export interface RunResult { output: OruValue[]; globals: Record<string, OruValue>; call(name: string, ...args: OruValue[]): OruValue; getGlobals(): Record<string, OruValue>; getGlobalState(): Record<string, OruValue> }
 
 export function run(source: string, options: RunOptions = {}): RunResult {
   const statements = new StatementParser(prepareLines(source)).parse();
@@ -313,6 +316,8 @@ export function run(source: string, options: RunOptions = {}): RunResult {
   let steps = 0;
   const maxSteps = options.maxSteps ?? 100_000;
   const global = new Environment();
+  const globalNames = new Set(Object.keys(options.initialGlobals ?? {}));
+  for (const [name, value] of Object.entries(options.initialGlobals ?? {})) global.declare(name, value, 0);
   const functions = new Map<string, { params: string[]; body: Statement[]; closure: Environment }>();
   const builtins = new Map<string, Callable>();
   builtins.set("print", { call: args => { const value = args.map(displayValue).join(" "); output.push(value); options.output?.(value); return null; } });
@@ -413,6 +418,10 @@ export function run(source: string, options: RunOptions = {}): RunResult {
       if (++steps > maxSteps) throw new OruError("Execution step limit exceeded.", statement.line);
       switch (statement.kind) {
         case "assign": env.assign(statement.name, evalExpr(statement.value, env), statement.line); break;
+        case "global":
+          globalNames.add(statement.name);
+          if (!global.has(statement.name)) global.declare(statement.name, evalExpr(statement.value, env), statement.line);
+          break;
         case "expression": evalExpr(statement.value, env); break;
         case "func": functions.set(statement.name, { params: statement.params, body: statement.body, closure: env }); break;
         case "if": {
@@ -465,5 +474,5 @@ export function run(source: string, options: RunOptions = {}): RunResult {
     return null;
   };
   executeBlock(statements, global);
-  return { output, globals: global.snapshot(), call: (name, ...args) => invokeFunction(name, args, 0), getGlobals: () => global.snapshot() };
+  return { output, globals: global.snapshot(), call: (name, ...args) => invokeFunction(name, args, 0), getGlobals: () => global.snapshot(), getGlobalState: () => Object.fromEntries(Object.entries(global.snapshot()).filter(([name]) => globalNames.has(name))) };
 }
