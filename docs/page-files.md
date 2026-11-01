@@ -117,7 +117,7 @@ The build writes static HTML files into `dist/` and copies an optional `assets/`
 
 The development compiler emits a browser page shell with a Canvas 2D renderer and a parallel semantic DOM layer for focusable controls. The initial renderer handles basic text, box, column, row, image, link, button, and input presentation. Page-local `logic:` blocks run through the ORU interpreter, and button `on.click` handlers invoke named ORU functions.
 
-This is an early vertical slice, not the finished ORU 1.0 runtime. Modules/imports, reusable style classes, form submission/validation, advanced responsive layout, and full keyboard/assistive-technology behavior are not complete yet. Do not use it for production applications until those features and the security/browser test suites are finished.
+This is an early runtime, not the finished ORU 1.0 release. The compiler supports reusable page-local style classes and cross-file style-class imports. General-purpose function/value imports, full form submission and validation, advanced responsive layout, complete keyboard and assistive-technology behavior, and comprehensive security/browser testing remain unfinished. Do not use it for production applications yet.
 
 ## Reactive page-local state
 
@@ -136,4 +136,4 @@ page:
             on.click: increment
 ```
 
-State currently belongs to one page instance. Cross-page global state, durable storage, richer binding expressions, and dependency-level redraw optimization are not yet implemented.
+State belongs to one page instance. Use `global name = value` for a value shared by pages in the same browser tab session. The runtime restores these values on navigation and saves them after click handlers. This is session-only, not durable storage. Richer binding expressions and dependency-level redraw optimization are not yet implemented.
