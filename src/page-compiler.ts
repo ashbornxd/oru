@@ -12,11 +12,11 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   row: new Set(["background", "padding", "gap", "width", "height", "wrapAt"]),
   box: new Set(["background", "padding", "radius", "width", "height", "gap"]),
   form: new Set(["background", "padding", "radius", "width", "height", "gap"]),
-  text: new Set(["color", "text.color", "size", "weight", "font", "line", "align"]),
+  text: new Set(["color", "text.color", "size", "weight", "font", "line", "align", "role", "level"]),
   button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color", "text.color", "align"]),
   link: new Set(["color", "text.color", "size", "weight", "decoration", "underline"]),
   image: new Set(["width", "height", "fit", "radius"]),
-  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "name", "text.color", "border.color"])
+  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "name", "text.color", "border.color", "label"])
 };
 
 function resolveWidget(widget: PageWidget, classes: OruPage["classes"]): PageWidget {
@@ -284,8 +284,14 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     controls.replaceChildren();
     semantic.replaceChildren();
     const addSemantic = (node, parent) => {
-      if (node.type === "text") { const item = document.createElement("p"); item.textContent = textOf(node); parent.append(item); }
-      if (node.type === "image") { const item = document.createElement("img"); item.alt = String(node.text ?? ""); item.src = String(node.properties.src ?? ""); parent.append(item); }
+      if (node.type === "text") {
+        const role = String(node.properties.role ?? "");
+        const level = Math.max(1, Math.min(6, Number(node.properties.level ?? 2)));
+        const item = document.createElement(role === "heading" ? "h" + level : "p");
+        item.textContent = textOf(node);
+        parent.append(item);
+      }
+      if (node.type === "image") { const item = document.createElement("img"); item.alt = String(node.properties.alt ?? node.text ?? ""); item.src = String(node.properties.src ?? ""); parent.append(item); }
       node.children.forEach(child => addSemantic(child, parent));
     };
     data.page.widgets.forEach(node => addSemantic(node, semantic));
@@ -294,6 +300,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       const form = document.createElement("form");
       form.id = formIds.get(node);
       form.style.cssText = "position:absolute;inset:0;pointer-events:none;";
+      form.setAttribute("aria-label", String(node.properties.label ?? "Form"));
       form.addEventListener("submit", event => {
         event.preventDefault();
         try {
@@ -303,7 +310,6 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         } catch (error) { console.error("ORU form submission failed:", error); }
       });
       forms.set(form.id, form);
-      controls.append(form);
     }
     for (const [regionIndex, region] of regions.entries()) {
       const node = region.node;
@@ -321,7 +327,10 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       } else {
         el.style.opacity = ".001";
       }
-      el.setAttribute("aria-label", textOf(node) || String(node.properties.alt ?? node.properties.placeholder ?? node.type));
+      const accessibleLabel = node.type === "input"
+        ? node.properties.label ?? node.properties.placeholder ?? node.binding ?? "Input"
+        : textOf(node) || node.properties.alt || node.type;
+      el.setAttribute("aria-label", String(accessibleLabel));
       if (node.type === "link") {
         const route = String(node.route ?? node.properties.route ?? "");
         el.href = Object.prototype.hasOwnProperty.call(data.routes, route) ? data.routes[route] : "#";
@@ -365,6 +374,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       }
       if (node.type === "link") el.addEventListener("click", event => { event.preventDefault(); activate(node); });
       const parent = region.formId ? forms.get(region.formId) : controls;
+      if (region.formId && !parent.isConnected) controls.append(parent);
       parent.append(el);
     }
   }
@@ -450,7 +460,7 @@ body{overflow-x:hidden}canvas{display:block;max-width:100%;touch-action:manipula
 </head>
 <body>
 <canvas aria-hidden="true"></canvas>
-<div id="oru-semantic" class="oru-sr-only"></div>
+<main id="oru-semantic" class="oru-sr-only" aria-label="${title}" aria-live="polite"></main>
 <div id="oru-controls" aria-label="Page controls"></div>
 <script type="module">${script}</script>
 </body>
