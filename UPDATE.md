@@ -631,7 +631,7 @@ Implemented on `oru-1.0.0-dev`:
 - Added a real browser layout check that verifies a wide row distributes fixed-width controls across a desktop viewport and switches to vertical flow at a narrow mobile viewport.
 - CI installs all three browser engines and runs the same integration suite against each.
 
-**Verification:** unit tests and TypeScript build passed for the latest implementation. Cross-browser integration verification is running on the current branch head; record the final result after completion.
+**Verification:** GitHub Actions run `41303802788` passed unit tests, the TypeScript build, and the complete Playwright suite in Chromium, Firefox, and WebKit.
 
 ### Milestone 27 — Cross-field form validation and accessible summaries
 
@@ -642,4 +642,4 @@ Implemented on `oru-1.0.0-dev`:
 - Forms accept `validationSummary: true`. When native validation blocks submission, ORU displays a visible summary naming invalid controls and exposes it as an assertive live region.
 - Added compiler tests, browser integration coverage, and documentation.
 
-**Verification pending:** complete the three-browser CI run for this milestone. Asynchronous validation remains open because it requires an explicit async execution model in the ORU language/runtime; it will not be simulated with synchronous handlers.
+**Verification:** GitHub Actions run `41303802788` passed unit tests, the TypeScript build, and browser integration tests in Chromium, Firefox, and WebKit. Asynchronous validation remains open because it requires an explicit async execution model in the ORU language/runtime; it will not be simulated with synchronous handlers.
