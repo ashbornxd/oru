@@ -8,7 +8,7 @@ Use four spaces per indentation level. Tabs are rejected. Blocks end when indent
 
 ## Values and variables
 
-The initial value types are strings, numbers, booleans, lists, and dictionary/object values.
+The initial value types are strings, numbers, booleans, lists, and dictionary/object values. Object values use own keys only; inherited JavaScript prototype properties are not exposed through ORU property access.
 
 ```oru
 siteName = "ORU"
@@ -45,7 +45,7 @@ message = greet("ORU")
 print(message)
 ```
 
-Functions use lexical closures and local parameter scopes. A function without an explicit return produces `pass`. Function overloading and explicit type annotations are not part of this initial core.
+Functions use lexical closures and local parameter scopes. A function without an explicit return produces `pass`. Function overloading and explicit type annotations are not part of this initial core. A nested `global name = value` statement updates shared session state; a top-level `global` declaration only initializes the value when it has not already been restored from the current browser tab session.
 
 ## Conditions and loops
 
