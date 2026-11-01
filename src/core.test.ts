@@ -353,3 +353,16 @@ test("rejects async host capabilities that shadow built-ins or ORU functions", a
     /Host capability 'len' conflicts with a built-in or ORU function/
   );
 });
+
+
+test("does not invoke a conflicting host capability before reporting the collision", async () => {
+  let invoked = false;
+  await assert.rejects(
+    () => runAsync(`async func fetchValue():
+    return 1
+value = fetchValue()
+`, { asyncFunctions: { fetchValue: async () => { invoked = true; return 2; } } }),
+    /Host capability 'fetchValue' conflicts with a built-in or ORU function/
+  );
+  assert.equal(invoked, false);
+});
