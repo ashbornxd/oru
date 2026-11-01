@@ -402,3 +402,11 @@ Implemented on `oru-1.0.0-dev`:
 - Added tests for input state updates and generated native constraints.
 
 **Still incomplete:** form submission workflows, custom validation messages, file inputs, async updates, and comprehensive accessibility/browser testing.
+
+
+### Decision — Native form lifecycle (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Forms | Add a built-in `form:` container widget. A form may declare `on.submit: functionName`; buttons nested in that form submit it by default. | The browser's native constraint validation runs before the ORU submit handler. Invalid forms do not invoke the handler. A valid submission prevents a page reload, calls the named ORU function, persists session globals, and refreshes the page. Inputs remain bound to ORU state through `input(name)`. Forms do not imply a backend or transmit data automatically. |
+
