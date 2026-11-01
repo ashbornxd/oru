@@ -257,6 +257,24 @@ class Environment {
     if (existing.type && existing.type !== type) throw new OruError("Type error: '" + name + "' is " + existing.type + ", not " + type + ".", line);
     existing.type = type; existing.initialized = true; existing.value = value;
   }
+  assign(name: string, value: OruValue, line: number): void {
+    const existing = this.values.get(name);
+    if (existing) {
+      if (value === null) throw new OruError("Cannot assign pass to an initialized variable.", line);
+      const type = valueType(value);
+      if (existing.type && existing.type !== type) throw new OruError("Type error: '" + name + "' is " + existing.type + ", not " + type + ".", line);
+      existing.type = type; existing.initialized = true; existing.value = value;
+      return;
+    }
+    if (this.parent?.has(name)) {
+      this.parent.assign(name, value, line);
+      return;
+    }
+    this.declare(name, value, line);
+  }
+  has(name: string): boolean {
+    return this.values.has(name) || Boolean(this.parent?.has(name));
+  }
   snapshot(): Record<string, OruValue> {
     const result: Record<string, OruValue> = {};
     for (const [name, binding] of this.values) if (binding.initialized) result[name] = binding.value!;
@@ -394,7 +412,7 @@ export function run(source: string, options: RunOptions = {}): RunResult {
     for (const statement of body) {
       if (++steps > maxSteps) throw new OruError("Execution step limit exceeded.", statement.line);
       switch (statement.kind) {
-        case "assign": env.declare(statement.name, evalExpr(statement.value, env), statement.line); break;
+        case "assign": env.assign(statement.name, evalExpr(statement.value, env), statement.line); break;
         case "expression": evalExpr(statement.value, env); break;
         case "func": functions.set(statement.name, { params: statement.params, body: statement.body, closure: env }); break;
         case "if": {
