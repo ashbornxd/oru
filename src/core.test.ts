@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { run } from "./core.js";
+import { run, runAsync } from "./core.js";
 
 test("runs variables, inferred types, expressions, and output", () => {
   const result = run('name = "ORU"\nversion = 1\nprint(name + " " + "language")\n');
@@ -94,4 +94,47 @@ test("keeps prototype-like variable names as safe own data properties", () => {
   assert.equal((globals["__proto__"] as { polluted: boolean }).polluted, true);
   assert.equal(globals.constructor, "safe");
   assert.equal(({} as { polluted?: boolean }).polluted, undefined);
+});
+
+
+test("runs async functions with awaitable host functions", async () => {
+  const program = await runAsync(`async func loadUser(id):
+    response = await fetchUser(id)
+    return response.name
+
+async func greeting(id):
+    name = await loadUser(id)
+    return "Hello " + name
+`, {
+    asyncFunctions: {
+      fetchUser: async (id) => {
+        await Promise.resolve();
+        return { id: id as number, name: "ORU" };
+      }
+    }
+  });
+  assert.equal(await program.callAsync("greeting", 7), "Hello ORU");
+});
+
+test("preserves synchronous execution and rejects async functions through sync call", () => {
+  const program = run("async func later():\n    return 42");
+  assert.throws(() => program.call("later"), /must be invoked with callAsync/);
+});
+
+test("rejects await outside async functions", async () => {
+  await assert.rejects(() => runAsync("value = await fetchValue()", {
+    asyncFunctions: { fetchValue: async () => 1 }
+  }), /await can only be used inside an async function/);
+});
+
+test("supports async state updates and sequential awaits", async () => {
+  const program = await runAsync(`state status = "idle"
+async func refresh():
+    first = await getValue(1)
+    second = await getValue(2)
+    status = first + second
+    return status
+`, { asyncFunctions: { getValue: async (n) => Number(n) } });
+  assert.equal(await program.callAsync("refresh"), 3);
+  assert.equal(program.getGlobals().status, 3);
 });
