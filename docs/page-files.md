@@ -42,7 +42,7 @@ Wrap related inputs in a `form:` widget and declare `on.submit: functionName` on
 
 ```oru
 logic:
-    state email = \"\"
+    state email = ""
     func register():
         print(email)
 page:
@@ -51,7 +51,7 @@ page:
         input(email):
             type: email
             required: true
-        button(\"Create account\")
+        button("Create account")
 ```
 
 ## Page-local style classes
@@ -132,6 +132,27 @@ page:
 ```
 
 With `import theme`, refer to the class as `theme.navText`. Module paths resolve relative to the importing page. Imported files are `.oru` pages, so they also contain a `page:` block. Circular imports, missing modules/classes, and class-name collisions are build errors. Named imports can also bring top-level functions and plain values from a module's `logic:` block: `from utils import greet, APP_NAME`. A module export is a top-level `func name(...):` or `name = value`. Imported declarations are added before the importing page's logic. Page-local `state`/`global` declarations and executable top-level statements are not exported. Namespace imports remain style-class-only in this release.
+
+For example, a `utils.oru` module can expose logic:
+
+```oru
+logic:
+    APP_NAME = "ORU"
+    func greet(name):
+        return "Hello " + name
+page:
+    text("Shared helpers")
+```
+
+A page can import those names explicitly:
+
+```oru
+from utils import greet, APP_NAME
+logic:
+    state greeting = greet(APP_NAME)
+page:
+    text(greeting)
+```
 
 ## Links
 
