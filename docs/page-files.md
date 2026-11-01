@@ -36,7 +36,7 @@ Supported fields are `title`, `description`, and `language`. Unknown fields are 
 
 ## Input bindings and constraints
 
-Use `input("Email address")` for a placeholder-only input, or `input(email)` to bind the input value to a declared string variable. Set `label: "Email address"` to provide a stable accessible name that does not change as the user types. The binding updates as the user types without interrupting focus. Supported native properties include `type`, `required`, `disabled`, `readOnly`, `min`, `max`, `step`, `minLength`, `maxLength`, `pattern`, `autocomplete`, and `name`; `constraint: letters` and `constraint: numbers` apply matching browser patterns. Set `validationMessage: "Please enter a valid value."` to replace the browser's default message when that input fails native validation; the custom message clears when the user edits the field. Use `type: password` for a sensitive input; password inputs must use page-local state rather than cross-page global state.
+Use `input("Email address")` for a placeholder-only input, or `input(email)` to bind the input value to a declared string variable. Use `textarea(message)` for multiline text bound to a declared string variable; it accepts `placeholder`, `label`, `rows`, `height`, `required`, `disabled`, `readOnly`, `minLength`, `maxLength`, and `name`. Set `label: "Email address"` to provide a stable accessible name that does not change as the user types. The binding updates as the user types without interrupting focus. Supported native properties include `type`, `required`, `disabled`, `readOnly`, `min`, `max`, `step`, `minLength`, `maxLength`, `pattern`, `autocomplete`, and `name`; `constraint: letters` and `constraint: numbers` apply matching browser patterns. Set `validationMessage: "Please enter a valid value."` to replace the browser's default message when that input fails native validation; the custom message clears when the user edits the field. Use `type: password` for a sensitive input; password inputs must use page-local state rather than cross-page global state.
 
 Wrap related inputs in a `form:` widget and declare `on.submit: functionName` on the form. Buttons inside a form submit it by default. The browser runs native constraint validation first; if validation succeeds, ORU prevents a page reload and calls the named function. Invalid forms do not call the handler. Form submission does not send data to a server automatically.
 
@@ -115,7 +115,7 @@ page:
         on.hover: showHint
 ```
 
-Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `image`, and `input`.
+Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `image`, `input`, and `textarea`.
 
 Widget properties use `:`, not `=`. Values currently parse as strings, numbers, or booleans. Color values and size units remain strings for the renderer.
 
