@@ -569,3 +569,13 @@ Implemented on `oru-1.0.0-dev`:
 ### Milestone 21 — Renderer regression-test repair
 
 The select-control implementation exposed stale compiler assertions that no longer matched the semantic DOM renderer's actual output. Updated the assertions to verify the current image alternative-text fallback, input-attribute dispatch, accessible control-label fallback, and select element creation branch. The earlier CI failure was caused by these stale expectations, not by TypeScript compilation. A fresh CI run is still required to confirm the fixes.
+
+
+### Milestone 22 — Required select placeholders
+
+- Added optional `placeholder:` support to select controls.
+- The placeholder is emitted as a disabled, empty-value option and is selected only while the bound state is empty.
+- This lets native browser `required` validation correctly reject an untouched dropdown.
+- Canvas preview text shows the placeholder while no value is selected.
+- Added a compiler regression test and updated page syntax documentation.
+- Automated tests/build have not yet been rerun for this milestone.
