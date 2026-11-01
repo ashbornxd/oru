@@ -40,7 +40,7 @@ export async function compileProject(projectDirectory = "."): Promise<Map<string
   for (const source of sources) {
     parsed.set(source, parsePage(await readFile(join(root, source), "utf8"), source));
   }
-  const routeMap: Record<string, string> = {};
+  const routeMap: Record<string, string> = Object.create(null) as Record<string, string>;
   for (const page of routeTable.values()) {
     routeMap[page.source.slice(0, -4)] = page.route;
   }
