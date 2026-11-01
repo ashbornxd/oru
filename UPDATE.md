@@ -251,3 +251,17 @@ Implemented on `oru-1.0.0-dev`:
 - Maps each route to a safe static output path and rejects absolute paths, traversal segments, invalid names, and non-`.oru` sources.
 - Requires `index.oru` and rejects duplicate source paths or route collisions.
 - Added route tests in `src/routes.test.ts`.
+
+
+### Decisions for the first end-to-end browser runtime slice (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Browser output | Compile each page into a static HTML shell that loads an embedded ORU Canvas 2D runtime and serialized page tree. | No separate runtime download or bundler is required for the first release; generated output remains deployable as static files. |
+| Layout model | Use deterministic vertical/horizontal flow for column/row, intrinsic sizing for text, and explicit width/height constraints where supplied. | The first renderer favors predictable responsive layouts over a full CSS-like layout engine. |
+| Interaction model | Use Canvas hit regions for pointer activation and a parallel semantic DOM tree for keyboard and assistive-technology interaction. | Buttons, links, and inputs must remain operable without a pointer; the DOM layer mirrors the visual widget order. |
+| Input safety | Treat all text as data, escape metadata and attributes, and never evaluate property strings as JavaScript. | Event names resolve only to registered ORU functions; arbitrary code injection through page values is not supported. |
+| Navigation | Internal links use the History API and route table; browser back/forward re-renders the matching page. | Static hosting must provide a fallback to the generated entry shell for extensionless routes. |
+| Initial renderer scope | Support column, row, box, text, button, link, image, and input widgets; unsupported advanced styling fails with a useful build error rather than silently pretending to work. | Forms, global reactive state, imported classes, and full expression binding remain subsequent integration milestones. |
+
+The first runtime slice is deliberately a vertical end-to-end milestone, not the final 1.0 feature set. Any limitations discovered during implementation must be reflected in the docs and tests.
