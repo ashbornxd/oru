@@ -61,7 +61,7 @@ function valueOf(raw: string, line: number): PageValue {
 }
 
 function widgetOf(text: string, line: number): PageWidget | null {
-  const match = text.match(/^(?:(?:[A-Za-z_]\w*)\s+)?([A-Za-z]+)(?:\((.*)\))?\s*:\s*$/);
+  const match = text.match(/^(?:(?:[A-Za-z_]\w*)\s+)?([A-Za-z]+)(?:\((.*)\))?\s*:?\s*$/);
   if (!match) return null;
   const type = match[1]!.toLowerCase();
   if (!widgetTypes.has(type as PageWidget["type"])) throw new OruError('Unknown widget "' + type + '".', line);
