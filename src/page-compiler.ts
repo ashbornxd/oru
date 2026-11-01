@@ -125,9 +125,22 @@ ${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
   };
   const appReady = data.logic ? runAsync(data.logic, { initialGlobals, output: value => console.log(value) }).then(instance => { app = instance; persistGlobals(); render(); return instance; }) : Promise.resolve(null);
   persistGlobals();
+  const reportRuntimeError = error => {
+    console.error("ORU async runtime error:", error);
+    let notice = document.getElementById("oru-runtime-error");
+    if (!notice) {
+      notice = document.createElement("div");
+      notice.id = "oru-runtime-error";
+      notice.className = "oru-runtime-error";
+      notice.setAttribute("role", "alert");
+      notice.setAttribute("aria-live", "assertive");
+      document.body.append(notice);
+    }
+    notice.textContent = "This action could not be completed. " + (error instanceof Error ? error.message : String(error));
+  };
   const activate = node => {
     const handler = node.properties["on.click"];
-    if (handler) appReady.then(instance => instance?.callAsync(String(handler))).then(() => { persistGlobals(); render(); }).catch(error => { console.error("ORU click handler failed:", error); });
+    if (handler) appReady.then(instance => instance?.callAsync(String(handler))).then(() => { persistGlobals(); render(); }).catch(reportRuntimeError);
     if (node.type === "link") {
       const route = String(node.route ?? node.properties.route ?? "");
       const target = Object.prototype.hasOwnProperty.call(data.routes, route) ? data.routes[route] : "";
@@ -386,7 +399,7 @@ ${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
         appReady.then(instance => instance?.callAsync(String(node.properties["on.submit"]))).then(() => {
           persistGlobals();
           render();
-        }).catch(error => { console.error("ORU form submission failed:", error); });
+        }).catch(reportRuntimeError);
       });
       forms.set(form.id, form);
     }
@@ -544,7 +557,7 @@ ${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
     const handler = node?.properties?.[key];
     if (handler && app) {
       appReady.then(instance => instance?.callAsync(String(handler))).then(() => { persistGlobals(); render(); })
-        .catch(error => { console.error("ORU " + key + " handler failed:", error); });
+        .catch(reportRuntimeError);
     }
   };
   controls.addEventListener("pointerover", event => {
@@ -611,6 +624,7 @@ body{overflow-x:hidden}canvas{display:block;max-width:100%;touch-action:manipula
 #oru-controls{position:absolute;top:0;left:0;width:100%;pointer-events:none}
 #oru-controls>*{pointer-events:auto}
 .oru-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.oru-runtime-error{position:fixed;left:12px;right:12px;bottom:12px;z-index:1000;padding:12px;border:1px solid #b00020;background:#fff;color:#b00020;font:14px system-ui;border-radius:6px}
 #oru-controls button:focus-visible,#oru-controls a:focus-visible{opacity:1!important;outline:2px solid #2457d6;outline-offset:2px}
 #oru-controls input:focus-visible,#oru-controls textarea:focus-visible,#oru-controls select:focus-visible{outline:2px solid #2457d6;outline-offset:2px}
 </style>
