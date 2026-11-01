@@ -36,7 +36,7 @@ Supported fields are `title`, `description`, and `language`. Unknown fields are 
 
 ## Input bindings and constraints
 
-Use `input("Email address")` for a placeholder-only input, or `input(email)` to bind the input value to a declared string variable. The binding updates when the input changes. Supported native properties include `type`, `required`, `minLength`, and `maxLength`; `constraint: letters` and `constraint: numbers` apply matching browser patterns. Use `type: password` for a sensitive input; password inputs must use page-local state rather than cross-page global state.
+Use `input("Email address")` for a placeholder-only input, or `input(email)` to bind the input value to a declared string variable. The binding updates when the input changes. Supported native properties include `type`, `required`, `minLength`, and `maxLength`; `constraint: letters` and `constraint: numbers` apply matching browser patterns. Use `type: password` for a sensitive input; password inputs must use page-local state rather than cross-page global state.\n\nWrap related inputs in a `form:` widget and declare `on.submit: functionName` on the form. Buttons inside a form submit it by default. The browser runs native constraint validation first; if validation succeeds, ORU prevents a page reload and calls the named function. Invalid forms do not call the handler. Form submission does not send data to a server automatically.\n\n```oru\nlogic:\n    state email = \"\"\n    func register():\n        print(email)\npage:\n    form:\n        on.submit: register\n        input(email):\n            type: email\n            required: true\n        button(\"Create account\")\n```
 
 ## Page-local style classes
 
@@ -86,7 +86,7 @@ page:
         input("Email address"):
 ```
 
-Initial widgets: `column`, `row`, `box`, `text`, `button`, `link`, `image`, and `input`.
+Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `image`, and `input`.
 
 Widget properties use `:`, not `=`. Values currently parse as strings, numbers, or booleans. Color values and size units remain strings for the renderer.
 
@@ -148,7 +148,7 @@ The build writes static HTML files into `dist/` and copies an optional `assets/`
 
 The development compiler emits a browser page shell with a Canvas 2D renderer and a parallel semantic DOM layer for focusable controls. The initial renderer handles basic text, box, column, row, image, link, button, and input presentation. Page-local `logic:` blocks run through the ORU interpreter, and button `on.click` handlers invoke named ORU functions.
 
-This is an early runtime, not the finished ORU 1.0 release. The compiler supports reusable page-local style classes and cross-file style-class imports. General-purpose function/value imports, full form submission and validation, advanced responsive layout, complete keyboard and assistive-technology behavior, and comprehensive security/browser testing remain unfinished. Do not use it for production applications yet.
+This is an early runtime, not the finished ORU 1.0 release. The compiler supports reusable page-local style classes and cross-file style-class imports. General-purpose function/value imports, advanced form controls and custom validation messages, advanced responsive layout, complete keyboard and assistive-technology behavior, and comprehensive security/browser testing remain unfinished. Do not use it for production applications yet.
 
 ## Reactive page-local state
 
