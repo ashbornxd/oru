@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and click handlers, basic reactive bindings, session-scoped cross-page global state, reusable style classes, and cross-file style-class imports. Still open: general-purpose function/value modules, full form workflows, advanced responsive layout, accessibility parity, asset/security hardening, and comprehensive browser integration testing.
+**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and click handlers, basic reactive bindings, session-scoped cross-page global state, reusable style classes, cross-file style-class imports, and native form submission with browser constraint validation. Still open: general-purpose function/value modules, advanced form controls, responsive layout, accessibility parity, asset/security hardening, and comprehensive browser integration testing.
 
 ## Vision
 
@@ -410,3 +410,17 @@ Implemented on `oru-1.0.0-dev`:
 |---|---|---|
 | Forms | Add a built-in `form:` container widget. A form may declare `on.submit: functionName`; buttons nested in that form submit it by default. | The browser's native constraint validation runs before the ORU submit handler. Invalid forms do not invoke the handler. A valid submission prevents a page reload, calls the named ORU function, persists session globals, and refreshes the page. Inputs remain bound to ORU state through `input(name)`. Forms do not imply a backend or transmit data automatically. |
 
+
+
+### Milestone 11 — Native form submission
+
+Implemented on `oru-1.0.0-dev`:
+- Added the `form:` container widget.
+- Forms require `on.submit: functionName` referencing a function declared in the page's `logic:` block.
+- Buttons inside forms submit the form by default; click handlers on those buttons are rejected to avoid ambiguous event behavior.
+- The browser's native validation runs before submission. Invalid forms do not invoke the ORU handler.
+- Successful submission prevents a page reload, invokes the ORU function, persists session globals, and refreshes the UI.
+- Bound inputs now synchronize state while typing without re-rendering and interrupting focus.
+- Added parser/compiler tests and form documentation.
+
+**Still incomplete:** server-side submission is intentionally outside the browser compiler; advanced form controls, custom validation messages, file inputs, async form workflows, responsive layout, accessibility parity, security hardening, and browser integration tests remain open.
