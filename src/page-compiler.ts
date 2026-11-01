@@ -292,7 +292,7 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const resolvedPage = { ...page, widgets: page.widgets.map(widget => resolveWidget(widget, page.classes)) };
   const declaredBindings = new Set([...page.logic.matchAll(/(?:^|\n)\s*(?:state|global)\s+([A-Za-z_]\w*)\s*=/g)].map(match => match[1]!));
   const globalBindings = new Set([...page.logic.matchAll(/(?:^|\n)\s*global\s+([A-Za-z_]\w*)\s*=/g)].map(match => match[1]!));
-  const declaredFunctions = new Set([...page.logic.matchAll(/\\bfunc\\s+([A-Za-z_]\\w*)\\s*\\(/g)].map(match => match[1]!));
+  const declaredFunctions = new Set([...page.logic.matchAll(/\bfunc\s+([A-Za-z_]\w*)\s*\(/g)].map(match => match[1]!));
   for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings, globalBindings); validateForms(widget, declaredFunctions); }
   const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
