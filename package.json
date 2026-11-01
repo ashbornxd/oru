@@ -48,5 +48,11 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "exports": {
+    "./language": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
+    }
+  }
 }
