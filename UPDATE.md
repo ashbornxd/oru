@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, text/textarea/select/file controls, cross-field form matching, accessible validation summaries, button interaction states and image icons, responsive row wrapping and container alignment, scrollable pages, semantic text/image content, native keyboard-operable controls, baseline security headers, and Playwright integration coverage for Chromium, Firefox, and WebKit. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: an explicit asynchronous execution model, full WCAG conformance and assistive-technology testing, broader security and performance review, real-device testing, and final release validation.
+**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, text/textarea/select/file controls, cross-field form matching, accessible validation summaries, button interaction states and image icons, responsive row wrapping and container alignment, scrollable pages, semantic text/image content, native keyboard-operable controls, baseline security headers, and Playwright integration coverage for Chromium, Firefox, and WebKit. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: an explicit asynchronous execution model, full WCAG conformance and assistive-technology testing, an independent security/performance review, real-device testing, and final release validation.
 
 ## Vision
 
@@ -656,3 +656,16 @@ Implemented on `oru-1.0.0-dev`:
 - Added unit tests for CSP hash correctness and route-specific static header generation, plus browser tests that execute the app under the strict policy in Chromium, Firefox, and WebKit.
 
 **Verification pending:** the newest branch-head CI run must pass after these changes. This closes the earlier inline-script/style CSP gap; it does not substitute for a full independent security audit.
+
+
+### Milestone 29 — Keyboard accessibility and strict CSP verification
+
+Implemented on `oru-1.0.0-dev`:
+- The native control layer is exposed as a labelled accessibility group.
+- Added browser integration checks for sequential Tab navigation and visible keyboard focus.
+- Strict per-page CSP now disables inline script handlers and inline style attributes while allowing only the exact generated inline module and stylesheet hashes.
+- Static build output includes route-specific Cloudflare Pages `_headers` rules; unit tests verify root and nested routes receive distinct policies.
+
+**Verification:** GitHub Actions run `41304768998` passed all unit tests, TypeScript build, and Playwright tests in Chromium, Firefox, and WebKit, including keyboard navigation, visible focus, strict CSP, file selection, form validation, and responsive layout.
+
+**Not yet release-ready:** asynchronous execution remains unimplemented. Full WCAG conformance and assistive-technology evaluation, independent security/performance review, and real-device testing are also outstanding.
