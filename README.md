@@ -104,6 +104,8 @@ The 1.0 development branch now has a page compiler and Canvas 2D browser rendere
 npm install
 npm test
 npm run build
+npx playwright install chromium
+npm run test:browser
 ```
 
 ## License
