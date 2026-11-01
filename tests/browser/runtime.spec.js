@@ -205,3 +205,18 @@ test("keeps native controls keyboard reachable with visible focus and a labelled
   await page.keyboard.press("Tab");
   await expect(second).toBeFocused();
 });
+
+
+test("awaits async click handlers before persisting and rendering state", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+  page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
+  await page.goto(baseURL);
+  const action = page.locator('#oru-controls button[aria-label="Async action"]');
+  await expect(action).toHaveCount(1);
+  await expect(page.locator("#oru-semantic")).toContainText("false");
+  await action.click();
+  await expect(page.locator("#oru-semantic")).toContainText("true");
+  expect(errors).toEqual([]);
+});
