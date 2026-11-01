@@ -287,14 +287,8 @@ ${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
       ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.fill();
       ctx.strokeStyle = color(node, "border.color", "#999999");
       ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.stroke();
-      const inputValue = textOf(node);
-      const firstOption = node.type === "select" ? node.children.find(option => option.type === "option") : undefined;
-      const selectedValue = node.type === "select" ? (inputValue || String(node.properties.placeholder ?? firstOption?.properties.value ?? firstOption?.text ?? "")) : inputValue;
-      const visibleValue = node.type === "input" && p.type === "password" ? "•".repeat(inputValue.length) : node.type === "select" ? (inputValue || selectedValue) : inputValue;
-      ctx.fillStyle = visibleValue ? color(node, "text.color", "#202124") : "#777777";
-      ctx.font = px(p.size, 14) + "px system-ui";
-      const displayText = visibleValue || String(p.placeholder ?? "");
-      displayText.split("\\n").slice(0, node.type === "textarea" ? Math.max(1, Math.floor((h - 20) / 20)) : 1).forEach((line, index) => ctx.fillText(line, x + 10, y + 14 + index * 20, w - 20));
+      // Native HTML controls render their own values and placeholders. Drawing text here
+      // duplicates select/input text underneath the interactive DOM control.
       regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
@@ -509,12 +503,9 @@ ${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
               if (value === null || (typeof value === "number" && !Number.isFinite(value))) return;
               app.set(node.binding, value);
               persistGlobals();
-              render();
-              const replacement = controls.querySelector("[data-oru-control=\\\"" + regionIndex + "\\\"]");
-              if (replacement) {
-                replacement.focus();
-                if (typeof start === "number" && typeof end === "number" && typeof replacement.setSelectionRange === "function") replacement.setSelectionRange(start, end);
-              }
+              // Keep the focused native element mounted while typing. Rebuilding the
+              // controls on every keystroke dismisses the Android keyboard and loses focus.
+              paint();
             } catch (error) { console.error("ORU input binding failed:", error); }
           });
         }
