@@ -230,7 +230,8 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const language = escapeHtml(page.metadata.language || "en");
   const depth = route.output.split("/").length - 1;
   const corePath = depth === 0 ? "./_oru/core.js" : "../".repeat(depth) + "_oru/core.js";
-  const resolvedPage = { ...page, widgets: page.widgets.map(widget => resolveWidget(widget, page.classes)) };\n  const script = runtimeSource(resolvedPage, routes, corePath);
+  const resolvedPage = { ...page, widgets: page.widgets.map(widget => resolveWidget(widget, page.classes)) };
+  const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
 <head>
