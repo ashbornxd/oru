@@ -205,7 +205,9 @@ ${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
       return { width, height: (horizontal ? cross : main) + padding * 2, lines: [] };
     }
     const children = node.children.map(child => measure(child, Math.max(40, width - padding * 2)));
-    return { width, height: px(p.height, children.reduce((sum, item) => sum + item.height, 0) + padding * 2), lines: [] };
+    const contentHeight = children.reduce((sum, item) => sum + item.height, 0)
+      + gap * Math.max(0, children.length - 1);
+    return { width, height: px(p.height, contentHeight + padding * 2), lines: [] };
   }
   function draw(node, x, y, maxWidth, formId = null, forcedHeight) {
     if (node.type === "form") formId = formIds.get(node) ?? null;
@@ -584,7 +586,29 @@ ${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
     if (!hit) return;
     if (hit.node.type === "button" || hit.node.type === "link") activate(hit.node);
   });
-  window.addEventListener("resize", render);
+  let renderedWidth = 0;
+  const resizeForViewport = () => {
+    const width = Math.max(280, document.documentElement.clientWidth);
+    if (width !== renderedWidth) {
+      render();
+      return;
+    }
+    // Mobile browsers resize the viewport when the software keyboard opens.
+    // Keep native controls mounted so the focused field and keyboard stay active.
+    const contentHeight = data.page.widgets.reduce((height, widget) => height + measure(widget, width - 40).height + 12, 24);
+    const pageHeight = Math.max(window.innerHeight, 600, contentHeight + 24);
+    canvas.height = Math.ceil(pageHeight * pixelRatio);
+    canvas.style.height = pageHeight + "px";
+    controls.style.height = pageHeight + "px";
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    paint();
+  };
+  const originalRender = render;
+  render = () => {
+    originalRender();
+    renderedWidth = Math.max(280, document.documentElement.clientWidth);
+  };
+  window.addEventListener("resize", resizeForViewport);
   render();
 })();
 `;
