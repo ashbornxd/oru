@@ -97,7 +97,7 @@ async function build(output = "dist"): Promise<void> {
     await mkdir(join(target, ".."), { recursive: true });
     await writeFile(target, content, "utf8");
     if (filename.endsWith(".html")) {
-      const route = filename === "index.html" ? "/" : "/" + filename.replace(/\\/index\\.html$/, "");
+      const route = filename === "index.html" ? "/" : "/" + filename.slice(0, -"/index.html".length);
       headerRules.push(
         route,
         "  Content-Security-Policy: " + contentSecurityPolicy(content),
@@ -109,7 +109,7 @@ async function build(output = "dist"): Promise<void> {
       );
     }
   }
-  await writeFile(join(outputRoot, "_headers"), headerRules.join("\\n"), "utf8");
+  await writeFile(join(outputRoot, "_headers"), headerRules.join("\n"), "utf8");
 
   await mkdir(join(outputRoot, "_oru"), { recursive: true });
   await cp(new URL("./core.js", import.meta.url), join(outputRoot, "_oru", "core.js"));
