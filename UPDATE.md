@@ -218,6 +218,9 @@ These details are implemented as the first coherent baseline, but remain open to
 | Build model | ORU 1.0 is a client-side browser application compiler/runtime; server APIs and database hosting are outside the 1.0 compiler scope. | Applications may call external APIs, but secrets and privileged operations must remain on a separately secured backend. |
 | Entry page | Every buildable project must contain `index.oru`, which maps to `/`. | Gives the dev server and static build a deterministic entry point. |
 
+
+| Project configuration | `oru.config` is a required UTF-8 text file at the project root, with a single `name: "Project Name"` field for 1.0. | The CLI validates the project identity and reserves this file for future explicit settings; unknown fields are errors rather than silently ignored. |
+
 ### Completion roadmap
 
 1. Harden the core interpreter: source locations, assignment/mutation, predictable scopes, diagnostics, and test coverage.
