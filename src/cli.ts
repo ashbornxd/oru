@@ -4,6 +4,7 @@ import { watch } from "node:fs";
 import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
 import { compileProject } from "./project-build.js";
+import { contentSecurityPolicy } from "./security.js";
 import { run as runLanguage } from "./core.js";
 
 const VERSION = "1.0.0-dev.0";
@@ -90,11 +91,25 @@ async function build(output = "dist"): Promise<void> {
   const files = await compileProject(".");
   const outputRoot = await cleanOutput(output);
 
+  const headerRules: string[] = [];
   for (const [filename, content] of files) {
     const target = join(outputRoot, filename);
     await mkdir(join(target, ".."), { recursive: true });
     await writeFile(target, content, "utf8");
+    if (filename.endsWith(".html")) {
+      const route = filename === "index.html" ? "/" : "/" + filename.replace(/\\/index\\.html$/, "");
+      headerRules.push(
+        route,
+        "  Content-Security-Policy: " + contentSecurityPolicy(content),
+        "  X-Content-Type-Options: nosniff",
+        "  Referrer-Policy: strict-origin-when-cross-origin",
+        "  X-Frame-Options: DENY",
+        "  Permissions-Policy: camera=(), microphone=(), geolocation=()",
+        ""
+      );
+    }
   }
+  await writeFile(join(outputRoot, "_headers"), headerRules.join("\\n"), "utf8");
 
   await mkdir(join(outputRoot, "_oru"), { recursive: true });
   await cp(new URL("./core.js", import.meta.url), join(outputRoot, "_oru", "core.js"));
@@ -113,7 +128,6 @@ const securityHeaders = {
   "x-content-type-options": "nosniff",
   "referrer-policy": "strict-origin-when-cross-origin",
   "x-frame-options": "DENY",
-  "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
   "permissions-policy": "camera=(), microphone=(), geolocation=()"
 };
 
@@ -181,7 +195,8 @@ async function runDev(port: number): Promise<void> {
       const file = resolve(root, relativePath);
       if (file !== root && !file.startsWith(root + sep)) throw new Error("Invalid path");
       const data = await readFile(file);
-      response.writeHead(200, { ...securityHeaders, "content-type": mimeTypes[extname(file)] ?? "application/octet-stream" });
+      const documentPolicy = extname(file) === ".html" ? { "content-security-policy": contentSecurityPolicy(data.toString("utf8")) } : {};
+      response.writeHead(200, { ...securityHeaders, ...documentPolicy, "content-type": mimeTypes[extname(file)] ?? "application/octet-stream" });
       response.end(request.method === "HEAD" ? undefined : data);
     } catch {
       response.writeHead(404, { ...securityHeaders, "content-type": "text/plain; charset=utf-8" });
