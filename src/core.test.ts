@@ -246,3 +246,27 @@ main()
   });
   assert.deepEqual(output, ["ready"]);
 });
+
+
+test("preserves supplied global state when async pages declare existing globals", async () => {
+  const first = await runAsync(`global visits = 0
+async func increment():
+    global visits = visits + 1
+`, { initialGlobals: { visits: 12 } });
+  assert.equal(first.getGlobalState().visits, 12);
+  await first.callAsync("increment");
+  assert.equal(first.getGlobalState().visits, 13);
+
+  const second = await runAsync(`global visits = 0
+async func current():
+    return visits
+`, { initialGlobals: first.getGlobalState() });
+  assert.equal(await second.callAsync("current"), 13);
+});
+
+test("does not overwrite supplied globals in nested top-level control flow", async () => {
+  const program = await runAsync(`if true:
+    global theme = "default"
+`, { initialGlobals: { theme: "custom" } });
+  assert.equal(program.getGlobalState().theme, "custom");
+});
