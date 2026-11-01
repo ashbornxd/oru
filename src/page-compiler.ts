@@ -6,8 +6,8 @@ function escapeHtml(value: string): string {
     .replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 
-function runtimeSource(page: OruPage, routes: Record<string, string>): string {
-  const payload = JSON.stringify({ page, routes }).replace(/</g, "\\u003c");
+function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: string): string {
+  const payload = JSON.stringify({ page, routes, logic: page.logic }).replace(/</g, "\\u003c");
   return `
 (() => {
   const data = ${payload};
@@ -166,7 +166,9 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const title = escapeHtml(page.metadata.title || "ORU");
   const description = escapeHtml(page.metadata.description || "");
   const language = escapeHtml(page.metadata.language || "en");
-  const script = runtimeSource(page, routes);
+  const depth = route.output.split("/").length - 1;
+  const corePath = "../".repeat(depth) + "_oru/core.js";
+  const script = runtimeSource(page, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
 <head>
@@ -184,7 +186,7 @@ body{overflow-x:hidden}canvas{display:block;max-width:100%;touch-action:manipula
 <body>
 <canvas role="img" aria-label="${title}"></canvas>
 <div id="oru-controls" aria-label="Page controls"></div>
-<script>${script}</script>
+<script type="module">${script}</script>
 </body>
 </html>`;
 }
