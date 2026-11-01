@@ -34,6 +34,10 @@ metadata:
 
 Supported fields are `title`, `description`, and `language`. Unknown fields are errors.
 
+## Input bindings and constraints
+
+Use `input("Email address")` for a placeholder-only input, or `input(email)` to bind the input value to a declared string variable. The binding updates when the input changes. Supported native properties include `type`, `required`, `minLength`, and `maxLength`; `constraint: letters` and `constraint: numbers` apply matching browser patterns. Use `type: password` for a sensitive input; password inputs must use page-local state rather than cross-page global state.
+
 ## Page-local style classes
 
 Define a class with `class name:` before the logic and page blocks. Give it indented style properties, then apply it to a widget with `class: name`. Widget properties override class defaults. The compiler rejects unknown classes and style properties that do not match the widget type. Import a named class with `from theme import navText`, or import a namespace with `import theme` and apply `class: theme.navText`. Module paths are resolved relative to the importing page file. Imported modules are other `.oru` page files; circular imports and name collisions are rejected.
