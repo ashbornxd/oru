@@ -43,19 +43,18 @@ metadata:
     title: "Counter"
 
 logic:
-    count = 0
+    state count = 0
     func increment():
         count = count + 1
-        print(count)
 
 page:
     column:
-        text("Counter")
+        text(count)
         button("Add"):
             on.click: increment
 ```
 
-Use `on.click: functionName` on a button to call a page-local function. The current runtime executes the function and supports its language-side output. Reactive binding of values into widget text, full state subscriptions, and persistent storage are still under development.
+Use `state name = value` for page-local state. Bind a `text` or `button` label with an unquoted variable name, such as `text(count)`. After a click handler completes, the page redraws using the latest variable values. This initial binding supports a single variable name, not arbitrary expressions.
 
 ## Widget tree
 
@@ -80,22 +79,6 @@ page:
 Initial widgets: `column`, `row`, `box`, `text`, `button`, `link`, `image`, and `input`.
 
 Widget properties use `:`, not `=`. Values currently parse as strings, numbers, or booleans. Color values and size units remain strings for the renderer.
-
-## Page logic and click handlers
-
-A page may include one `logic:` block between metadata and `page:`. Its contents use the general ORU language syntax. Functions declared there are available to that page's controls.
-
-```oru
-logic:
-    func continueAction():
-        print("Continue was selected")
-
-page:
-    button("Continue"):
-        on.click: continueAction
-```
-
-A button's `on.click` property names a function in the same page. The function runs in the browser through the ORU interpreter. The current handler bridge supports function calls and console output; it does not yet provide reactive UI bindings or persistent state.
 
 ## Links
 
@@ -128,4 +111,4 @@ The build writes static HTML files into `dist/` and copies an optional `assets/`
 
 The development compiler emits a browser page shell with a Canvas 2D renderer and a parallel semantic DOM layer for focusable controls. The initial renderer handles basic text, box, column, row, image, link, button, and input presentation. Page-local `logic:` blocks run through the ORU interpreter, and button `on.click` handlers invoke named ORU functions.
 
-This is an early vertical slice, not the finished ORU 1.0 runtime. Reactive state and UI bindings, global state, imports, reusable style classes, form submission/validation, advanced responsive layout, and full keyboard/assistive-technology behavior are not complete yet. Do not use it for production applications until those features and the security/browser test suites are finished.
+This is an early vertical slice, not the finished ORU 1.0 runtime. Cross-page global state, modules/imports, reusable style classes, form submission/validation, advanced responsive layout, and full keyboard/assistive-technology behavior are not complete yet. Do not use it for production applications until those features and the security/browser test suites are finished.
