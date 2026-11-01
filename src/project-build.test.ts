@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { compileProject } from "./project-build.js";
+import { run } from "./core.js";
 
 test("compiles a multi-page project into safe static routes", async () => {
   const root = await mkdtemp(join(tmpdir(), "oru-project-"));
@@ -104,6 +105,12 @@ page:
     assert.ok(html.includes("APP_NAME ="));
     assert.ok(!html.includes('func unused()'));
     assert.ok(html.includes('state message = greet(APP_NAME)'));
+    const payload = html.match(/const data = (\\{[\\s\\S]*?\\});\\n  let initialGlobals/);
+    assert.ok(payload);
+    const runtime = JSON.parse(payload[1]!) as { logic: string };
+    const program = run(runtime.logic);
+    assert.equal(program.getGlobals().message, "Hello ORU");
+    assert.equal(program.call("greet", "World"), "Hello World");
   } finally {
     await rm(root, { recursive: true, force: true });
   }
