@@ -235,14 +235,16 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
-    if (node.type === "input" || node.type === "textarea") {
+    if (node.type === "input" || node.type === "textarea" || node.type === "select") {
       ctx.fillStyle = color(node, "background", "#ffffff");
       const radius = Math.max(0, px(p.radius, 0));
       ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.fill();
       ctx.strokeStyle = color(node, "border.color", "#999999");
       ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.stroke();
       const inputValue = textOf(node);
-      const selectedValue = node.type === "select" ? (node.children.find(option => option.type === "option")?.text ?? "") : inputValue;\n      const visibleValue = node.type === "input" && p.type === "password" ? "•".repeat(inputValue.length) : node.type === "select" ? (inputValue || selectedValue) : inputValue;
+      const firstOption = node.type === "select" ? node.children.find(option => option.type === "option") : undefined;
+      const selectedValue = node.type === "select" ? (inputValue || String(firstOption?.properties.value ?? firstOption?.text ?? "")) : inputValue;
+      const visibleValue = node.type === "input" && p.type === "password" ? "•".repeat(inputValue.length) : node.type === "select" ? (inputValue || selectedValue) : inputValue;
       ctx.fillStyle = visibleValue ? color(node, "text.color", "#202124") : "#777777";
       ctx.font = px(p.size, 14) + "px system-ui";
       const displayText = visibleValue || String(p.placeholder ?? "");
@@ -320,7 +322,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : node.type === "textarea" ? "textarea" : node.type === "select" ? "select" : "button");
       el.dataset.oruControl = String(regionIndex);
       el.style.cssText = "position:absolute;overflow:hidden;left:" + region.x + "px;top:" + region.y + "px;width:" + region.w + "px;height:" + region.h + "px;pointer-events:auto;";
-      if (node.type === "input" || node.type === "textarea") {
+      if (node.type === "input" || node.type === "textarea" || node.type === "select") {
         el.style.opacity = "1";
         el.style.background = "transparent";
         el.style.border = "0";
@@ -338,18 +340,29 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         el.style.cursor = "pointer";
       }
       const accessibleLabel = node.type === "input" || node.type === "textarea" || node.type === "select"
-        ? node.properties.label ?? node.properties.placeholder ?? node.binding ?? (node.type === "textarea" ? "Text area" : "Input")
+        ? node.properties.label ?? node.properties.placeholder ?? node.binding ?? (node.type === "textarea" ? "Text area" : node.type === "select" ? "Select" : "Input")
         : textOf(node) || node.properties.alt || node.type;
       el.setAttribute("aria-label", String(accessibleLabel));
       if (node.type === "link") {
         const route = String(node.route ?? node.properties.route ?? "");
         el.href = Object.prototype.hasOwnProperty.call(data.routes, route) ? data.routes[route] : "#";
-      } else if (node.type === "input" || node.type === "textarea") {
+      } else if (node.type === "input" || node.type === "textarea" || node.type === "select") {
+        if (node.type === "select") {
+          for (const option of node.children) {
+            if (option.type !== "option") continue;
+            const item = document.createElement("option");
+            item.value = String(option.properties.value ?? option.text ?? "");
+            item.textContent = String(option.text ?? item.value);
+            el.append(item);
+          }
+          const firstOption = node.children.find(option => option.type === "option");
+          el.value = textOf(node) || String(firstOption?.properties.value ?? firstOption?.text ?? "");
+        }
         el.placeholder = String(node.properties.placeholder ?? "");
         if (node.type === "input") {
           el.type = String(node.properties.type ?? "text");
           el.autocomplete = String(node.properties.autocomplete ?? (el.type === "password" ? "current-password" : "on"));
-        } else {
+        } else if (node.type === "textarea") {
           el.rows = Number(node.properties.rows ?? 4);
           el.style.resize = "none";
           el.style.whiteSpace = "pre-wrap";
@@ -370,8 +383,8 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
           if (node.properties[key] !== undefined) el[key] = node.properties[key];
         }
         if (node.binding && app) {
-          el.value = textOf(node);
-          el.addEventListener("input", () => {
+          if (node.type !== "select") el.value = textOf(node);
+          el.addEventListener(node.type === "select" ? "change" : "input", () => {
             try {
               const start = el.selectionStart, end = el.selectionEnd;
               const current = app.getGlobals()[node.binding];
