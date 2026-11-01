@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { contentSecurityPolicy } from "./security.js";
+import { contentSecurityPolicy, staticHostingHeaders } from "./security.js";
 
 test("uses exact hashes for generated inline scripts and styles without unsafe script execution", () => {
   const script = 'import { run } from "./_oru/core.js";\\nrun("safe");';
@@ -22,4 +22,19 @@ test("does not add hashes when a document has no inline code", () => {
   assert.ok(policy.includes("script-src 'self'"));
   assert.ok(policy.includes("style-src 'self'"));
   assert.ok(!policy.includes("sha256-"));
+});
+
+
+test("creates route-specific Cloudflare Pages headers for root and nested pages", () => {
+  const files = new Map([
+    ["index.html", "<style>body{margin:0}</style><script type=\"module\">run()</script>"],
+    ["docs/help/index.html", "<style>h1{color:black}</style><script type=\"module\">help()</script>"],
+    ["_oru/core.js", "export const run = () => {};"]
+  ]);
+  const headers = staticHostingHeaders(files);
+  assert.ok(headers.startsWith("/\\n  Content-Security-Policy:"));
+  assert.ok(headers.includes("/docs/help\\n  Content-Security-Policy:"));
+  assert.ok(headers.includes("X-Frame-Options: DENY"));
+  assert.ok(headers.includes("Permissions-Policy: camera=(), microphone=(), geolocation=()"));
+  assert.ok(!headers.includes("unsafe-inline"));
 });
