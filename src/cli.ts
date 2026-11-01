@@ -53,8 +53,8 @@ async function createProject(name: string): Promise<void> {
   await mkdir(target, { recursive: true });
 
   try {
-    await access(join(target, "main.oru"));
-    throw new Error(`"${name}" already contains a main.oru file. Nothing was changed.`);
+    await access(join(target, "oru.config"));
+    throw new Error(`"${name}" already contains an ORU project. Nothing was changed.`);
   } catch (error) {
     if (error instanceof Error && error.message.includes("already contains")) throw error;
   }
@@ -130,7 +130,6 @@ async function runDev(port: number): Promise<void> {
     throw new Error("Port must be a number between 1 and 65535.");
   }
 
-  const input = resolve("main.oru");
   let building = false;
 
   const rebuild = async () => {
