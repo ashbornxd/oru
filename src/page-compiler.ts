@@ -1,4 +1,5 @@
-import type { OruPage } from "./project.js";
+import { OruError } from "./ast.js";
+import type { OruPage, PageWidget } from "./project.js";
 import type { PageRoute } from "./routes.js";
 
 function escapeHtml(value: string): string {
@@ -6,6 +7,31 @@ function escapeHtml(value: string): string {
     .replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 
+const classProperties: Record<PageWidget["type"], Set<string>> = {
+  column: new Set(["background", "padding", "gap", "width", "height"]),
+  row: new Set(["background", "padding", "gap", "width", "height"]),
+  box: new Set(["background", "padding", "radius", "width", "height", "gap"]),
+  text: new Set(["color", "size", "weight", "font", "line", "align"]),
+  button: new Set(["color", "background", "size", "weight", "radius", "padding", "width"]),
+  link: new Set(["color", "size", "weight", "decoration"]),
+  image: new Set(["width", "height", "fit", "radius"]),
+  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type"])
+};
+
+function resolveWidget(widget: PageWidget, classes: OruPage["classes"]): PageWidget {
+  const properties = { ...widget.properties };
+  const className = properties.class;
+  if (className !== undefined) {
+    if (typeof className !== "string" || !classes[className]) throw new OruError("Unknown style class: " + String(className), widget.line);
+    const styles = classes[className]!;
+    for (const key of Object.keys(styles)) {
+      if (!classProperties[widget.type].has(key)) throw new OruError("Style class property " + key + " is not supported by " + widget.type + ".", widget.line);
+    }
+    Object.assign(properties, styles);
+    delete properties.class;
+  }
+  return { ...widget, properties, children: widget.children.map(child => resolveWidget(child, classes)) };
+}
 function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: string): string {
   const payload = JSON.stringify({ page, routes, logic: page.logic }).replace(/</g, "\\u003c");
   return `
@@ -204,7 +230,7 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const language = escapeHtml(page.metadata.language || "en");
   const depth = route.output.split("/").length - 1;
   const corePath = depth === 0 ? "./_oru/core.js" : "../".repeat(depth) + "_oru/core.js";
-  const script = runtimeSource(page, routes, corePath);
+  const resolvedPage = { ...page, widgets: page.widgets.map(widget => resolveWidget(widget, page.classes)) };\n  const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
 <head>
