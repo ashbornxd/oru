@@ -2,23 +2,34 @@
 
 **A simpler way to build for the web.**
 
-ORU is a Python-inspired language for building websites. Describe pages, content, layouts, and styles in readable `.oru` files. ORU compiles them into standard web files.
+ORU is a Python-inspired programming language for websites and browser applications. Its source files use the `.oru` extension.
 
-> ORU 0.3 is the published release. ORU 1.0 is under active development on the `oru-1.0.0-dev` branch and is not published.
+> **Release status:** ORU 0.3.0 is the published npm release. ORU 1.0 is being developed on `oru-1.0.0-dev` and is not published.
 
-## Requirements
+## Published release (0.3.0)
 
-- Node.js 20 or newer
-- npm
-
-## Install
+Install the stable published version:
 
 ```sh
-npm install --global @ashbornxd/oru
-oru --version
+npm install --global @ashbornxd/oru@0.3.0
 ```
 
-## Create and run a project
+The 0.3 syntax and behavior are documented in [language basics](docs/language-basics.md).
+
+## ORU 1.0 development build
+
+Requirements: Node.js 20+ and npm.
+
+```sh
+git clone --branch oru-1.0.0-dev https://github.com/ashbornxd/oru.git
+cd oru
+npm install
+npm test
+npm run build
+npm link
+```
+
+Create and preview a 1.0 project:
 
 ```sh
 oru create myWebsite
@@ -26,69 +37,70 @@ cd myWebsite
 oru run dev
 ```
 
-Open http://localhost:3000.
+Open `http://localhost:3000`. Build static output with `oru build`; files are written to `dist/`. An optional `assets/` directory is copied into the output.
 
-## Build
+## 1.0 page example
 
-```sh
-oru build
+Project structure:
+
+```text
+myWebsite/
+├── oru.config
+├── index.oru
+└── pages/
+    └── help.oru
 ```
 
-ORU writes static files to `dist/` and copies an optional `assets/` folder. Deploy `dist/` to any static web host.
+`oru.config`:
 
-## Language example
+```text
+name: "My Website"
+```
+
+`index.oru`:
 
 ```oru
-title = "My website"
-description = "Made with ORU."
+metadata:
+    title: "My website"
+    description: "Made with ORU."
+    language: "en"
 
-page index:
-    section:
-        section.padding = 32
-        section.align = center
-
-        heading("Hello, web!"):
-            heading.size = 44
-            heading.color = "#182230"
-
-        text("A website written in ORU."):
-            text.size = 18
-            text.color = "#596579"
-
-        button("Explore", "go about"):
-            button.background = "#2457d6"
-            button.color = white
-            button.radius = 12
-
-page about:
-    section:
-        heading("About")
-        text("Another page, in the same file.")
+page:
+    column:
+        text("Hello, web!"):
+            size: 32
+        link("Get help", "pages/help"):
 ```
 
-## What ORU provides
+Each `.oru` file defines one page. `index.oru` maps to `/`; `pages/help.oru` maps to `/pages/help`.
 
-- Multiple pages in one source file
-- Semantic elements and reusable style classes
-- Element-scoped styling such as `text.color` and `button.radius`
-- Simple vertical stacks and auto-fitting grids
-- Responsive defaults for phones, tablets, and desktops
-- Static HTML output and a local development server
-- Optional local assets
+## Language core
+
+The 1.0 interpreter currently includes:
+
+- Strings, numbers, booleans, lists, and dictionary/object values
+- Inferred, type-stable variables and uninitialized declarations
+- Arithmetic, comparisons, and logical expressions
+- Functions, lexical closures, conditionals, and loops
+- `print`, `len`, and `range` built-ins
+- The `oru eval <file>` script command
+
+## Browser runtime status
+
+The 1.0 development branch now has a first end-to-end page compiler and Canvas 2D browser renderer, with basic text, layout, image, link, button, and input presentation plus a semantic DOM control layer.
+
+**ORU 1.0 is not feature-complete or production-ready yet.** Reactive state, language-level event handlers, module imports, reusable style classes, complete form validation, advanced responsive layout, full accessibility behavior, and comprehensive security/browser testing remain in progress.
 
 ## Documentation
 
 - [Published 0.3 language basics](docs/language-basics.md)
-- [ORU 1.0 language core development spec](docs/core-language.md)
-- [ORU 1.0 page-file syntax (development)](docs/page-files.md)
-
-The 1.0 core interpreter is an early development milestone; it is not yet the complete page, UI, state, module, or browser runtime.
+- [1.0 language core](docs/core-language.md)
+- [1.0 page files and browser runtime](docs/page-files.md)
+- [1.0 planning and implementation log](UPDATE.md)
 
 ## Contributing
 
 ```sh
-git clone https://github.com/ashbornxd/oru.git
-cd oru
 npm install
 npm test
 npm run build
