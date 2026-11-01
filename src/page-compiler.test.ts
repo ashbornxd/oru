@@ -289,3 +289,23 @@ page:
   assert.ok(html.includes('node.properties.label ?? node.properties.placeholder'));
   assert.ok(html.includes('el.addEventListener("input"'));
 });
+
+
+test("renders accessible select controls bound to page state", () => {
+  const page = parsePage(`logic:
+    state country = "India"
+page:
+    select(country):
+        label: Country
+        required: true
+        option("India")
+        option("Japan")
+`);
+  assert.equal(page.widgets[0]?.type, "select");
+  assert.equal(page.widgets[0]?.binding, "country");
+  assert.equal(page.widgets[0]?.children.length, 2);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('document.createElement("select")'));
+  assert.ok(html.includes('document.createElement("option")'));
+  assert.ok(html.includes('el.addEventListener(node.type === "select" ? "change" : "input"'));
+});
