@@ -78,8 +78,8 @@ test.afterAll(async () => {
 test("native file selection keeps the FileList for required form submission", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const runtimeErrors = [];
-  page.on("pageerror", error => runtimeErrors.push(error.stack ?? error.message));
-  page.on("console", message => { if (message.type() === "error") runtimeErrors.push(message.text() + " @ " + JSON.stringify(message.location())); });
+  page.on("pageerror", error => runtimeErrors.push("PAGEERROR " + error.message + " STACK " + String(error.stack)));
+  page.on("console", message => runtimeErrors.push("CONSOLE " + message.type() + " " + message.text() + " @ " + JSON.stringify(message.location())));
   const response = await page.goto(baseURL);
   expect(response?.status()).toBe(200);
   expect(response?.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
