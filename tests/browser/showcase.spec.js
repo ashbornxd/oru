@@ -98,6 +98,10 @@ test("showcase form covers native validation, matching fields, and file names", 
   await page.evaluate(() => { window.__oruEmailBeforeInput = document.querySelector('[aria-label="Email address"]'); });
   await page.getByLabel("Email address").fill("tester@example.com");
   expect(await page.getByLabel("Email address").evaluate(el => el === window.__oruEmailBeforeInput)).toBe(true);
+  await page.getByLabel("Project description").focus();
+  const focusedBeforeViewportResize = await page.getByLabel("Project description").evaluate(el => el);
+  await page.setViewportSize({ width: 390, height: 620 });
+  expect(await page.getByLabel("Project description").evaluate(el => el === focusedBeforeViewportResize && document.activeElement === el)).toBe(true);
   await page.getByLabel("What are you building?").selectOption("browser-app");
   await page.getByLabel("Project description").fill("Testing the complete ORU showcase.");
   await page.getByLabel("Demo passphrase").fill("first-value");
