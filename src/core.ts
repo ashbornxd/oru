@@ -606,7 +606,7 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
   class AsyncReturn { constructor(readonly value: OruValue) {} }
   class AsyncBreak {}
   class AsyncContinue {}
-  const execute = async (body: Statement[], env: Environment, inFunction = false, inAsync = false, inLoop = false): Promise<void> => {
+  const execute = async (body: Statement[], env: Environment, inFunction = false, inAsync = false, inLoop = false, topLevel = false): Promise<void> => {
     for (const statement of body) {
       if (++steps > maxSteps) throw new OruError("Execution step limit exceeded.", statement.line);
       switch (statement.kind) {
@@ -614,14 +614,14 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
         case "global":
           globalNames.add(statement.name);
           if (!shared.has(statement.name)) shared.declare(statement.name, await evalExpr(statement.value, env, inAsync), statement.line);
-          else shared.assign(statement.name, await evalExpr(statement.value, env, inAsync), statement.line);
+          else if (!topLevel) shared.assign(statement.name, await evalExpr(statement.value, env, inAsync), statement.line);
           break;
         case "state": env.declare(statement.name, await evalExpr(statement.value, env, inAsync), statement.line); break;
         case "expression": await evalExpr(statement.value, env, inAsync); break;
         case "func": functions.set(statement.name, { params: statement.params, body: statement.body, closure: env, isAsync: statement.isAsync }); break;
         case "if": {
           for (const item of statement.branches) {
-            if (item.condition === null || truthy(await evalExpr(item.condition, env, inAsync))) { await execute(item.body, env, inFunction, inAsync, inLoop); break; }
+            if (item.condition === null || truthy(await evalExpr(item.condition, env, inAsync))) { await execute(item.body, env, inFunction, inAsync, inLoop, topLevel); break; }
           }
           break;
         }
@@ -629,7 +629,7 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
           let count = 0;
           while (truthy(await evalExpr(statement.condition, env, inAsync))) {
             if (++count > maxSteps) throw new OruError("Loop iteration limit exceeded.", statement.line);
-            try { await execute(statement.body, env, inFunction, inAsync, true); }
+            try { await execute(statement.body, env, inFunction, inAsync, true, topLevel); }
             catch (signal) { if (signal instanceof AsyncBreak) break; if (!(signal instanceof AsyncContinue)) throw signal; }
           }
           break;
@@ -697,7 +697,7 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
     return null;
   };
 
-  await execute(statements, global);
+  await execute(statements, global, false, false, false, true);
   return {
     output, globals: allGlobals(),
     callAsync: (name, ...args) => call(name, args, 0),
