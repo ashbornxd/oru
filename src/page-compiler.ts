@@ -39,9 +39,10 @@ function validateLinks(widget: PageWidget, routes: Record<string, string>): void
   }
   for (const child of widget.children) validateLinks(child, routes);
 }
-function validateBindings(widget: PageWidget, declared: Set<string>): void {
+function validateBindings(widget: PageWidget, declared: Set<string>, globals: Set<string>): void {
   if (widget.binding && !declared.has(widget.binding)) throw new OruError("Bound widget variable must be declared with state or global: " + widget.binding, widget.line);
-  for (const child of widget.children) validateBindings(child, declared);
+  if (widget.type === "input" && widget.properties.type === "password" && widget.binding && globals.has(widget.binding)) throw new OruError("Password inputs must use page-local state.", widget.line);
+  for (const child of widget.children) validateBindings(child, declared, globals);
 }
 
 function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: string): string {
@@ -212,7 +213,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       } else if (node.type === "input") {
         el.placeholder = String(node.properties.placeholder ?? "");
         el.type = String(node.properties.type ?? "text");
-        el.autocomplete = el.type === "password" ? "current-password" : "on";
+        el.autocomplete = String(node.properties.autocomplete ?? (el.type === "password" ? "current-password" : "on"));
         if (node.properties.required === true) el.required = true;
         if (node.properties.constraint === "numbers") el.pattern = "[0-9]+";
         if (node.properties.constraint === "letters") el.pattern = "[A-Za-z]+";
@@ -254,7 +255,8 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const corePath = depth === 0 ? "./_oru/core.js" : "../".repeat(depth) + "_oru/core.js";
   const resolvedPage = { ...page, widgets: page.widgets.map(widget => resolveWidget(widget, page.classes)) };
   const declaredBindings = new Set([...page.logic.matchAll(/(?:^|\n)\s*(?:state|global)\s+([A-Za-z_]\w*)\s*=/g)].map(match => match[1]!));
-  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings); }
+  const globalBindings = new Set([...page.logic.matchAll(/(?:^|\n)\s*global\s+([A-Za-z_]\w*)\s*=/g)].map(match => match[1]!));
+  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings, globalBindings); }
   const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
