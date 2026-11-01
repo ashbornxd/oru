@@ -1,5 +1,5 @@
 import { readFile, readdir } from "node:fs/promises";
-import { dirname, join, relative, resolve, sep } from "node:path";
+import { dirname, join, normalize, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { OruError } from "./ast.js";
 import { parsePage } from "./project.js";
@@ -44,9 +44,46 @@ export async function compileProject(projectDirectory = "."): Promise<Map<string
   for (const page of routeTable.values()) {
     routeMap[page.source.slice(0, -4)] = page.route;
   }
+
+  const resolving = new Set<string>();
+  const resolved = new Map<string, ReturnType<typeof parsePage>>();
+  const resolvePage = (source: string): ReturnType<typeof parsePage> => {
+    const cached = resolved.get(source);
+    if (cached) return cached;
+    if (resolving.has(source)) throw new OruError("Circular style import detected at " + source + ".");
+    const page = parsed.get(source);
+    if (!page) throw new OruError("Imported ORU module was not found: " + source + ".");
+    resolving.add(source);
+    const classes = { ...page.classes };
+    for (const item of page.imports) {
+      const modulePath = item.module.replaceAll(".", "/") + ".oru";
+      const target = normalize(join(dirname(source), modulePath)).split(sep).join("/");
+      if (target === ".." || target.startsWith("../")) throw new OruError("Import path leaves the project: " + item.module + ".");
+      const modulePage = resolvePage(target);
+      if (item.kind === "named") {
+        for (const name of item.names) {
+          const styles = modulePage.classes[name];
+          if (!styles) throw new OruError("Style class " + name + " was not exported by " + item.module + ".");
+          if (classes[name]) throw new OruError("Imported style class conflicts with local class: " + name + ".");
+          classes[name] = styles;
+        }
+      } else {
+        for (const [name, styles] of Object.entries(modulePage.classes)) {
+          const qualified = item.alias + "." + name;
+          if (classes[qualified]) throw new OruError("Imported style class conflicts with existing class: " + qualified + ".");
+          classes[qualified] = styles;
+        }
+      }
+    }
+    resolving.delete(source);
+    const result = { ...page, classes, imports: [] };
+    resolved.set(source, result);
+    return result;
+  };
+
   const output = new Map<string, string>();
   for (const pageRoute of routeTable.values()) {
-    const page = parsed.get(pageRoute.source)!;
+    const page = resolvePage(pageRoute.source);
     output.set(pageRoute.output, compilePage(page, pageRoute, routeMap));
   }
   if ([...parsed.values()].some(page => page.logic.trim().length > 0)) {
