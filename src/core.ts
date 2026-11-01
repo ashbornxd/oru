@@ -556,11 +556,19 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
         if (expr.op === "==") return JSON.stringify(left) === JSON.stringify(right);
         if (expr.op === "!=") return JSON.stringify(left) !== JSON.stringify(right);
         if (["<", "<=", ">", ">="].includes(expr.op)) {
-          if (typeof left !== typeof right || (typeof left !== "number" && typeof left !== "string")) throw new OruError("Values cannot be ordered.", 0);
-          if (expr.op === "<") return left < right;
-          if (expr.op === "<=") return left <= right;
-          if (expr.op === ">") return left > right;
-          return left >= right;
+          if (typeof left === "number" && typeof right === "number") {
+            if (expr.op === "<") return left < right;
+            if (expr.op === "<=") return left <= right;
+            if (expr.op === ">") return left > right;
+            return left >= right;
+          }
+          if (typeof left === "string" && typeof right === "string") {
+            if (expr.op === "<") return left < right;
+            if (expr.op === "<=") return left <= right;
+            if (expr.op === ">") return left > right;
+            return left >= right;
+          }
+          throw new OruError("Values cannot be ordered.", 0);
         }
         if (expr.op === "+" && typeof left === "string" && typeof right === "string") return left + right;
         if (typeof left !== "number" || typeof right !== "number") throw new OruError("Operator '" + expr.op + "' expects numbers.", 0);
@@ -607,12 +615,9 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
         case "expression": await evalExpr(statement.value, env, inAsync); break;
         case "func": functions.set(statement.name, { params: statement.params, body: statement.body, closure: env, isAsync: statement.isAsync }); break;
         case "if": {
-          const branch = statement.branches.find(x => x.condition === null);
-          let selected = false;
           for (const item of statement.branches) {
-            if (item.condition === null || truthy(await evalExpr(item.condition, env, inAsync))) { await execute(item.body, env, inFunction, inAsync, inLoop); selected = true; break; }
+            if (item.condition === null || truthy(await evalExpr(item.condition, env, inAsync))) { await execute(item.body, env, inFunction, inAsync, inLoop); break; }
           }
-          void branch; void selected;
           break;
         }
         case "while": {
