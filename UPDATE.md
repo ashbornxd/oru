@@ -364,3 +364,15 @@ Implemented on `oru-1.0.0-dev`:
 - Added tests for style class parsing, application, and incompatible properties.
 
 **Still incomplete:** importing classes across files, module loading, richer expression bindings, full form workflows, and the remaining runtime/accessibility/security work.
+
+
+### Milestone 8 — Cross-file style class imports
+
+Implemented on `oru-1.0.0-dev`:
+- Added named imports with `from module.path import className`.
+- Added namespace imports with `import module.path`; imported classes are referenced as `namespace.className`.
+- Module paths resolve relative to the importing page file and point to another `.oru` page.
+- Imports can be chained; circular imports, missing modules/classes, and class name collisions produce build errors.
+- Added project build tests for named imports, namespace imports, and circular import rejection.
+
+**Scope boundary:** this first import milestone shares style classes only. General-purpose function/module imports and external package imports remain unfinished.
