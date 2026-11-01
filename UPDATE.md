@@ -72,7 +72,9 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Agreed priority:** Design general-purpose programming fundamentals (types, variables, values, operators, and logic) before website/UI syntax.
 - **Agreed syntax distinction:** Use `:` for structured configuration fields and `=` for variable declarations and assignments. Example configuration shape: `metadata:` followed by indented fields such as `title: "..."` and `description: "..."`.
 - **Agreed variable behavior:** `name = pass` declares an uninitialized variable. Its type is inferred from the first non-`pass` value assigned to it. Later assignments must match that established type; incompatible assignments produce an error. Reading the variable before its first value is assigned produces an error.
-- **Agreed file/page model:** Each `.oru` file contains exactly one page, and each page file can define its own metadata such as title and description. How pages are organized and linked/routed across files remains open.
+- **Agreed file/page model:** Each `.oru` file contains exactly one page, and each page file can define its own metadata such as title and description.
+- **Agreed page references:** Refer to a page using its relative file path without the `.oru` extension: `index`, `help`, or `pages/help`.
+- **Still to design:** The exact navigation syntax and how these page references map to browser URLs.
 - **Illustrative example:** `name = pass`, then `name = "kunal"` establishes it as a string; `name = 20` afterward is a type error.
 - **Superseded proposal:** Explicit declarations such as `string name = pass` are no longer the chosen variable syntax.
 - **Still to design:** Exact type set, inference rules, operators, expressions, functions, control flow, input conversion, and error timing. Do not assume Python's existing `pass` semantics.
