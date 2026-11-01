@@ -105,7 +105,7 @@ page:
     assert.ok(html.includes("APP_NAME ="));
     assert.ok(!html.includes('func unused()'));
     assert.ok(html.includes('state message = greet(APP_NAME)'));
-    const payload = html.match(/const data = (\\{[\\s\\S]*?\\});\\n  let initialGlobals/);
+    const payload = html.match(/const data = (\{[\s\S]*?\});\n  let initialGlobals/);
     assert.ok(payload);
     const runtime = JSON.parse(payload[1]!) as { logic: string };
     const program = run(runtime.logic);
