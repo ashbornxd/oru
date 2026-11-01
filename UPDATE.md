@@ -44,7 +44,7 @@ These are observations about the existing implementation, not commitments for 1.
 
 ## Decisions
 
-_No ORU 1.0.0 decisions have been approved yet._
+Approved decisions are recorded below.
 
 Add decisions below in chronological order. Include the date, the decision, its reasoning, and any consequences or follow-up work.
 
@@ -52,11 +52,11 @@ Add decisions below in chronological order. Include the date, the decision, its 
 
 | Date | Area | Agreed decision | Reason / consequences |
 | 2026-11-01 | Language design order | Design ORU's general-purpose programming fundamentals (types, variables, values, operators, and logic) before designing website/UI syntax. | ORU should be a real programming language, not just a markup language with styling syntax. |
-| --- | --- | --- | --- |
 | 2026-11-01 | Runtime target | ORU 1.0 applications must run in ordinary web browsers. A separate ORU desktop/mobile runtime is not required for 1.0. | Browser reach is the delivery target. The ORU runtime and renderer will execute within the browser, with compatibility across major browsers as a requirement. |
 | 2026-11-01 | Renderer backend | Use Canvas 2D as the drawing backend for the ORU 1.0 renderer. | It provides a simpler foundation for a UI-focused renderer: text, shapes, images, layouts, and interactions. Keep the renderer architecture modular so a different backend, potentially WebGL, can be explored later if justified. |
 | 2026-11-01 | Uninitialized variables | A variable declared with `pass` has no value until it is explicitly assigned. Reading it before assignment must produce a clear error. | Avoids silently inventing default values and makes missing data easier to detect. |
-| 2026-11-01 | Variable type safety | Variables must retain their declared type; assigning a value of an incompatible type must produce an error. | Prevents accidental type changes and makes program behavior more predictable. Exact conversion rules and diagnostic timing remain to be specified. |
+| 2026-11-01 | Variable type safety | Once a variable's type is established by its first non-`pass` value, it cannot be changed by assigning an incompatible value. | Prevents accidental type changes while allowing concise declarations without explicit type keywords. |
+| 2026-11-01 | Assignment and configuration syntax | Use `:` for structured configuration fields (for example, `metadata: title: "..."`) and `=` for variable declarations and assignments. A variable may be declared as `name = pass`; its type is inferred from the first value later assigned. | Separates configuration syntax from variable syntax and avoids requiring a type keyword when declaring an uninitialized variable. |
 
 ## Open planning areas
 
@@ -68,9 +68,12 @@ Work through these together. An item is not a decision until we explicitly agree
 - What is explicitly out of scope for 1.0?
 
 ### 2. Language design
-- **Agreed priority:** Design general-purpose programming fundamentals before website/UI syntax.
-- **Proposed variable declaration syntax (not finalized):** `string name = pass` and `int age = pass`. The idea is to allow a typed variable to be declared without an initial value, then assigned later (potentially from user input).
-- **Open question:** Define exactly what `pass` means, how uninitialized variables behave, and how input is read and converted to the declared type. Do not assume Python's existing `pass` semantics.
+- **Agreed priority:** Design general-purpose programming fundamentals (types, variables, values, operators, and logic) before website/UI syntax.
+- **Agreed syntax distinction:** Use `:` for structured configuration fields and `=` for variable declarations and assignments. Example configuration shape: `metadata:` followed by indented fields such as `title: "..."` and `description: "..."`.
+- **Agreed variable behavior:** `name = pass` declares an uninitialized variable. Its type is inferred from the first non-`pass` value assigned to it. Later assignments must match that established type; incompatible assignments produce an error. Reading the variable before its first value is assigned produces an error.
+- **Illustrative example:** `name = pass`, then `name = "kunal"` establishes it as a string; `name = 20` afterward is a type error.
+- **Superseded proposal:** Explicit declarations such as `string name = pass` are no longer the chosen variable syntax.
+- **Still to design:** Exact type set, inference rules, operators, expressions, functions, control flow, input conversion, and error timing. Do not assume Python's existing `pass` semantics.
 - Core syntax, values, expressions, variables, functions, control flow, and errors.
 - Pages, reusable components, properties/arguments, slots or composition.
 - Styling model, responsive behavior, themes, and custom CSS escape hatches.
