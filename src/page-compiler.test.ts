@@ -82,3 +82,16 @@ page:
 `);
   assert.throws(() => compilePage(page, routeForPage("index.oru"), { index: "/" }), /not supported by text/);
 });
+test("binds input values to page state and updates the interpreter", () => {
+  const page = parsePage(`logic:
+    state email = pass
+page:
+    input(email):
+        type: email
+        required: true
+`);
+  assert.equal(page.widgets[0]?.binding, "email");
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes("app.set(node.binding, el.value)"));
+  assert.ok(html.includes("el.required = true"));
+});
