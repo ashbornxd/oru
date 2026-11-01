@@ -14,7 +14,7 @@ export function contentSecurityPolicy(html: string): string {
     "script-src 'self'" + (scriptHash ? " " + scriptHash : ""),
     "script-src-attr 'none'",
     "style-src 'self'" + (styleHash ? " " + styleHash : ""),
-    "style-src-attr 'unsafe-inline'",
+    "style-src-attr 'none'",
     "img-src 'self' https:",
     "object-src 'none'",
     "base-uri 'self'",
