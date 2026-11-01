@@ -29,3 +29,17 @@ test("rejects duplicate page blocks and malformed indentation", () => {
   assert.throws(() => parsePage("page:\n    text(\"a\"):\npage:"), /exactly one page/);
   assert.throws(() => parsePage("page:\n     text(\"a\"):"), /four-space/);
 });
+
+test("parses leaf widgets, image sources, and input placeholders", () => {
+  const page = parsePage(`page:
+    column:
+        text("No trailing colon")
+        image("assets/logo.png", "Logo")
+        input("Email")
+`);
+  const column = page.widgets[0]!;
+  assert.equal(column.children[0]?.text, "No trailing colon");
+  assert.equal(column.children[1]?.properties.src, "assets/logo.png");
+  assert.equal(column.children[1]?.text, "Logo");
+  assert.equal(column.children[2]?.properties.placeholder, "Email");
+});
