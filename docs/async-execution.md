@@ -1,6 +1,6 @@
 # ORU asynchronous execution
 
-Status: async interpreter and browser event integration implemented; full compatibility and release verification remain in progress.
+Status: async interpreter, CLI entry point, and browser event integration implemented; full compatibility and release verification remain in progress.
 
 ## Syntax
 
@@ -22,9 +22,9 @@ async func showProfile():
 
 - Preserve `run(source)` and synchronous `call()` for existing programs.
 - Add `runAsync(source)` and `callAsync(name, ...args)`.
-- The synchronous API must reject async declarations and await expressions with a clear source-line error. It must never silently leak a Promise.
+- The synchronous API must reject calls to async functions and await expressions with a clear source-line error. It must never silently leak a Promise.
 - The async API may execute synchronous and asynchronous functions in one program.
-- Async host calls are explicitly registered capabilities; no arbitrary JavaScript evaluation, host globals, or unrestricted module loading.
+- Async host calls are explicitly registered capabilities; no arbitrary JavaScript evaluation, host globals, or unrestricted module loading. Async lists and call arguments evaluate left-to-right.
 - Promise values are runtime-only and cannot be stored in ORU lists, objects, or state.
 - Awaited statements execute sequentially. Parallel execution is not implicit.
 - Async execution preserves step limits, type checks, state/global semantics, and useful source locations.
@@ -40,6 +40,6 @@ Browser tests: async click and form handlers, state persistence after completion
 
 ## Current implementation boundary
 
-The first interpreter implementation exposes `runAsync(source, options)` and `callAsync(name, ...args)`. Host capabilities are supplied through the explicit `asyncFunctions` option. It supports async function declarations, sequential awaitable calls, return values, local/global/state assignments, conditionals, loops, and the existing execution-step ceiling. The legacy `run()` / `call()` path remains synchronous and gives an explicit error if an async function is invoked there.
+ The interpreter exposes `runAsync(source, options)` and `callAsync(name, ...args)`. Host capabilities are supplied through the explicit `asyncFunctions` option. It supports async function declarations, sequential awaitable calls, return values, local/global/state assignments, conditionals, loops, and the execution-step ceiling. Lists and function arguments evaluate left-to-right; awaits are not implicitly parallelized. The legacy `run()` / `call()` path remains synchronous and gives an explicit error if an async function is invoked there. The `oru eval <file>` CLI command uses the async interpreter, so local async functions can be executed from scripts.
 
-The first implementation is not yet release-complete: browser event dispatch does not yet await handlers, async errors are not yet surfaced through the page runtime, and the full parser/runtime edge-case matrix still needs verification.
+Browser event dispatch awaits async handlers before persisting state and rerendering. Rejected handlers are caught and surfaced through an accessible alert. The remaining verification work is the full parser/runtime edge-case matrix, broader async form workflows, accessibility review, security/performance review, and real-device testing.
