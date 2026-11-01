@@ -5,7 +5,7 @@ import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
 import { compileProject } from "./project-build.js";
 import { contentSecurityPolicy, staticHostingHeaders } from "./security.js";
-import { run as runLanguage } from "./core.js";
+import { runAsync as runLanguage } from "./core.js";
 
 const VERSION = "1.0.0-dev.0";
 const STARTER = `metadata:
@@ -84,7 +84,7 @@ async function cleanOutput(output: string): Promise<string> {
 
 async function evaluateFile(input: string): Promise<void> {
   const source = await readFile(resolve(input), "utf8");
-  runLanguage(source, { output: value => console.log(typeof value === "string" ? value : JSON.stringify(value)) });
+  await runLanguage(source, { output: value => console.log(typeof value === "string" ? value : JSON.stringify(value)) });
 }
 
 async function build(output = "dist"): Promise<void> {
