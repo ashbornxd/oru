@@ -63,7 +63,7 @@ function valueOf(raw: string, line: number): PageValue {
 }
 
 function widgetOf(text: string, line: number): PageWidget | null {
-  const match = text.match(/^(?:(?:[A-Za-z_][A-Za-z0-9_]*)\\s+)?([A-Za-z]+)(?:\\((.*)\\))?\\s*:?\\s*$/);
+  const match = text.match(/^(?:(?:[A-Za-z_][A-Za-z0-9_]*)\s+)?([A-Za-z]+)(?:\((.*)\))?\s*:?\s*$/);
   if (!match) return null;
   const type = match[1]!.toLowerCase();
   if (!widgetTypes.has(type as PageWidget["type"])) throw new OruError("Unknown widget: " + type, line);
@@ -108,10 +108,6 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
     if (line.indent === 0 && line.text === "logic:") {
       if (sawLogic || sawPage) throw new OruError("logic must appear once before page.", line.number);
       sawLogic = true; section = "logic"; continue;
-    }
-    if (line.indent === 0 && line.text === "logic:") {
-      if (section === "page" || logicLines.length) throw new OruError("logic: must appear once before page:.", line.number);
-      section = "logic"; continue;
     }
     if (line.indent === 0 && line.text === "page:") {
       if (sawPage) throw new OruError("A .oru file can define exactly one page.", line.number);
