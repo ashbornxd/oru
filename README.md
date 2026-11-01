@@ -87,7 +87,7 @@ The 1.0 interpreter currently includes:
 
 ## Browser runtime status
 
-The 1.0 development branch now has a page compiler and Canvas 2D browser renderer, with basic text, layout, image, link, button, and input presentation plus a semantic DOM control layer. Page-local logic, click handlers, reactive text/button/input bindings, session-scoped `global` values, native form submission and constraints, reusable style classes, and named cross-file function/value imports are implemented. The Canvas renderer supports responsive row wrapping, scrollable content, and a semantic accessibility layer with native keyboard-operable controls. The compiler also rejects unresolved internal routes, unsafe module paths, unsafe image sources, and symbolic links in project assets.
+The 1.0 development branch now has a page compiler and Canvas 2D browser renderer, with basic text, layout, image, link, button, and input presentation plus a semantic DOM control layer. Page-local logic, click handlers, reactive text/button/input bindings, session-scoped `global` values, native form submission and constraints, button hover/active/disabled states and icon assets, reusable style classes, and named cross-file function/value imports are implemented. The Canvas renderer supports responsive row wrapping, scrollable content, and a semantic accessibility layer with native keyboard-operable controls. The compiler also rejects unresolved internal routes, unsafe module paths, unsafe image sources, and symbolic links in project assets.
 
 **ORU 1.0 is not feature-complete or production-ready yet.** Custom validation messages, advanced responsive layout controls, full WCAG conformance, hardened asset policies, and comprehensive browser integration testing remain in progress.
 
