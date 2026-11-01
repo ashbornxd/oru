@@ -239,7 +239,8 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const depth = route.output.split("/").length - 1;
   const corePath = depth === 0 ? "./_oru/core.js" : "../".repeat(depth) + "_oru/core.js";
   const resolvedPage = { ...page, widgets: page.widgets.map(widget => resolveWidget(widget, page.classes)) };
-  for (const widget of resolvedPage.widgets) validateLinks(widget, routes);\n  const script = runtimeSource(resolvedPage, routes, corePath);
+  for (const widget of resolvedPage.widgets) validateLinks(widget, routes);
+  const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
 <head>
@@ -251,7 +252,9 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,sans-serif;background:#fff;color:#202124}
 body{overflow-x:hidden}canvas{display:block;max-width:100%;touch-action:manipulation}
 #oru-controls{position:absolute;inset:0;pointer-events:none}
-#oru-controls>*{pointer-events:auto}\n#oru-controls>button:focus-visible,#oru-controls>a:focus-visible{opacity:1!important;outline:2px solid #2457d6;outline-offset:2px}\n#oru-controls>input:focus-visible{outline:2px solid #2457d6}
+#oru-controls>*{pointer-events:auto}
+#oru-controls>button:focus-visible,#oru-controls>a:focus-visible{opacity:1!important;outline:2px solid #2457d6;outline-offset:2px}
+#oru-controls>input:focus-visible{outline:2px solid #2457d6}
 </style>
 </head>
 <body>
