@@ -64,3 +64,23 @@ test("parses reactive value bindings for text and buttons", () => {
   assert.equal(page.widgets[0]?.binding, "count");
   assert.equal(page.widgets[1]?.binding, "count");
 });
+
+
+test("parses a form container and submit handler", () => {
+  const page = parsePage(`logic:
+    func register():
+        print("register")
+page:
+    form:
+        on.submit: register
+        input(email):
+            type: email
+            required: true
+        button("Create account")
+`);
+  const form = page.widgets[0]!;
+  assert.equal(form.type, "form");
+  assert.equal(form.properties["on.submit"], "register");
+  assert.equal(form.children[0]?.binding, "email");
+  assert.equal(form.children[1]?.type, "button");
+});
