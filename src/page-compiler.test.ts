@@ -44,7 +44,7 @@ page:
         on.click: help
 `);
   const html = compilePage(page, routeForPage("pages/help.oru"), { "pages/help": "/pages/help" });
-  assert.ok(html.includes('import { run } from "../../_oru/core.js";'));
+  assert.ok(html.includes('import { runAsync } from "../../_oru/core.js";'));
 });
 test("binds page text to mutable ORU state", () => {
   const page = parsePage(`logic:
