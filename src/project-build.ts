@@ -34,13 +34,17 @@ async function validateConfig(root: string): Promise<void> {
 
 async function validateAssetTree(root: string): Promise<void> {
   const assetRoot = join(root, "assets");
-  let entries: Dirent[];
+  let rootInfo;
   try {
-    entries = await readdir(assetRoot, { withFileTypes: true });
+    rootInfo = await lstat(assetRoot);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
     throw error;
   }
+  if (rootInfo.isSymbolicLink() || !rootInfo.isDirectory()) {
+    throw new OruError('The project "assets" path must be a regular directory.');
+  }
+  const entries: Dirent[] = await readdir(assetRoot, { withFileTypes: true });
   const inspect = async (directory: string, children: Dirent[]): Promise<void> => {
     for (const entry of children) {
       const path = join(directory, entry.name);
