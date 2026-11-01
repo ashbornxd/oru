@@ -7,6 +7,7 @@ type Expr =
   | { kind: "unary"; op: string; value: Expr }
   | { kind: "binary"; op: string; left: Expr; right: Expr }
   | { kind: "call"; callee: Expr; args: Expr[] }
+  | { kind: "await"; value: Expr }
   | { kind: "member"; object: Expr; key: string }
   | { kind: "index"; object: Expr; index: Expr };
 
@@ -14,7 +15,7 @@ type Statement =
   | { kind: "assign"; name: string; value: Expr; line: number }
   | { kind: "global"; name: string; value: Expr; line: number }
   | { kind: "state"; name: string; value: Expr; line: number }
-  | { kind: "func"; name: string; params: string[]; body: Statement[]; line: number }
+  | { kind: "func"; name: string; params: string[]; body: Statement[]; line: number; isAsync: boolean }
   | { kind: "if"; branches: Array<{ condition: Expr | null; body: Statement[] }>; line: number }
   | { kind: "while"; condition: Expr; body: Statement[]; line: number }
   | { kind: "for"; name: string; iterable: Expr; body: Statement[]; line: number }
@@ -83,7 +84,9 @@ class ExpressionParser {
   private prefix(): Expr {
     const token = this.take();
     let value: Expr;
-    if (token.value === "!" || token.value === "not" || token.value === "-" || token.value === "+") {
+    if (token.value === "await") {
+      value = { kind: "await", value: this.expression(7) };
+    } else if (token.value === "!" || token.value === "not" || token.value === "-" || token.value === "+") {
       value = { kind: "unary", op: token.value, value: this.expression(7) };
     } else if (token.value === "(") {
       value = this.expression(0); this.expect(")");
@@ -203,12 +206,12 @@ class StatementParser {
     return this.block(next.indent);
   }
   private statement(line: SourceLine): Statement {
-    let match = line.text.match(/^func\s+([A-Za-z_]\w*)\s*\((.*?)\)\s*:\s*$/);
+    let match = line.text.match(/^(async\s+)?func\s+([A-Za-z_]\w*)\s*\((.*?)\)\s*:\s*$/);
     if (match) {
-      const params = match[2]!.trim() ? match[2]!.split(",").map(x => x.trim()) : [];
+      const params = match[3]!.trim() ? match[3]!.split(",").map(x => x.trim()) : [];
       if (params.some(x => !/^[A-Za-z_]\w*$/.test(x)) || new Set(params).size !== params.length)
         throw new OruError("Function parameters must be unique variable names.", line.line);
-      return { kind: "func", name: match[1]!, params, body: this.childBlock(line), line: line.line };
+      return { kind: "func", name: match[2]!, params, body: this.childBlock(line), line: line.line, isAsync: Boolean(match[1]) };
     }
     match = line.text.match(/^if\s+(.+)\s*:\s*$/);
     if (match) {
@@ -325,7 +328,7 @@ export function run(source: string, options: RunOptions = {}): RunResult {
   for (const [name, value] of Object.entries(options.initialGlobals ?? {})) shared.declare(name, value, 0);
   const global = new Environment(shared);
   const allGlobals = () => ({ ...shared.snapshot(), ...global.snapshot() });
-  const functions = new Map<string, { params: string[]; body: Statement[]; closure: Environment }>();
+  const functions = new Map<string, { params: string[]; body: Statement[]; closure: Environment; isAsync: boolean }>();
   const builtins = new Map<string, Callable>();
   builtins.set("print", { call: args => { const value = args.map(displayValue).join(" "); output.push(value); options.output?.(value); return null; } });
   builtins.set("len", { call: (args, line) => {
@@ -406,6 +409,7 @@ export function run(source: string, options: RunOptions = {}): RunResult {
         if (object && typeof object === "object" && !Array.isArray(object) && typeof index === "string") return Object.hasOwn(object, index) ? (object as Record<string, OruValue>)[index]! : null;
         throw new OruError("Invalid index operation.", 0);
       }
+      case "await": throw new OruError("await can only be executed by runAsync() inside an async function.", 0);
       case "call": {
         if (expr.callee.kind !== "name") throw new OruError("Only named functions can be called in this release.", 0);
         return invokeFunction(expr.callee.name, expr.args.map(x => evalExpr(x, env)), 0);
@@ -437,7 +441,7 @@ export function run(source: string, options: RunOptions = {}): RunResult {
         }
         case "state": env.declare(statement.name, evalExpr(statement.value, env), statement.line); break;
         case "expression": evalExpr(statement.value, env); break;
-        case "func": functions.set(statement.name, { params: statement.params, body: statement.body, closure: env }); break;
+        case "func": functions.set(statement.name, { params: statement.params, body: statement.body, closure: env, isAsync: statement.isAsync }); break;
         case "if": {
           const branch = statement.branches.find(x => x.condition === null || truthy(evalExpr(x.condition, env)));
           if (branch) executeBlock(branch.body, env, inFunction, inLoop);
@@ -480,6 +484,7 @@ export function run(source: string, options: RunOptions = {}): RunResult {
     if (builtin) return builtin.call(args, line);
     const fn = functions.get(name);
     if (!fn) throw new OruError("Unknown function '" + name + "'.", line);
+    if (fn.isAsync) throw new OruError("Async function '" + name + "' must be invoked with callAsync() from runAsync().", line);
     if (args.length !== fn.params.length) throw new OruError("Function '" + name + "' expects " + fn.params.length + " argument(s).", line);
     const env = new Environment(fn.closure);
     fn.params.forEach((param, i) => env.declare(param, args[i]!, line));
