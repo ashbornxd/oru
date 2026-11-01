@@ -132,7 +132,11 @@ test("reflows aligned controls across desktop and mobile widths", async ({ page 
   expect(desktopSecond.x).toBeGreaterThan(desktopFirst.x + 400);
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect.poll(async () => (await second.boundingBox()).y).toBeGreaterThan((await first.boundingBox()).y);
+  await expect.poll(async () => {
+    const firstBox = await first.boundingBox();
+    const secondBox = await second.boundingBox();
+    return Boolean(firstBox && secondBox && secondBox.y > firstBox.y);
+  }).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   expect(errors).toEqual([]);
 });
