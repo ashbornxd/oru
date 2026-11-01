@@ -60,3 +60,25 @@ page:
   const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
   assert.ok(html.includes("app.getGlobals()"));
 });
+test("applies compatible page-local style classes to widgets", () => {
+  const page = parsePage(`class navText:
+    color: #123456
+    size: 24
+page:
+    text("Styled"):
+        class: navText
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes("#123456"));
+  assert.ok(html.includes('"size":24'));
+});
+
+test("rejects style properties that do not match a widget type", () => {
+  const page = parsePage(`class navText:
+    radius: 8
+page:
+    text("Styled"):
+        class: navText
+`);
+  assert.throws(() => compilePage(page, routeForPage("index.oru"), { index: "/" }), /not supported by text/);
+});
