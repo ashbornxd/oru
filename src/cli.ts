@@ -4,6 +4,7 @@ import { watch } from "node:fs";
 import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
 import { compile } from "./compiler.js";
+import { run as runLanguage } from "./core.js";
 
 const VERSION = "1.0.0-dev.0";
 const STARTER = `title = "My website"
@@ -80,7 +81,7 @@ async function cleanOutput(output: string): Promise<string> {
   return root;
 }
 
-async function build(input = "main.oru", output = "dist"): Promise<void> {
+async function evaluateFile(input: string): Promise<void> {\n  const source = await readFile(resolve(input), "utf8");\n  runLanguage(source, { output: value => console.log(typeof value === "string" ? value : JSON.stringify(value)) });\n}\n\nasync function build(input = "main.oru", output = "dist"): Promise<void> {
   const source = await readFile(resolve(input), "utf8");
   const result = compile(source);
   const outputRoot = await cleanOutput(output);
@@ -175,7 +176,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "build") {
+  if (command === "eval") {\n    const file = args[1];\n    if (!file) throw new Error("Provide an ORU script file, for example: oru eval script.oru");\n    await evaluateFile(file);\n    return;\n  }\n\n  if (command === "build") {
     await build("main.oru", option(args, "--out", "dist"));
     return;
   }
