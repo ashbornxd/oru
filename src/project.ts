@@ -82,6 +82,8 @@ function widgetOf(text: string, line: number): PageWidget | null {
   } else if (type === "image") {
     properties.src = values[0] ?? "";
     label = values[1] ?? "";
+  } else if (type === "input" && values.length === 0 && /^[A-Za-z_][A-Za-z0-9_]*$/.test(args)) {
+    binding = args;
   } else if (type === "input") {
     properties.placeholder = values[0] ?? "";
   } else if ((type === "text" || type === "button") && values.length === 0 && /^[A-Za-z_][A-Za-z0-9_]*$/.test(args)) {
