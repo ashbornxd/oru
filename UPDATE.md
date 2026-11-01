@@ -486,3 +486,14 @@ Implemented on `oru-1.0.0-dev`:
 - Added asset validation tests.
 
 **Still incomplete:** full threat-model review, CSP and deployment-header guidance, file-size budgets, asset optimization, external package integrity, browser integration tests, and full release verification.
+
+
+### Milestone 16 — Core state and object safety fixes
+
+Implemented on `oru-1.0.0-dev`:
+- Fixed nested `global name = value` statements so they update an existing shared value inside functions and loops.
+- Preserved top-level global initializers so restored session values are not overwritten on navigation.
+- Created object literals with a null prototype and restricted property/index access to own keys, preventing inherited JavaScript properties from leaking into ORU objects.
+- Added tests for nested global updates, restored-state behavior, and prototype-key isolation.
+
+**Still incomplete:** deeper type checking for nested collections, mutable collection operations, improved source-line diagnostics for expression runtime errors, and a broader interpreter security review.
