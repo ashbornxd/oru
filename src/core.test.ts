@@ -34,3 +34,10 @@ test("exposes page functions for event-driven invocation", () => {
   assert.equal(program.call("increment", 2), 3);
   assert.equal(program.getGlobals().count, 3);
 });
+
+test("supports state declarations and updates captured state", () => {
+  const program = run('state count = 0\nfunc increment():\n    count = count + 1');
+  assert.equal(program.getGlobals().count, 0);
+  program.call("increment");
+  assert.equal(program.getGlobals().count, 1);
+});
