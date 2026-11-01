@@ -77,12 +77,18 @@ test.afterAll(async () => {
 
 test("native file selection keeps the FileList for required form submission", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  const runtimeErrors = [];
+  page.on("pageerror", error => runtimeErrors.push(error.message));
+  page.on("console", message => { if (message.type() === "error") runtimeErrors.push(message.text()); });
   const response = await page.goto(baseURL);
   expect(response?.status()).toBe(200);
   expect(response?.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
 
   const file = page.getByLabel("Choose a file");
-  await page.getByRole("button", { name: "Send" }).click();
+  const send = page.locator("#oru-controls button");
+  await expect(send, runtimeErrors.join("\\n")).toHaveCount(1);
+  expect(await send.getAttribute("aria-label")).toBe("Send");
+  await send.click();
   await expect(page.locator("#oru-semantic")).toContainText("false");
 
   await file.setInputFiles({
@@ -91,7 +97,7 @@ test("native file selection keeps the FileList for required form submission", as
     buffer: Buffer.from("ORU browser test")
   });
   await expect(page.locator("#oru-semantic")).toContainText("Selected: sample.txt");
-  await page.getByRole("button", { name: "Send" }).click();
+  await send.click();
   await expect(page.locator("#oru-semantic")).toContainText("true");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
