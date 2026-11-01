@@ -39,7 +39,13 @@ page:
   const pageHTML = output.get("index.html");
   const inlineScript = pageHTML?.match(/<script type="module">([\s\S]*?)<\/script>/)?.[1];
   if (!inlineScript) throw new Error("Compiled page is missing its module runtime.");
-  new Function(inlineScript.trimStart().replace(/^import\s+\{\s*run\s*\}\s+from\s+"[^"]+";\s*/, ""));
+  const executableSource = inlineScript.trimStart().replace(/^import\\s+\\{\\s*run\\s*\\}\\s+from\\s+"[^"]+";\\s*/, "");
+  try {
+    new Function(executableSource);
+  } catch (error) {
+    const numbered = executableSource.split("\\n").map((line, index) => (index + 1) + ": " + line).join("\\n");
+    throw new Error(String(error) + "\\n" + numbered);
+  }
   for (const [filename, content] of output) {
     const target = join(root, filename);
     await mkdir(join(target, ".."), { recursive: true });
