@@ -4,7 +4,7 @@ import { watch } from "node:fs";
 import { access, cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { extname, join, resolve, sep } from "node:path";
 import { compileProject } from "./project-build.js";
-import { contentSecurityPolicy } from "./security.js";
+import { contentSecurityPolicy, staticHostingHeaders } from "./security.js";
 import { run as runLanguage } from "./core.js";
 
 const VERSION = "1.0.0-dev.0";
@@ -91,25 +91,12 @@ async function build(output = "dist"): Promise<void> {
   const files = await compileProject(".");
   const outputRoot = await cleanOutput(output);
 
-  const headerRules: string[] = [];
   for (const [filename, content] of files) {
     const target = join(outputRoot, filename);
     await mkdir(join(target, ".."), { recursive: true });
     await writeFile(target, content, "utf8");
-    if (filename.endsWith(".html")) {
-      const route = filename === "index.html" ? "/" : "/" + filename.slice(0, -"/index.html".length);
-      headerRules.push(
-        route,
-        "  Content-Security-Policy: " + contentSecurityPolicy(content),
-        "  X-Content-Type-Options: nosniff",
-        "  Referrer-Policy: strict-origin-when-cross-origin",
-        "  X-Frame-Options: DENY",
-        "  Permissions-Policy: camera=(), microphone=(), geolocation=()",
-        ""
-      );
-    }
   }
-  await writeFile(join(outputRoot, "_headers"), headerRules.join("\n"), "utf8");
+  await writeFile(join(outputRoot, "_headers"), staticHostingHeaders(files), "utf8");
 
   await mkdir(join(outputRoot, "_oru"), { recursive: true });
   await cp(new URL("./core.js", import.meta.url), join(outputRoot, "_oru", "core.js"));
