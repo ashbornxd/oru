@@ -169,8 +169,8 @@ test("validates matching fields and announces a form error summary", async ({ pa
   page.on("pageerror", error => errors.push(error.message));
   await page.goto(baseURL);
 
-  const password = page.getByLabel("Password");
-  const confirmation = page.getByLabel("Confirm password");
+  const password = page.getByRole("textbox", { name: "Password", exact: true });
+  const confirmation = page.getByRole("textbox", { name: "Confirm password", exact: true });
   const verify = page.locator('#oru-controls button[aria-label="Verify"]');
   await password.fill("correct-value");
   await confirmation.fill("different-value");
