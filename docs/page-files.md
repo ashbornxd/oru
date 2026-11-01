@@ -34,6 +34,29 @@ metadata:
 
 Supported fields are `title`, `description`, and `language`. Unknown fields are errors.
 
+## Page logic and events
+
+A page may define one `logic:` block after optional metadata and before `page:`. It uses the normal ORU language syntax. Functions in this block are available to that page's event handlers.
+
+```oru
+metadata:
+    title: "Counter"
+
+logic:
+    count = 0
+    func increment():
+        count = count + 1
+        print(count)
+
+page:
+    column:
+        text("Counter")
+        button("Add"):
+            on.click: increment
+```
+
+Use `on.click: functionName` on a button to call a page-local function. The current runtime executes the function and supports its language-side output. Reactive binding of values into widget text, full state subscriptions, and persistent storage are still under development.
+
 ## Widget tree
 
 The page body is a nested widget tree. Four spaces represent one nesting level.
