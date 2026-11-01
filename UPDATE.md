@@ -683,3 +683,15 @@ Implemented on `oru-1.0.0-dev`:
 **Verification: GitHub Actions run `41309470666` passed all three Node.js matrix jobs.** Each job completed dependency installation, `npm audit --audit-level=high`, all unit tests, TypeScript build, `npm pack --dry-run`, browser installation, and Playwright tests in Chromium, Firefox, and WebKit.
 
 **Release status remains blocked:** an explicit async execution model and async browser workflows have not been designed or implemented. Full WCAG/assistive-technology review, independent security and performance review, real-device testing, and final release validation remain required. Automated CI success is not a production certification.
+
+
+### Decision — Asynchronous execution model (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Async syntax | Use `async func name(...):` and `await expression`. | The existing synchronous `run()` and `call()` APIs remain compatible. A separate `runAsync()` / `callAsync()` API handles async programs. Await is restricted to async functions; host async capabilities must be explicitly registered. |
+| Execution order | Awaited statements execute sequentially. | No implicit parallel execution; async event handlers finish before state persistence and rerender. |
+
+The full runtime contract and required test matrix are recorded in `docs/async-execution.md`.
+
+**Implementation status:** specification approved; parser, interpreter, and browser runtime support are not yet implemented. No release claim is made.
