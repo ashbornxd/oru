@@ -41,3 +41,18 @@ test("supports state declarations and updates captured state", () => {
   program.call("increment");
   assert.equal(program.getGlobals().count, 1);
 });
+
+test("keeps global values separate and restores them into a later page run", () => {
+  const first = run('global visits = 0\nfunc increment():\n    visits = visits + 1');
+  first.call("increment");
+  assert.equal(first.getGlobalState().visits, 1);
+  const second = run('global visits = 0\nfunc current():\n    return visits', { initialGlobals: first.getGlobalState() });
+  assert.equal(second.call("current"), 1);
+  assert.equal(second.getGlobalState().visits, 1);
+});
+
+test("keeps page-local state separate from a same-named global", () => {
+  const program = run("global count = 8\nstate count = 0");
+  assert.equal(program.getGlobals().count, 0);
+  assert.equal(program.getGlobalState().count, 8);
+});
