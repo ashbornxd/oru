@@ -123,7 +123,7 @@ ${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
     try { sessionStorage.setItem("oru:globals", JSON.stringify(app.getGlobalState())); }
     catch (error) { console.error("ORU global state could not be saved:", error); }
   };
-  const appReady = data.logic ? runAsync(data.logic, { initialGlobals, output: value => console.log(value) }).then(instance => { app = instance; persistGlobals(); return instance; }) : Promise.resolve(null);
+  const appReady = data.logic ? runAsync(data.logic, { initialGlobals, output: value => console.log(value) }).then(instance => { app = instance; persistGlobals(); render(); return instance; }) : Promise.resolve(null);
   persistGlobals();
   const activate = node => {
     const handler = node.properties["on.click"];
