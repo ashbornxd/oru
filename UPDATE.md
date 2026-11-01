@@ -581,3 +581,17 @@ The select-control implementation exposed stale compiler assertions that no long
 - Canvas preview text shows the placeholder while no value is selected.
 - Added a compiler regression test and updated page syntax documentation.
 - Automated tests and TypeScript build pass on the current development-branch head (`e929f02`).
+
+
+### Milestone 23 — Native file selection and development-server headers
+
+Implemented on `oru-1.0.0-dev`:
+- Native `input:` widgets support `type: file`, `accept:`, `multiple:`, `required:`, `disabled:`, and accessible labels.
+- Single selection binds the filename as a string; multiple selection binds a list of filenames.
+- File objects and file bytes are deliberately not copied into ORU state. This feature does not upload files.
+- File inputs avoid assigning the browser-protected `value` property and use the native `change` event.
+- Added compiler regression coverage and documented the exact metadata-only behavior.
+- The development server now sends baseline CSP, frame, MIME-sniffing, referrer, and permissions headers on success and error responses.
+- The CSP still permits inline scripts/styles because the current generated runtime uses inline code and dynamic inline styles. A nonce/hash-based policy remains future work.
+
+**Still incomplete:** advanced responsive layout primitives, async/cross-field form validation, full WCAG conformance, production-grade CSP/nonces, comprehensive security review, and real-browser integration tests. Run the CI suite after this milestone before treating it as verified.
