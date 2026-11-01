@@ -1,0 +1,53 @@
+import lib.theme
+from lib.helpers import APP_VERSION, welcome, getGreeting
+
+metadata:
+    title: "ORU Language Lab"
+    description: "Exercise the ORU language core and async runtime."
+    language: "en"
+
+logic:
+    state output = "Run the language demo to see its result."
+    state asyncOutput = "Async result will appear here."
+    func runLanguageDemo():
+        values = range(1, 6)
+        total = 0
+        for value in values:
+            if value == 3:
+                continue
+            total = total + value
+        while total > 10:
+            total = total - 1
+            if total == 10:
+                break
+        profile = {name: "ORU", version: APP_VERSION}
+        output = welcome(profile.name) + " | total=" + total + " | items=" + len(values)
+    async func runAsyncDemo():
+        result = await getGreeting()
+        asyncOutput = result
+
+page:
+    column:
+        class: theme.PageShell
+        text("LANGUAGE LAB"):
+            class: theme.MutedText
+        text("Try the language core"):
+            size: 34
+            weight: 700
+        box:
+            class: theme.HeroPanel
+            text("Lists, objects, functions, conditions, loops, and built-ins.")
+            button("Run language demo"):
+                class: theme.ActionButton
+                on.click: runLanguageDemo
+            text(output)
+        box:
+            class: theme.HeroPanel
+            text("Async functions and imported module functions.")
+            button("Run async demo"):
+                class: theme.ActionButton
+                on.click: runAsyncDemo
+            text(asyncOutput)
+        button("Disabled control"):
+            disabled: true
+        link("Back home", "index")

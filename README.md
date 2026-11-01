@@ -39,6 +39,21 @@ oru run dev
 
 Open `http://localhost:3000`. Build static output with `oru build`; files are written to `dist/`. An optional `assets/` directory is copied into the output.
 
+## Complete interactive showcase
+
+A multi-page test website is included at [`examples/showcase/`](examples/showcase/README.md). It exercises the language core, page compiler, browser runtime, modules, async handlers, global state, style classes, responsive layouts, native forms, validation, file selection, assets, and routes.
+
+Run it from the repository root:
+
+```sh
+npm install
+npm run build
+cd examples/showcase
+node ../../dist/cli.js run dev
+```
+
+Open `http://localhost:3000`. The showcase README lists what to test. Its form is local-only and does not send data.
+
 ## 1.0 page example
 
 Project structure:
