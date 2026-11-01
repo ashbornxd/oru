@@ -36,7 +36,23 @@ Supported fields are `title`, `description`, and `language`. Unknown fields are 
 
 ## Input bindings and constraints
 
-Use `input("Email address")` for a placeholder-only input, or `input(email)` to bind the input value to a declared string variable. The binding updates as the user types without interrupting focus. Supported native properties include `type`, `required`, `disabled`, `readOnly`, `min`, `max`, `step`, `minLength`, `maxLength`, `pattern`, `autocomplete`, and `name`; `constraint: letters` and `constraint: numbers` apply matching browser patterns. Use `type: password` for a sensitive input; password inputs must use page-local state rather than cross-page global state.\n\nWrap related inputs in a `form:` widget and declare `on.submit: functionName` on the form. Buttons inside a form submit it by default. The browser runs native constraint validation first; if validation succeeds, ORU prevents a page reload and calls the named function. Invalid forms do not call the handler. Form submission does not send data to a server automatically.\n\n```oru\nlogic:\n    state email = \"\"\n    func register():\n        print(email)\npage:\n    form:\n        on.submit: register\n        input(email):\n            type: email\n            required: true\n        button(\"Create account\")\n```
+Use `input("Email address")` for a placeholder-only input, or `input(email)` to bind the input value to a declared string variable. The binding updates as the user types without interrupting focus. Supported native properties include `type`, `required`, `disabled`, `readOnly`, `min`, `max`, `step`, `minLength`, `maxLength`, `pattern`, `autocomplete`, and `name`; `constraint: letters` and `constraint: numbers` apply matching browser patterns. Use `type: password` for a sensitive input; password inputs must use page-local state rather than cross-page global state.
+
+Wrap related inputs in a `form:` widget and declare `on.submit: functionName` on the form. Buttons inside a form submit it by default. The browser runs native constraint validation first; if validation succeeds, ORU prevents a page reload and calls the named function. Invalid forms do not call the handler. Form submission does not send data to a server automatically.
+
+```oru
+logic:
+    state email = \"\"
+    func register():
+        print(email)
+page:
+    form:
+        on.submit: register
+        input(email):
+            type: email
+            required: true
+        button(\"Create account\")
+```
 
 ## Page-local style classes
 
@@ -62,7 +78,7 @@ page:
             on.click: increment
 ```
 
-Use `state name = value` for page-local state. Bind a `text` or `button` label with an unquoted variable name, such as `text(count)`. After a click handler completes, the page redraws using the latest variable values. This initial binding supports a single variable name, not arbitrary expressions.
+Use `state name = value` for page-local state. Bind a `text` or `button` label with an unquoted variable name, such as `text(count)`. Top-level plain values imported from modules can also be displayed; changing a value in an event handler triggers a full page redraw. After a click handler completes, the page redraws using the latest variable values. This initial binding supports a single variable name, not arbitrary expressions.
 
 Use `global name = value` for values shared by pages. ORU keeps these values in the current browser tab session and restores them when another page loads. Page-local `state` variables are not shared and start from their initial values on each page load.
 
@@ -115,7 +131,7 @@ page:
         class: navText
 ```
 
-With `import theme`, refer to the class as `theme.navText`. Module paths resolve relative to the importing page. Imported files are `.oru` pages, so they also contain a `page:` block. Circular imports, missing modules/classes, and class-name collisions are build errors. Only style classes are imported today; functions and values are not yet importable.
+With `import theme`, refer to the class as `theme.navText`. Module paths resolve relative to the importing page. Imported files are `.oru` pages, so they also contain a `page:` block. Circular imports, missing modules/classes, and class-name collisions are build errors. Named imports can also bring top-level functions and plain values from a module's `logic:` block: `from utils import greet, APP_NAME`. A module export is a top-level `func name(...):` or `name = value`. Imported declarations are added before the importing page's logic. Page-local `state`/`global` declarations and executable top-level statements are not exported. Namespace imports remain style-class-only in this release.
 
 ## Links
 
@@ -148,7 +164,7 @@ The build writes static HTML files into `dist/` and copies an optional `assets/`
 
 The development compiler emits a browser page shell with a Canvas 2D renderer and a parallel semantic DOM layer for focusable controls. The renderer handles text, box, column, row, image, link, button, and input presentation. Rows switch to a vertical layout below 560px by default (customize with `wrapAt`). The page canvas grows with its content so longer pages can scroll. A visually hidden semantic text/image tree and native DOM controls support screen readers and keyboard interaction; this is not yet full WCAG conformance. Page-local `logic:` blocks run through the ORU interpreter, and button `on.click` handlers invoke named ORU functions.
 
-This is an early runtime, not the finished ORU 1.0 release. The compiler supports reusable page-local style classes and cross-file style-class imports. General-purpose function/value imports, custom validation messages, advanced responsive layout controls, complete keyboard and assistive-technology behavior, and comprehensive security/browser testing remain unfinished. Do not use it for production applications yet.
+This is an early runtime, not the finished ORU 1.0 release. The compiler supports reusable page-local style classes and cross-file style-class imports. Custom validation messages, advanced responsive layout controls, full WCAG conformance, and comprehensive security/browser testing remain unfinished. Do not use it for production applications yet.
 
 ## Reactive page-local state
 
