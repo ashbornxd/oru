@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, responsive row wrapping, scrollable pages, and a semantic text/image layer with native keyboard-operable controls. Still open: advanced form controls and custom validation, advanced layout primitives, full WCAG conformance, asset/security hardening, browser integration testing, and final release validation.
+**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, responsive row wrapping, scrollable pages, and a semantic text/image layer with native keyboard-operable controls. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: advanced form controls and custom validation, advanced layout primitives, full WCAG conformance, broader security review, browser integration testing, and final release validation.
 
 ## Vision
 
@@ -466,3 +466,23 @@ Implemented on `oru-1.0.0-dev`:
 - Input redraws retain form ownership and do not interrupt normal typing.
 
 **Verification note:** the latest responsive, import, and reactive-input changes require a fresh GitHub Actions run before they can be called verified. No npm 1.0 release has been published.
+
+
+### Decision — Project image asset policy (2026-11-01)
+
+| Area | Decision | Consequence |
+|---|---|---|
+| Image sources | Local images must be regular files inside the project's `assets/` directory. Remote images may use HTTPS only. | Reject path traversal, missing local files, symbolic links, HTTP, data, and file URLs. HTTPS images are fetched by the visitor's browser. This limits accidental local-file exposure and avoids copying symlink targets into production output. |
+
+### Milestone 15 — Project asset and dev-server hardening
+
+Implemented on `oru-1.0.0-dev`:
+- Validate local image paths and confirm referenced assets exist as regular files under `assets/`.
+- Reject symbolic links and special filesystem entries in the assets tree, including a symlinked assets root.
+- Permit HTTPS remote images while rejecting credential-bearing URLs and non-HTTPS schemes.
+- Make project creation fail safely when the target directory already exists and clean up partial scaffolds.
+- Queue rebuilds during rapid file changes and rebuild when assets change.
+- Restrict the dev server to GET/HEAD, add MIME types for common assets, and set basic response security headers.
+- Added asset validation tests.
+
+**Still incomplete:** full threat-model review, CSP and deployment-header guidance, file-size budgets, asset optimization, external package integrity, browser integration tests, and full release verification.
