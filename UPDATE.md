@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** ORU 1.0 development branch created. Implementation is beginning in stages; unresolved language and runtime details must be specified before the related features are implemented.
+**Status:** Active development. The first language-core interpreter milestone is implemented on `oru-1.0.0-dev`; page composition, modules, reactive state, and the Canvas 2D browser runtime remain unimplemented.
 
 ## Vision
 
@@ -165,3 +165,36 @@ Milestones are provisional planning stages, not promises or fixed dates.
 - If a decision changes, record the new decision and mark the old one as superseded instead of erasing history.
 - Before implementing ORU 1.0.0, review this file and turn the approved decisions into a formal language specification and implementation roadmap.
 - Once ORU 1.0.0 ships, remove this temporary file or archive its final decisions into permanent project documentation.
+
+
+## Implementation progress
+
+### Milestone 1 — Language core foundation
+
+**Implemented on `oru-1.0.0-dev` (initial development slice):**
+- Indentation-aware statement parsing and expression parsing.
+- String, number, boolean, list, and dictionary/object literals.
+- Inferred variable types, uninitialized `pass`, and incompatible reassignment errors.
+- Arithmetic, comparison, and logical expressions.
+- Functions with parameters, return values, and lexical closures.
+- `if`, `elif`, `else`, `for`, `while`, `break`, and `continue`.
+- List/string iteration, object property access, and collection indexing.
+- Initial `print`, `len`, and `range` built-ins.
+- Execution limits and initial automated tests.
+
+**Not yet implemented:** module/import loading, page-file semantics, global and page-local reactive state, widgets, Canvas 2D rendering, browser event handling, form validation/security, browser interoperability, CLI execution of general-purpose scripts, and production diagnostics.
+
+### Provisional implementation semantics
+
+These details are implemented as the first coherent baseline, but remain open to review and refinement:
+- Use four spaces per indentation level; tabs and inconsistent indentation are errors.
+- Use `true` and `false` for booleans; `pass` represents an uninitialized variable declaration.
+- Initial operators: arithmetic (`+`, `-`, `*`, `/`, `//`, `%`, `**`), comparisons, and logical (`and`, `or`, `not`, `!`).
+- `+` adds numbers or joins strings; arithmetic operators otherwise require numbers.
+- Conditions treat `false`, `pass`, zero, and the empty string as false; other values are true.
+- Functions use `func name(parameters):` and `return`; parameters are local and functions can read enclosing variables.
+- `for` iterates lists and strings; `range` creates numeric lists.
+- `break` exits the nearest loop; `continue` skips to its next iteration.
+- Initial built-ins are `print`, `len`, and `range`.
+- Execution is bounded by a configurable statement/iteration limit to prevent accidental runaway loops.
+- Object/list mutation and assignment to nested properties or indexes are not implemented yet.
