@@ -18,7 +18,7 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   image: new Set(["width", "height", "fit", "radius"]),
   input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "validationMessage", "name", "text.color", "border.color", "label"]),
   textarea: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "readOnly", "minLength", "maxLength", "validationMessage", "name", "text.color", "border.color", "label", "rows"]),
-  select: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "name", "text.color", "border.color", "label"]),
+  select: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "name", "placeholder", "text.color", "border.color", "label"]),
   option: new Set([])
 };
 
@@ -243,7 +243,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.stroke();
       const inputValue = textOf(node);
       const firstOption = node.type === "select" ? node.children.find(option => option.type === "option") : undefined;
-      const selectedValue = node.type === "select" ? (inputValue || String(firstOption?.properties.value ?? firstOption?.text ?? "")) : inputValue;
+      const selectedValue = node.type === "select" ? (inputValue || String(node.properties.placeholder ?? firstOption?.properties.value ?? firstOption?.text ?? "")) : inputValue;
       const visibleValue = node.type === "input" && p.type === "password" ? "•".repeat(inputValue.length) : node.type === "select" ? (inputValue || selectedValue) : inputValue;
       ctx.fillStyle = visibleValue ? color(node, "text.color", "#202124") : "#777777";
       ctx.font = px(p.size, 14) + "px system-ui";
@@ -348,6 +348,14 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         el.href = Object.prototype.hasOwnProperty.call(data.routes, route) ? data.routes[route] : "#";
       } else if (node.type === "input" || node.type === "textarea" || node.type === "select") {
         if (node.type === "select") {
+          if (typeof node.properties.placeholder === "string" && node.properties.placeholder.length > 0) {
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.textContent = String(node.properties.placeholder);
+            placeholder.disabled = true;
+            placeholder.selected = !textOf(node);
+            el.append(placeholder);
+          }
           for (const option of node.children) {
             if (option.type !== "option") continue;
             const item = document.createElement("option");
@@ -356,7 +364,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
             el.append(item);
           }
           const firstOption = node.children.find(option => option.type === "option");
-          el.value = textOf(node) || String(firstOption?.properties.value ?? firstOption?.text ?? "");
+          el.value = textOf(node) || (typeof node.properties.placeholder === "string" && node.properties.placeholder.length > 0 ? "" : String(firstOption?.properties.value ?? firstOption?.text ?? ""));
         }
         el.placeholder = String(node.properties.placeholder ?? "");
         if (node.type === "input") {
