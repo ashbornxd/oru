@@ -34,12 +34,14 @@
     "test": "tsx --test src/*.test.ts",
     "prepack": "npm run build",
     "prepublishOnly": "npm test",
-    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\""
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "test:browser": "playwright test"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "@playwright/test": "^1.56.1"
   },
   "engines": {
     "node": ">=20"
