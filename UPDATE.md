@@ -305,3 +305,14 @@ Implemented on `oru-1.0.0-dev`:
 - Added tests for function invocation, page logic compilation, and nested-route interpreter paths.
 
 **Still missing:** reactive state declarations and bindings, global state, modules/imports, reusable style-class semantics, full form handling, and complete renderer/accessibility/security validation. Calling a handler currently runs ORU code and can produce console output; changing a variable does not yet automatically update text or layout.
+
+
+### Milestone 5 — Page-local state and simple reactive bindings
+
+Implemented on `oru-1.0.0-dev`:
+- Page logic supports `state name = value` declarations using the core interpreter's type-stable variable behavior.
+- `text(name)` and `button(name)` accept an unquoted variable identifier as a content binding; quoted values remain static text.
+- Button handlers trigger a page redraw after execution, and the renderer reads the current interpreter globals for bound content.
+- Added parser and compiler tests for variable bindings and handler-driven updates.
+
+**Scope boundary:** this is synchronous, page-local re-rendering after an event handler. Cross-page global state, arbitrary expression bindings, async updates, imports, and other 1.0 systems remain incomplete.
