@@ -55,7 +55,8 @@ function validateForms(widget: PageWidget, functions: Set<string>, insideForm = 
 }
 function validateEvents(widget: PageWidget, functions: Set<string>): void {
   if (widget.type === "button" || widget.type === "link") {
-    for (const event of ["on.click", "on.hover", "on.active", "on.leave"]) {
+    const events = widget.type === "button" ? ["on.click", "on.hover", "on.active", "on.leave"] : ["on.click"];
+    for (const event of events) {
       const handler = widget.properties[event];
       if (handler !== undefined && (typeof handler !== "string" || !functions.has(handler))) {
         throw new OruError(event + " must reference a function declared in logic:.", widget.line);
