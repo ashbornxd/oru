@@ -5,6 +5,7 @@ export interface PageWidget {
   type: "column" | "row" | "box" | "text" | "button" | "link" | "image" | "input";
   text?: string;
   route?: string;
+  binding?: string;
   properties: Record<string, PageValue>;
   children: PageWidget[];
   line: number;
