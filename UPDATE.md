@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Planning — no 1.0 implementation decisions are final unless recorded below.
+**Status:** ORU 1.0 development branch created. Implementation is beginning in stages; unresolved language and runtime details must be specified before the related features are implemented.
 
 ## Vision
 
@@ -69,6 +69,7 @@ Add decisions below in chronological order. Include the date, the decision, its 
 | 2026-11-01 | User-defined functions | ORU 1.0 will support user-defined functions declared with the `func` keyword. | Gives developers reusable logic and a foundation for structuring applications. Function parameter syntax, return syntax, scope, overloads, and typing rules remain to be designed. |
 | 2026-11-01 | Conditional logic | ORU 1.0 will support `if`, `elif`, and `else` conditional branches. | Enables programs to make decisions based on values and application state. Condition expression rules, block syntax, truthiness, and type requirements remain to be designed. |
 | 2026-11-01 | Loops | ORU 1.0 will support both `for` loops and `while` loops. | `for` supports iteration over collections or ranges; `while` repeats while a condition holds. Exact syntax, range support, iteration behavior, and loop control (`break`/`continue`) remain to be designed. |
+| 2026-11-01 | Loop control | ORU 1.0 will support `break` and `continue` inside loops. | `break` exits the nearest enclosing loop; `continue` skips to the next iteration of the nearest enclosing loop. Use outside a loop must be a compile-time error. |
 | 2026-11-01 | Collection type scope | Keep the initial collection types to `list` and dictionary/object values; tuples are out of scope for ORU 1.0's initial type set. | Keeps the type system focused and avoids adding another collection model before real use cases justify it. Tuples can be reconsidered in a later version. |
 | 2026-11-01 | Collection scope | Keep `list` and dictionary/object as the only built-in collection types planned for ORU 1.0; do not add tuples as a separate built-in type for this release. | Keeps the initial type system focused. Additional collection types can be considered in a later version if real use cases justify them. |
 | 2026-11-01 | Collection type scope | Keep the initial collection types limited to lists and dictionary/object values. Tuples are not included in ORU 1.0. | Keeps the initial type system focused; additional collection types can be considered in a later version if there is a clear need. |
@@ -103,7 +104,8 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Still to design:** Inference details, operators, expressions, functions, control flow, input conversion, and error timing. Do not assume Python's existing `pass` semantics.
 - **Agreed:** User-defined functions use the `func` keyword. Their parameter and return syntax, scope, and typing rules remain to be designed.
 - **Agreed:** Conditional logic uses `if`, `elif`, and `else`. Condition evaluation and block semantics remain to be designed.
-- **Agreed:** Include both `for` and `while` loops. Their exact syntax, iteration rules, and loop-control behavior remain to be designed.
+- **Agreed:** Include both `for` and `while` loops. Their exact syntax and iteration rules remain to be designed.
+- **Agreed:** Include `break` and `continue` for loop control. They apply to the nearest enclosing loop and are errors outside loops.
 - Core syntax, values, expressions, variables, functions, control flow, and errors.
 - **Agreed file/page model:** One `.oru` file defines one page; each file has its own metadata such as title and description. The rules for routing and mapping filenames to URLs remain open.
 - Pages, reusable components, properties/arguments, slots or composition.
