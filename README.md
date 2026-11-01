@@ -4,7 +4,7 @@
 
 ORU is a Python-inspired language for building websites. Describe pages, content, layouts, and styles in readable `.oru` files. ORU compiles them into standard web files.
 
-> ORU 0.3 is an early language redesign. Syntax and compiler behavior may still change before 1.0.
+> ORU 0.3 is the published release. ORU 1.0 is under active development on the `oru-1.0.0-dev` branch and is not published.
 
 ## Requirements
 
@@ -78,7 +78,10 @@ page about:
 
 ## Documentation
 
-Read [Language basics](docs/language-basics.md) for the current syntax and supported elements.
+- [Published 0.3 language basics](docs/language-basics.md)
+- [ORU 1.0 language core development spec](docs/core-language.md)
+
+The 1.0 core interpreter is an early development milestone; it is not yet the complete page, UI, state, module, or browser runtime.
 
 ## Contributing
 
