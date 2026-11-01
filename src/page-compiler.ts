@@ -109,7 +109,7 @@ function validateLayout(widget: PageWidget): void {
 function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: string): string {
   const payload = JSON.stringify({ page, routes, logic: page.logic }).replace(/</g, "\\u003c");
   return `
-${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
+${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
 (() => {
   const data = ${payload};
   let initialGlobals = {};
@@ -117,16 +117,17 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     const saved = JSON.parse(sessionStorage.getItem("oru:globals") || "{}");
     if (saved && typeof saved === "object" && !Array.isArray(saved)) initialGlobals = saved;
   } catch { /* Start with an empty session state. */ }
-  const app = data.logic ? run(data.logic, { initialGlobals, output: value => console.log(value) }) : null;
+  let app = null;
   const persistGlobals = () => {
     if (!app) return;
     try { sessionStorage.setItem("oru:globals", JSON.stringify(app.getGlobalState())); }
     catch (error) { console.error("ORU global state could not be saved:", error); }
   };
+  const appReady = data.logic ? runAsync(data.logic, { initialGlobals, output: value => console.log(value) }).then(instance => { app = instance; persistGlobals(); return instance; }) : Promise.resolve(null);
   persistGlobals();
   const activate = node => {
     const handler = node.properties["on.click"];
-    if (handler && app) { try { app.call(String(handler)); } catch (error) { console.error("ORU click handler failed:", error); } persistGlobals(); render(); }
+    if (handler) appReady.then(instance => instance?.callAsync(String(handler))).then(() => { persistGlobals(); render(); }).catch(error => { console.error("ORU click handler failed:", error); });
     if (node.type === "link") {
       const route = String(node.route ?? node.properties.route ?? "");
       const target = Object.prototype.hasOwnProperty.call(data.routes, route) ? data.routes[route] : "";
@@ -382,11 +383,10 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       }
       form.addEventListener("submit", event => {
         event.preventDefault();
-        try {
-          if (app) app.call(String(node.properties["on.submit"]));
+        appReady.then(instance => instance?.callAsync(String(node.properties["on.submit"]))).then(() => {
           persistGlobals();
           render();
-        } catch (error) { console.error("ORU form submission failed:", error); }
+        }).catch(error => { console.error("ORU form submission failed:", error); });
       });
       forms.set(form.id, form);
     }
@@ -543,8 +543,8 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
   const runStateEvent = (node, key) => {
     const handler = node?.properties?.[key];
     if (handler && app) {
-      try { app.call(String(handler)); persistGlobals(); render(); }
-      catch (error) { console.error("ORU " + key + " handler failed:", error); }
+      appReady.then(instance => instance?.callAsync(String(handler))).then(() => { persistGlobals(); render(); })
+        .catch(error => { console.error("ORU " + key + " handler failed:", error); });
     }
   };
   controls.addEventListener("pointerover", event => {
