@@ -2,7 +2,7 @@ import { OruError } from "./ast.js";
 
 export type PageValue = string | number | boolean;
 export interface PageWidget {
-  type: "column" | "row" | "box" | "text" | "button" | "link" | "image" | "input";
+  type: "column" | "row" | "box" | "form" | "text" | "button" | "link" | "image" | "input";
   text?: string;
   route?: string;
   binding?: string;
@@ -20,7 +20,7 @@ export interface OruPage {
   sourcePath?: string;
 }
 type Line = { indent: number; text: string; number: number };
-const widgetTypes = new Set<PageWidget["type"]>(["column", "row", "box", "text", "button", "link", "image", "input"]);
+const widgetTypes = new Set<PageWidget["type"]>(["column", "row", "box", "form", "text", "button", "link", "image", "input"]);
 
 function linesOf(source: string): Line[] {
   const lines: Line[] = [];
