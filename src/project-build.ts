@@ -90,7 +90,7 @@ function logicDeclarations(logic: string): Map<string, LogicDeclaration> {
     if (!line.trim()) continue;
     const indent = line.length - line.trimStart().length;
     if (indent !== 0) continue;
-    const functionMatch = line.match(/^func\s+([A-Za-z_]\w*)\s*\(/);
+    const functionMatch = line.match(/^(?:async\s+)?func\s+([A-Za-z_]\w*)\s*\(/);
     const stateMatch = line.match(/^(?:state|global)\s+([A-Za-z_]\w*)\s*=/);
     const valueMatch = line.match(/^([A-Za-z_]\w*)\s*=\s*.+$/);
     const name = functionMatch?.[1] ?? stateMatch?.[1] ?? valueMatch?.[1];
