@@ -73,7 +73,7 @@ page:
 page:
     text("About")
 `);
-    await assert.rejects(() => compileProject(root), /Circular style import/);
+    await assert.rejects(() => compileProject(root), /Circular ORU module import/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -98,7 +98,7 @@ logic:
 page:
     text(message)
 `);
-    const files = await compileProject(root);
+    const files = await compileProject(root, { includeRuntime: false });
     const html = files.get("index.html") ?? "";
     assert.ok(html.includes('func greet(name)'));
     assert.ok(html.includes("APP_NAME ="));
