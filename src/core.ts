@@ -640,7 +640,7 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
           if (!values) throw new OruError("for loops require a list or string.", statement.line);
           for (const value of values) {
             env.declare(statement.name, value, statement.line);
-            try { await execute(statement.body, env, inFunction, inAsync, true); }
+            try { await execute(statement.body, env, inFunction, inAsync, true, topLevel); }
             catch (signal) { if (signal instanceof AsyncBreak) break; if (!(signal instanceof AsyncContinue)) throw signal; }
           }
           break;
