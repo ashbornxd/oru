@@ -1,4 +1,4 @@
-import type { OruPage, PageWidget } from "./project.js";
+import type { OruPage } from "./project.js";
 import type { PageRoute } from "./routes.js";
 
 function escapeHtml(value: string): string {
@@ -50,8 +50,10 @@ function runtimeSource(page: OruPage, routes: Record<string, string>): string {
     if (type === "image") return { width, height: px(p.height, 180), lines: [] };
     if (type === "input") return { width, height: px(p.height, 44), lines: [] };
     if (type === "row" || type === "column") {
-      const children = node.children.map(child => measure(child, Math.max(40, width - padding * 2)));
       const horizontal = type === "row";
+      const available = Math.max(40, width - padding * 2 - (horizontal ? gap * Math.max(0, node.children.length - 1) : 0));
+      const childWidth = horizontal && node.children.length ? available / node.children.length : available;
+      const children = node.children.map(child => measure(child, childWidth));
       const main = children.reduce((sum, item) => sum + (horizontal ? item.width : item.height), 0) + gap * Math.max(0, children.length - 1);
       const cross = children.reduce((m, item) => Math.max(m, horizontal ? item.height : item.width), 0);
       return { width: horizontal ? Math.min(width, main + padding * 2) : width, height: (horizontal ? cross : main) + padding * 2, lines: [] };
@@ -99,9 +101,11 @@ function runtimeSource(page: OruPage, routes: Record<string, string>): string {
     }
     const horizontal = node.type === "row";
     let cursor = horizontal ? x + padding : y + padding;
+    const available = Math.max(40, w - padding * 2 - (horizontal ? gap * Math.max(0, node.children.length - 1) : 0));
+    const childWidth = horizontal && node.children.length ? available / node.children.length : available;
     for (const child of node.children) {
-      const childBox = measure(child, Math.max(40, w - padding * 2));
-      draw(child, horizontal ? cursor : x + padding, horizontal ? y + padding : cursor, Math.max(40, w - padding * 2));
+      const childBox = measure(child, childWidth);
+      draw(child, horizontal ? cursor : x + padding, horizontal ? y + padding : cursor, childWidth);
       cursor += (horizontal ? childBox.width : childBox.height) + gap;
     }
     return { width: w, height: h };
@@ -116,7 +120,12 @@ function runtimeSource(page: OruPage, routes: Record<string, string>): string {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, canvas.height / dpr);
     regions = [];
-    data.page.widgets.forEach(widget => draw(widget, 20, 24, width - 40));
+    let cursorY = 24;
+    for (const widget of data.page.widgets) {
+      const size = measure(widget, width - 40);
+      draw(widget, 20, cursorY, width - 40);
+      cursorY += size.height + 12;
+    }
     controls.replaceChildren();
     for (const region of regions) {
       const node = region.node;
