@@ -14,7 +14,7 @@ page:
         button("Continue")
 `);
   const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
-  assert.ok(html.includes('<canvas role="img"'));
+  assert.ok(html.includes('<canvas aria-hidden="true"'));
   assert.ok(html.includes("A &lt;safe&gt; title"));
   assert.ok(html.includes("oru-controls"));
   assert.ok(html.includes("Continue"));
