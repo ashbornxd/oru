@@ -352,7 +352,11 @@ export function run(source: string, options: RunOptions = {}): RunResult {
       case "literal": return expr.value;
       case "name": return env.get(expr.name, 0);
       case "list": return expr.items.map(x => evalExpr(x, env));
-      case "object": return Object.fromEntries(expr.entries.map(([k, v]) => [k, evalExpr(v, env)]));
+      case "object": {
+        const result = Object.create(null) as Record<string, OruValue>;
+        for (const [key, value] of expr.entries) result[key] = evalExpr(value, env);
+        return result;
+      }
       case "unary": {
         const value = evalExpr(expr.value, env);
         if (expr.op === "!" || expr.op === "not") return !truthy(value);
@@ -389,7 +393,7 @@ export function run(source: string, options: RunOptions = {}): RunResult {
       case "member": {
         const object = evalExpr(expr.object, env);
         if (!object || typeof object !== "object" || Array.isArray(object)) throw new OruError("Property access requires an object.", 0);
-        if (!(expr.key in object)) throw new OruError("Unknown object key '" + expr.key + "'.", 0);
+        if (!Object.hasOwn(object, expr.key)) throw new OruError("Unknown object key '" + expr.key + "'.", 0);
         return (object as Record<string, OruValue>)[expr.key]!;
       }
       case "index": {
@@ -397,7 +401,7 @@ export function run(source: string, options: RunOptions = {}): RunResult {
         const index = evalExpr(expr.index, env);
         if (Array.isArray(object) && typeof index === "number") return object[index] ?? null;
         if (typeof object === "string" && typeof index === "number") return object[index] ?? "";
-        if (object && typeof object === "object" && typeof index === "string") return (object as Record<string, OruValue>)[index] ?? null;
+        if (object && typeof object === "object" && !Array.isArray(object) && typeof index === "string") return Object.hasOwn(object, index) ? (object as Record<string, OruValue>)[index]! : null;
         throw new OruError("Invalid index operation.", 0);
       }
       case "call": {
@@ -423,10 +427,13 @@ export function run(source: string, options: RunOptions = {}): RunResult {
       if (++steps > maxSteps) throw new OruError("Execution step limit exceeded.", statement.line);
       switch (statement.kind) {
         case "assign": env.assign(statement.name, evalExpr(statement.value, env), statement.line); break;
-        case "global":
+        case "global": {
           globalNames.add(statement.name);
-          if (!shared.has(statement.name)) shared.declare(statement.name, evalExpr(statement.value, env), statement.line);
+          const value = evalExpr(statement.value, env);
+          if (!shared.has(statement.name)) shared.declare(statement.name, value, statement.line);
+          else if (inFunction) shared.assign(statement.name, value, statement.line);
           break;
+        }
         case "state": env.declare(statement.name, evalExpr(statement.value, env), statement.line); break;
         case "expression": evalExpr(statement.value, env); break;
         case "func": functions.set(statement.name, { params: statement.params, body: statement.body, closure: env }); break;
