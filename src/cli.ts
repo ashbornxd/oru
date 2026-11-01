@@ -81,7 +81,12 @@ async function cleanOutput(output: string): Promise<string> {
   return root;
 }
 
-async function evaluateFile(input: string): Promise<void> {\n  const source = await readFile(resolve(input), "utf8");\n  runLanguage(source, { output: value => console.log(typeof value === "string" ? value : JSON.stringify(value)) });\n}\n\nasync function build(input = "main.oru", output = "dist"): Promise<void> {
+async function evaluateFile(input: string): Promise<void> {
+  const source = await readFile(resolve(input), "utf8");
+  runLanguage(source, { output: value => console.log(typeof value === "string" ? value : JSON.stringify(value)) });
+}
+
+async function build(input = "main.oru", output = "dist"): Promise<void> {
   const source = await readFile(resolve(input), "utf8");
   const result = compile(source);
   const outputRoot = await cleanOutput(output);
@@ -176,7 +181,14 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (command === "eval") {\n    const file = args[1];\n    if (!file) throw new Error("Provide an ORU script file, for example: oru eval script.oru");\n    await evaluateFile(file);\n    return;\n  }\n\n  if (command === "build") {
+  if (command === "eval") {
+    const file = args[1];
+    if (!file) throw new Error("Provide an ORU script file, for example: oru eval script.oru");
+    await evaluateFile(file);
+    return;
+  }
+
+  if (command === "build") {
     await build("main.oru", option(args, "--out", "dist"));
     return;
   }
