@@ -87,9 +87,9 @@ The 1.0 interpreter currently includes:
 
 ## Browser runtime status
 
-The 1.0 development branch now has a page compiler and Canvas 2D browser renderer, with text, layout, image, link, button, native form controls, and file selection plus a semantic DOM control layer. Page-local logic, click handlers, reactive text/button/input bindings, session-scoped `global` values, native form submission and constraints, button hover/active/disabled states and icon assets, reusable style classes, and named cross-file function/value imports are implemented. The Canvas renderer supports responsive row wrapping, scrollable content, and a semantic accessibility layer with native keyboard-operable controls. The compiler also rejects unresolved internal routes, unsafe module paths, unsafe image sources, and symbolic links in project assets.
+The 1.0 development branch has a page compiler and Canvas 2D browser renderer, with text, layout, image, link, button, native form controls, and file selection plus a semantic DOM control layer. Page-local logic, click handlers, reactive text/button/input bindings, session-scoped `global` values, native form submission and constraints, cross-field input matching, accessible validation summaries, button hover/active/disabled states and icon assets, reusable style classes, and named cross-file function/value imports are implemented. The renderer supports responsive row wrapping, main/cross-axis container alignment, scrollable content, semantic content, and native keyboard-operable controls. The compiler rejects unresolved internal routes, unsafe module paths, unsafe image sources, and symbolic links in project assets. Playwright browser integration tests target Chromium, Firefox, and WebKit, including desktop/mobile layout checks.
 
-**ORU 1.0 is not feature-complete or production-ready yet.** The current development branch passes its unit tests, TypeScript build, and a Chromium integration test in GitHub Actions. File selection currently binds filenames only and does not upload file contents. Remaining work includes advanced responsive layout controls, async/cross-field validation, full WCAG conformance, a broader security review, and wider cross-browser/device/screen-reader testing.
+**ORU 1.0 is not feature-complete or production-ready yet.** The current development branch is validated with unit tests, a TypeScript build, and Playwright integration tests across Chromium, Firefox, and WebKit. File selection currently binds filenames only and does not upload file contents. Remaining work includes asynchronous form validation, full WCAG conformance and assistive-technology testing, production-grade CSP without `unsafe-inline`, broader security/performance review, and real-device/browser testing.
 
 ## Documentation
 
@@ -104,7 +104,7 @@ The 1.0 development branch now has a page compiler and Canvas 2D browser rendere
 npm install
 npm test
 npm run build
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npm run test:browser
 ```
 
