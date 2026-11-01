@@ -138,3 +138,13 @@ async func refresh():
   assert.equal(await program.callAsync("refresh"), 3);
   assert.equal(program.getGlobals().status, 3);
 });
+
+
+test("keeps core collection builtins available in async programs", async () => {
+  const program = await runAsync(`async func total():
+    values = range(1, 4)
+    return len(values)
+`);
+  assert.equal(await program.callAsync("total"), 3);
+  await assert.rejects(() => runAsync("async func bad():\n    return range(1, 2, 0)\nbad()").then(x => x.callAsync("bad")), /range step cannot be zero/);
+});
