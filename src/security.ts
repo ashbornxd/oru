@@ -22,3 +22,22 @@ export function contentSecurityPolicy(html: string): string {
     "frame-ancestors 'none'"
   ].join("; ");
 }
+
+/** Generate Cloudflare Pages-compatible per-route security headers. */
+export function staticHostingHeaders(files: ReadonlyMap<string, string>): string {
+  const rules: string[] = [];
+  for (const [filename, content] of files) {
+    if (!filename.endsWith(".html")) continue;
+    const route = filename === "index.html" ? "/" : "/" + filename.slice(0, -"/index.html".length);
+    rules.push(
+      route,
+      "  Content-Security-Policy: " + contentSecurityPolicy(content),
+      "  X-Content-Type-Options: nosniff",
+      "  Referrer-Policy: strict-origin-when-cross-origin",
+      "  X-Frame-Options: DENY",
+      "  Permissions-Policy: camera=(), microphone=(), geolocation=()",
+      ""
+    );
+  }
+  return rules.join("\n");
+}
