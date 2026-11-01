@@ -275,3 +275,29 @@ test("does not overwrite supplied globals in nested top-level control flow", asy
   });
   assert.equal(loop.getGlobalState().theme, "custom");
 });
+
+
+test("reports source lines for async expression failures", async () => {
+  const unknown = await runAsync(`async func load():
+    value = 1
+    return missingValue
+`);
+  await assert.rejects(() => unknown.callAsync("load"), /Line 3: Unknown variable 'missingValue'/);
+
+  const division = await runAsync(`async func calculate():
+    value = 4
+    return value / 0
+`);
+  await assert.rejects(() => division.callAsync("calculate"), /Line 3: Division by zero/);
+});
+
+test("short-circuits async logical expressions without invoking skipped capabilities", async () => {
+  let calls = 0;
+  const program = await runAsync(`async func check():
+    first = false and await fetchValue()
+    second = true or await fetchValue()
+    return first or second
+`, { asyncFunctions: { fetchValue: async () => { calls++; return true; } } });
+  assert.equal(await program.callAsync("check"), true);
+  assert.equal(calls, 0);
+});
