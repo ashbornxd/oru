@@ -326,6 +326,12 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         el.style.font = px(node.properties.size, 16) + "px system-ui";
       } else {
         el.style.opacity = ".001";
+        el.style.background = "transparent";
+        el.style.border = "0";
+        el.style.padding = "0";
+        el.style.color = "transparent";
+        el.style.appearance = "none";
+        el.style.cursor = "pointer";
       }
       const accessibleLabel = node.type === "input"
         ? node.properties.label ?? node.properties.placeholder ?? node.binding ?? "Input"
