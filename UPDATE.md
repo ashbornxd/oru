@@ -216,6 +216,7 @@ These details are implemented as the first coherent baseline, but remain open to
 | Renderer | ORU renders its own widget tree to Canvas 2D, with a hidden accessible DOM layer for keyboard, focus, and assistive technology support. | Canvas remains the visual backend without sacrificing basic browser accessibility. |
 | Browser boundary | ORU exposes a small explicit browser API for navigation, clipboard, and network requests; raw arbitrary JavaScript execution is not a language feature. | Browser capabilities are permission- and context-aware rather than silently injected into every script. |
 | Build model | ORU 1.0 is a client-side browser application compiler/runtime; server APIs and database hosting are outside the 1.0 compiler scope. | Applications may call external APIs, but secrets and privileged operations must remain on a separately secured backend. |
+| Entry page | Every buildable project must contain `index.oru`, which maps to `/`. | Gives the dev server and static build a deterministic entry point. |
 
 ### Completion roadmap
 
@@ -241,3 +242,12 @@ Implemented on `oru-1.0.0-dev`:
 - Added the existing `oru eval` command to CLI help.
 
 Remaining: route discovery, project configuration, imports, expression binding, page compilation, and Canvas runtime output. The parser is not yet a complete page compiler.
+
+
+### Milestone 2 continued — Route mapping
+
+Implemented on `oru-1.0.0-dev`:
+- Added `src/routes.ts` to map `index.oru` to `/`, `about.oru` to `/about`, and nested pages to matching extensionless routes.
+- Maps each route to a safe static output path and rejects absolute paths, traversal segments, invalid names, and non-`.oru` sources.
+- Requires `index.oru` and rejects duplicate source paths or route collisions.
+- Added route tests in `src/routes.test.ts`.
