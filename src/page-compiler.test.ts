@@ -190,7 +190,7 @@ page:
   const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
   assert.ok(html.includes('el.disabled = true'));
   assert.ok(html.includes('el[key] = node.properties[key]'));
-  assert.ok(html.includes('node.type === "input" ? ["min", "max", "step", "maxLength", "minLength", "name"]'));
+  assert.ok(html.includes('node.type === "input" ? (node.properties.type === "file" ? ["name"] : ["min", "max", "step", "maxLength", "minLength", "name"])'));
 });
 
 
@@ -307,7 +307,7 @@ page:
   const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
   assert.ok(html.includes('node.type === "select" ? "select"'));
   assert.ok(html.includes('document.createElement("option")'));
-  assert.ok(html.includes('el.addEventListener(node.type === "select" ? "change" : "input"'));
+  assert.ok(html.includes('el.addEventListener(node.type === "select" || isFileInput ? "change" : "input"'));
 });
 
 
