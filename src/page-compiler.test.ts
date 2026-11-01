@@ -269,3 +269,23 @@ test("supports custom native validation messages on inputs", () => {
   assert.ok(html.includes('el.setCustomValidity(message)'));
   assert.ok(html.includes('node.properties.validationMessage'));
 });
+
+test("renders bound multiline textarea controls with accessible labels", () => {
+  const page = parsePage(`logic:
+    state message = ""
+page:
+    textarea(message):
+        label: Message
+        placeholder: Write your message
+        rows: 5
+        maxLength: 500
+        required: true
+`);
+  assert.equal(page.widgets[0]?.type, "textarea");
+  assert.equal(page.widgets[0]?.binding, "message");
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('node.type === "textarea" ? "textarea"'));
+  assert.ok(html.includes('el.rows = Number(node.properties.rows ?? 4)'));
+  assert.ok(html.includes('node.properties.label ?? node.properties.placeholder'));
+  assert.ok(html.includes('el.addEventListener("input"'));
+});
