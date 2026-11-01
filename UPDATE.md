@@ -56,7 +56,8 @@ Add decisions below in chronological order. Include the date, the decision, its 
 | 2026-11-01 | Renderer backend | Use Canvas 2D as the drawing backend for the ORU 1.0 renderer. | It provides a simpler foundation for a UI-focused renderer: text, shapes, images, layouts, and interactions. Keep the renderer architecture modular so a different backend, potentially WebGL, can be explored later if justified. |
 | 2026-11-01 | Uninitialized variables | A variable declared with `pass` has no value until it is explicitly assigned. Reading it before assignment must produce a clear error. | Avoids silently inventing default values and makes missing data easier to detect. |
 | 2026-11-01 | Variable type safety | Once a variable's type is established by its first non-`pass` value, it cannot be changed by assigning an incompatible value. | Prevents accidental type changes while allowing concise declarations without explicit type keywords. |
-| 2026-11-01 | Assignment and configuration syntax | Use `:` for structured configuration fields (for example, `metadata: title: "..."`) and `=` for variable declarations and assignments. A variable may be declared as `name = pass`; its type is inferred from the first value later assigned. | Separates configuration syntax from variable syntax and avoids requiring a type keyword when declaring an uninitialized variable. |
+| 2026-11-01 | Assignment and configuration syntax | Use `:` for structured configuration fields (for example, `metadata:` with indented `title: "..."`) and `=` for variable declarations and assignments. A variable may be declared as `name = pass`; its type is inferred from the first value later assigned. | Separates configuration syntax from variable syntax and avoids requiring a type keyword when declaring an uninitialized variable. |
+| 2026-11-01 | File and page model | Each `.oru` source file defines exactly one page. Each file can declare its own page metadata, including its title and description. | Gives each page a clear, independent source file and page-specific metadata. Multi-page projects are composed from multiple `.oru` files; routing and file-to-URL mapping remain to be designed. |
 
 ## Open planning areas
 
@@ -75,6 +76,7 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Superseded proposal:** Explicit declarations such as `string name = pass` are no longer the chosen variable syntax.
 - **Still to design:** Exact type set, inference rules, operators, expressions, functions, control flow, input conversion, and error timing. Do not assume Python's existing `pass` semantics.
 - Core syntax, values, expressions, variables, functions, control flow, and errors.
+- **Agreed file/page model:** One `.oru` file defines one page; each file has its own metadata such as title and description. The rules for routing and mapping filenames to URLs remain open.
 - Pages, reusable components, properties/arguments, slots or composition.
 - Styling model, responsive behavior, themes, and custom CSS escape hatches.
 - Imports, project organization, and code reuse.
