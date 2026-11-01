@@ -34,6 +34,10 @@ metadata:
 
 Supported fields are `title`, `description`, and `language`. Unknown fields are errors.
 
+## Page-local style classes
+
+Define a class with `class name:` before the logic and page blocks. Give it indented style properties, then apply it to a widget with `class: name`. Widget properties override class defaults. The compiler rejects unknown classes and style properties that do not match the widget type. Classes are currently local to one page; cross-file imports are not implemented yet.
+
 ## Page logic and events
 
 A page may define one `logic:` block after optional metadata and before `page:`. It uses the normal ORU language syntax. Functions in this block are available to that page's event handlers.
