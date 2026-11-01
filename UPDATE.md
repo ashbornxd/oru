@@ -228,3 +228,16 @@ These details are implemented as the first coherent baseline, but remain open to
 7. Add documentation, examples, compatibility tests, security review, and release checklist.
 
 These decisions define the implementation direction for this completion pass. Any syntax refinement must be recorded here before its implementation.
+
+
+### Milestone 2 — Page-file parser foundation
+
+Implemented on `oru-1.0.0-dev`:
+- Added `src/project.ts`, a separate parser for one-page-per-file source.
+- Parses optional `metadata:` fields (`title`, `description`, `language`) and a required `page:` block.
+- Parses nested `column`, `row`, `box`, `text`, `button`, `link`, `image`, and `input` widgets.
+- Parses widget properties using colon syntax and validates indentation, duplicate fields, and unknown widgets.
+- Added parser tests in `src/project.test.ts` and syntax documentation in `docs/page-files.md`.
+- Added the existing `oru eval` command to CLI help.
+
+Remaining: route discovery, project configuration, imports, expression binding, page compilation, and Canvas runtime output. The parser is not yet a complete page compiler.
