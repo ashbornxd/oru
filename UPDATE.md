@@ -233,6 +233,9 @@ These details are implemented as the first coherent baseline, but remain open to
 
 | Cross-page global state | Declare shared values with `global name = value` in a page's `logic:` block. A previously stored value takes precedence over the declaration's initial value. | Values are serialized for the current browser tab session and are shared across pages in that session; they are not durable application storage. |
 
+
+| Local style classes | Use `class name:` for a reusable page style and `class: name` on a widget to apply it. Direct widget properties take precedence over class properties. | The first implementation supports page-local classes; sharing them between files is a later step. |
+
 ### Completion roadmap
 
 1. Harden the core interpreter: source locations, assignment/mutation, predictable scopes, diagnostics, and test coverage.
