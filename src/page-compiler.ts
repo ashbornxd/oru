@@ -16,7 +16,8 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color", "text.color", "align"]),
   link: new Set(["color", "text.color", "size", "weight", "decoration", "underline"]),
   image: new Set(["width", "height", "fit", "radius"]),
-  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "validationMessage", "name", "text.color", "border.color", "label"])
+  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "validationMessage", "name", "text.color", "border.color", "label"]),
+  textarea: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "readOnly", "minLength", "maxLength", "validationMessage", "name", "text.color", "border.color", "label", "rows"])
 };
 
 function resolveWidget(widget: PageWidget, classes: OruPage["classes"]): PageWidget {
@@ -313,7 +314,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     }
     for (const [regionIndex, region] of regions.entries()) {
       const node = region.node;
-      const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : "button");
+      const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : node.type === "textarea" ? "textarea" : "button");
       el.dataset.oruControl = String(regionIndex);
       el.style.cssText = "position:absolute;overflow:hidden;left:" + region.x + "px;top:" + region.y + "px;width:" + region.w + "px;height:" + region.h + "px;pointer-events:auto;";
       if (node.type === "input") {
@@ -356,7 +357,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
           el.addEventListener("input", () => el.setCustomValidity(""));
           el.addEventListener("change", () => el.setCustomValidity(""));
         }
-        for (const key of ["min", "max", "step", "maxLength", "minLength", "name"]) {
+        for (const key of (node.type === "input" ? ["min", "max", "step", "maxLength", "minLength", "name"] : ["maxLength", "minLength", "name"])) {
           if (node.properties[key] !== undefined) el[key] = node.properties[key];
         }
         if (node.binding && app) {
