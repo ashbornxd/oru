@@ -8,6 +8,8 @@ metadata:
 
 logic:
     state output = "Run the language demo to see its result."
+    state totalOutput = 0
+    state countOutput = 0
     state asyncOutput = "Async result will appear here."
     func runLanguageDemo():
         values = range(1, 6)
@@ -21,7 +23,9 @@ logic:
             if total == 10:
                 break
         profile = {name: "ORU", version: APP_VERSION}
-        output = welcome(profile.name) + " | total=" + total + " | items=" + len(values)
+        output = welcome(profile.name)
+        totalOutput = total
+        countOutput = len(values)
     async func runAsyncDemo():
         result = await getGreeting()
         asyncOutput = result
@@ -41,6 +45,10 @@ page:
                 class: theme.ActionButton
                 on.click: runLanguageDemo
             text(output)
+            text("Final total")
+            text(totalOutput)
+            text("List length")
+            text(countOutput)
         box:
             class: theme.HeroPanel
             text("Async functions and imported module functions.")
