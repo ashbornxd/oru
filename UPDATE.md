@@ -268,3 +268,19 @@ Implemented on `oru-1.0.0-dev`:
 | Initial renderer scope | Support column, row, box, text, button, link, image, and input widgets; unsupported advanced styling fails with a useful build error rather than silently pretending to work. | Forms, global reactive state, imported classes, and full expression binding remain subsequent integration milestones. |
 
 The first runtime slice is deliberately a vertical end-to-end milestone, not the final 1.0 feature set. Any limitations discovered during implementation must be reflected in the docs and tests.
+
+
+### Milestone 3 — First end-to-end page build and Canvas runtime
+
+Implemented on `oru-1.0.0-dev`:
+- Added `oru.config` validation with the initial `name: "Project Name"` format.
+- Added recursive page discovery and multi-page project compilation.
+- Connected `oru build` and `oru run dev` to the new page-file compiler.
+- Added extensionless route output: root page to `index.html`, nested pages to route `index.html` files.
+- Added a browser page shell with a Canvas 2D renderer for basic text, columns, rows, boxes, images, links, buttons, and inputs.
+- Added a parallel semantic DOM control layer for focusable controls.
+- Updated the starter project to use `oru.config` and `index.oru`.
+- Added project compiler and page compiler tests; updated the 1.0 page documentation and README.
+- Fixed leaf widget parsing so simple widgets such as `text("Hello")` do not require a trailing colon.
+
+**Known limitations still open:** the renderer is a basic first slice. ORU-language event functions are not connected to controls; state and reactivity, module imports, reusable style classes, full form validation/submission, robust responsive layout, complete accessibility, asset URL hardening, and broad browser/security tests remain unfinished. The current UI should be treated as experimental.
