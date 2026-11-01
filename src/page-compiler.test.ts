@@ -95,3 +95,58 @@ page:
   assert.ok(html.includes("app.set(node.binding, el.value)"));
   assert.ok(html.includes("el.required = true"));
 });
+
+test("compiles native form validation and submit handlers", () => {
+  const page = parsePage(`logic:
+    state email = ""
+    func register():
+        print(email)
+page:
+    form:
+        on.submit: register
+        input(email):
+            type: email
+            required: true
+        button("Create account")
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('form.addEventListener("submit"'));
+  assert.ok(html.includes('el.type = region.formId ? "submit" : "button"'));
+  assert.ok(html.includes('forms.set(form.id, form)'));
+  assert.ok(html.includes('parent.append(el)'));
+  assert.ok(html.includes('app.call(String(node.properties["on.submit"]))'));
+});
+
+test("rejects forms without a declared submit function", () => {
+  const page = parsePage(`page:
+    form:
+        on.submit: missing
+        button("Send")
+`);
+  assert.throws(() => compilePage(page, routeForPage("index.oru"), { index: "/" }), /requires on.submit/);
+});
+
+test("rejects nested forms and click handlers on submit buttons", () => {
+  const nested = parsePage(`logic:
+    func send():
+        print("sent")
+page:
+    form:
+        on.submit: send
+        form:
+            on.submit: send
+            button("Send")
+`);
+  assert.throws(() => compilePage(nested, routeForPage("index.oru"), { index: "/" }), /cannot be nested/);
+
+  const click = parsePage(`logic:
+    func send():
+        print("sent")
+page:
+    form:
+        on.submit: send
+        button("Send"):
+            on.click: send
+`);
+  assert.throws(() => compilePage(click, routeForPage("index.oru"), { index: "/" }), /use on.submit/);
+});
