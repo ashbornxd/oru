@@ -293,8 +293,11 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
           el.addEventListener("input", () => {
             try {
               const start = el.selectionStart, end = el.selectionEnd;
-              const value = ["number", "range"].includes(el.type) ? (el.value === "" ? null : Number(el.value)) : el.value;
-              if (value !== null) app.set(node.binding, value);
+              const current = app.getGlobals()[node.binding];
+              const numeric = typeof current === "number" || (current === undefined && ["number", "range"].includes(el.type));
+              const value = numeric ? (el.value === "" ? null : Number(el.value)) : el.value;
+              if (value === null || (typeof value === "number" && !Number.isFinite(value))) return;
+              app.set(node.binding, value);
               persistGlobals();
               render();
               const replacement = controls.querySelector("[data-oru-control=\\\"" + regionIndex + "\\\"]");
