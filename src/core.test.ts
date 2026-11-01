@@ -62,3 +62,25 @@ test("allows browser input to update a declared string state variable", () => {
   assert.equal(program.getGlobals().email, "user@example.com");
   assert.throws(() => program.set("missing", "value"), /Unknown variable/);
 });
+
+test("updates an existing shared global from functions and nested blocks", () => {
+  const program = run(`global count = 0
+func increment():
+    global count = count + 1
+`);
+  program.call("increment");
+  assert.equal(program.getGlobalState().count, 1);
+
+  const loop = run(`global count = 0
+while count < 3:
+    global count = count + 1
+`);
+  assert.equal(loop.getGlobalState().count, 3);
+});
+
+test("does not expose inherited object prototype properties", () => {
+  assert.throws(() => run('profile = {name: "ORU"}\nprint(profile.constructor)'), /Unknown object key/);
+  assert.throws(() => run('profile = {name: "ORU"}\nprint(profile.__proto__)'), /Unknown object key/);
+  const result = run('profile = {"__proto__": "safe"}\nprint(profile["__proto__"])');
+  assert.deepEqual(result.output, ["safe"]);
+});
