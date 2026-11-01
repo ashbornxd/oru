@@ -9,6 +9,7 @@ metadata:
 logic:
     global demoVisits = 0
     state greeting = "Press the button to run an async function."
+    state welcomeMessage = welcome("web builder")
     func countVisit():
         global demoVisits = demoVisits + 1
     async func loadGreeting():
@@ -62,7 +63,7 @@ page:
             box:
                 class: HeroPanel
                 text("Imported function")
-                text(welcome("web builder"))
+                text(welcomeMessage)
                 text(APP_VERSION)
         row:
             wrapAt: 620
