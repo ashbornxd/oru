@@ -9,8 +9,19 @@ function escapeHtml(value: string): string {
 function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: string): string {
   const payload = JSON.stringify({ page, routes, logic: page.logic }).replace(/</g, "\\u003c");
   return `
+import { run } from "${corePath}";
 (() => {
   const data = ${payload};
+  const app = data.logic ? run(data.logic) : null;
+  const activate = node => {
+    const handler = node.properties["on.click"];
+    if (handler && app) { app.call(String(handler)); render(); }
+    if (node.type === "link") {
+      const route = String(node.route ?? node.properties.route ?? "");
+      const target = data.routes[route] ?? route;
+      if (target) location.href = target;
+    }
+  };
   const canvas = document.querySelector("canvas");
   const ctx = canvas.getContext("2d");
   const controls = document.getElementById("oru-controls");
