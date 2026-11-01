@@ -10,9 +10,11 @@ export interface PageWidget {
   children: PageWidget[];
   line: number;
 }
+export interface PageImport { kind: "namespace" | "named"; module: string; names: string[]; alias?: string }
 export interface OruPage {
   metadata: { title: string; description: string; language: string };
   classes: Record<string, Record<string, PageValue>>;
+  imports: PageImport[];
   widgets: PageWidget[];
   logic: string;
   sourcePath?: string;
@@ -101,6 +103,7 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
   let activeClass = "";
   let sawLogic = false;
   const classes: Record<string, Record<string, PageValue>> = {};
+  const imports: PageImport[] = [];
   const logicLines: string[] = [];
 
   for (const line of lines) {
@@ -108,6 +111,21 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
     if (line.indent === 0 && line.text === "metadata:") {
       if (sawMetadata || sawClass || sawLogic || sawPage) throw new OruError("metadata must appear once before classes, logic, and page.", line.number);
       sawMetadata = true; section = "metadata"; continue;
+    }
+    if (line.indent === 0 && (sawLogic || sawPage) && (line.text.startsWith("import ") || line.text.startsWith("from "))) {
+      throw new OruError("Imports must appear before logic and page.", line.number);
+    }
+    const fromImport = line.indent === 0 ? line.text.match(/^from\\s+([A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*)\\s+import\\s+([A-Za-z_]\\w*(?:\\s*,\\s*[A-Za-z_]\\w*)*)$/) : null;
+    if (fromImport) {
+      imports.push({ kind: "named", module: fromImport[1]!, names: fromImport[2]!.split(",").map(name => name.trim()) });
+      continue;
+    }
+    const namespaceImport = line.indent === 0 ? line.text.match(/^import\\s+([A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*)$/) : null;
+    if (namespaceImport) {
+      const modulePath = namespaceImport[1]!;
+      const alias = modulePath.split(".").at(-1)!;
+      imports.push({ kind: "namespace", module: modulePath, names: [], alias });
+      continue;
     }
     const classHeader = line.indent === 0 ? line.text.match(/^class\s+([A-Za-z_]\w*)\s*:\s*$/) : null;
     if (classHeader) {
@@ -170,5 +188,5 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
   for (const [name, properties] of Object.entries(classes)) {
     if (Object.keys(properties).length === 0) throw new OruError("Style class is empty: " + name);
   }
-  return { metadata, classes, widgets, logic: logicLines.join("\n"), sourcePath };
+  return { metadata, classes, imports, widgets, logic: logicLines.join("\n"), sourcePath };
 }
