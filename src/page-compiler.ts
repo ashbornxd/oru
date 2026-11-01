@@ -248,7 +248,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       ctx.fillStyle = visibleValue ? color(node, "text.color", "#202124") : "#777777";
       ctx.font = px(p.size, 14) + "px system-ui";
       const displayText = visibleValue || String(p.placeholder ?? "");
-      displayText.split("\n").slice(0, node.type === "textarea" ? Math.max(1, Math.floor((h - 20) / 20)) : 1).forEach((line, index) => ctx.fillText(line, x + 10, y + 14 + index * 20, w - 20));
+      displayText.split("\\n").slice(0, node.type === "textarea" ? Math.max(1, Math.floor((h - 20) / 20)) : 1).forEach((line, index) => ctx.fillText(line, x + 10, y + 14 + index * 20, w - 20));
       regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
