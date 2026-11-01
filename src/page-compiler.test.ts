@@ -214,9 +214,9 @@ page:
         on.leave: leave
 `);
   const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
-  assert.ok(html.includes('node.properties["hover.background"]'));
-  assert.ok(html.includes('node.properties["active.background"]'));
-  assert.ok(html.includes('node.properties["disabled.background"]'));
+  assert.ok(html.includes('p["hover.background"]'));
+  assert.ok(html.includes('p["active.background"]'));
+  assert.ok(html.includes('p["disabled.background"]'));
   assert.ok(html.includes('controls.addEventListener("pointerover"'));
   assert.ok(html.includes('controls.addEventListener("pointerdown"'));
   assert.ok(html.includes('runStateEvent(node, "on.leave")'));
