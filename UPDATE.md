@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, text/textarea/select/file controls, cross-field form matching, accessible validation summaries, button interaction states and image icons, responsive row wrapping and container alignment, scrollable pages, semantic text/image content, native keyboard-operable controls, baseline security headers, and Playwright integration coverage for Chromium, Firefox, and WebKit. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: an explicit asynchronous execution model, full WCAG conformance and assistive-technology testing, an independent security/performance review, real-device testing, and final release validation.
+**Status:** Feature implementation and automated verification are complete on `oru-1.0.0-dev`; release approval is still pending. Implemented: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive bindings, session-scoped global state, reusable style classes, named sync/async module imports, forms and validation, responsive layout, semantic DOM controls, baseline security headers, and async browser event handling. Latest branch-head CI (commit `934c89d`) passed Node 20, 22, and 24, including `npm audit --audit-level=high`, unit tests, TypeScript build, package dry-run, and Playwright tests in Chromium, Firefox, and WebKit. Remaining release gates: WCAG/assistive-technology review, independent security and performance review, real-device testing, and final release validation. These checks are not represented as completed.
 
 ## Vision
 
@@ -720,7 +720,7 @@ Implemented on `oru-1.0.0-dev`:
 - Browser integration coverage includes async click completion, state rerendering, and accessible error reporting.
 - Updated compiler expectations to verify the async runtime import.
 
-**Verification pending:** run the latest full CI matrix, including Chromium, Firefox, and WebKit, on the final branch head. Browser runtime host-capability configuration and comprehensive async semantics review remain open, along with accessibility, external security/performance review, real-device testing, and final release validation.
+**Verification:** the latest branch-head CI run `41326490207` passed all Node 20/22/24 jobs, including the full Chromium, Firefox, and WebKit Playwright suite. Manual accessibility, external security/performance, real-device, and release reviews remain open.
 
 
 ### Milestone 33 — Async runtime compatibility matrix
@@ -731,7 +731,7 @@ Implemented on `oru-1.0.0-dev`:
 - Added early-return-after-await global-state persistence coverage.
 - Expanded the async execution guide with the tested compatibility matrix and explicit manual-review boundaries.
 
-**Verification:** CI is running on the updated branch head. Earlier async runtime and browser integration commits passed the complete Node 20/22/24 matrix, including Chromium, Firefox, and WebKit.
+**Verification:** the latest branch-head CI run `41326490207` passed the complete Node 20/22/24 matrix, including Chromium, Firefox, and WebKit.
 
 **Release blockers remain:** the current CI result must pass on the final head; WCAG and assistive-technology review, independent security/performance review, and physical-device testing cannot be replaced by automated tests.
 
@@ -743,7 +743,7 @@ Implemented on `oru-1.0.0-dev`:
 - Added regression tests for both user-function and built-in collisions.
 - Documented the explicit capability namespace rule.
 
-**Verification pending:** run the full Node and browser CI matrix on the current head.
+**Verification:** latest branch-head CI run `41326490207` passed the full Node and browser matrix.
 
 
 ### Milestone 35 — Async functions across modules
@@ -753,4 +753,4 @@ Implemented on `oru-1.0.0-dev`:
 - Added an integration test that compiles a page importing an async function, executes the generated logic with an explicit async host capability, awaits the imported function, and verifies the resulting state.
 - Documented asynchronous module imports and updated the README's async verification status.
 
-**Verification pending:** final CI for the latest branch head. This feature does not remove the remaining manual accessibility, independent security/performance, and physical-device release gates.
+**Verification:** latest branch-head CI run `41326490207` passed. Manual accessibility, independent security/performance, and physical-device release gates remain.
