@@ -84,3 +84,14 @@ test("does not expose inherited object prototype properties", () => {
   const result = run('profile = {"__proto__": "safe"}\nprint(profile["__proto__"])');
   assert.deepEqual(result.output, ["safe"]);
 });
+
+
+test("keeps prototype-like variable names as safe own data properties", () => {
+  const program = run('__proto__ = {polluted: true}\nconstructor = "safe"');
+  const globals = program.getGlobals();
+  assert.equal(Object.getPrototypeOf(globals), Object.prototype);
+  assert.equal(Object.hasOwn(globals, "__proto__"), true);
+  assert.deepEqual(globals["__proto__"], { polluted: true });
+  assert.equal(globals.constructor, "safe");
+  assert.equal(({} as { polluted?: boolean }).polluted, undefined);
+});
