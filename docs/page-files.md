@@ -40,6 +40,33 @@ Use `input("Email address")` for a placeholder-only input, or `input(email)` to 
 
 Wrap related inputs in a `form:` widget and declare `on.submit: functionName` on the form. Buttons inside a form submit it by default. The browser runs native constraint validation first; if validation succeeds, ORU prevents a page reload and calls the named function. Invalid forms do not call the handler. Form submission does not send data to a server automatically.
 
+Use `matches: otherBinding` on a bound input, textarea, or select to compare its value with another bound control in the same form. The field becomes invalid while both values are non-empty and differ. Its optional `validationMessage` supplies the mismatch message; otherwise ORU uses a default message. References to missing, unbound, or self-matching fields are compile-time errors.
+
+Set `validationSummary: true` on a form to show an accessible error summary when native browser validation blocks submission. The summary names the invalid controls and is announced with an assertive live region. It does not replace each control's native validation behavior.
+
+```oru
+logic:
+    state password = ""
+    state confirmation = ""
+    func verify():
+        print("verified")
+page:
+    form:
+        on.submit: verify
+        validationSummary: true
+        input(password):
+            type: password
+            required: true
+            label: Password
+        input(confirmation):
+            type: password
+            required: true
+            matches: password
+            validationMessage: "Passwords must match."
+            label: Confirm password
+        button("Verify")
+```
+
 ```oru
 logic:
     state email = ""
