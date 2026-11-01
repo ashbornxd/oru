@@ -83,13 +83,13 @@ The 1.0 interpreter currently includes:
 - Arithmetic, comparisons, and logical expressions
 - Functions, lexical closures, conditionals, and loops
 - `print`, `len`, and `range` built-ins
-- The `oru eval <file>` script command
+- The `oru eval <file>` script command (async-aware in 1.0)
 
 ## Browser runtime status
 
 The 1.0 development branch has a page compiler and Canvas 2D browser renderer, with text, layout, image, link, button, native form controls, and file selection plus a semantic DOM control layer. Page-local logic, click handlers, reactive text/button/input bindings, session-scoped `global` values, native form submission and constraints, cross-field input matching, accessible validation summaries, button hover/active/disabled states and icon assets, reusable style classes, and named cross-file function/value imports are implemented. The renderer supports responsive row wrapping, main/cross-axis container alignment, scrollable content, semantic content, and native keyboard-operable controls. The compiler rejects unresolved internal routes, unsafe module paths, unsafe image sources, and symbolic links in project assets. Playwright browser integration tests target Chromium, Firefox, and WebKit, including desktop/mobile layout checks.
 
-**ORU 1.0 is not feature-complete or production-ready yet.** The current development branch passes unit tests, the TypeScript build, and Playwright integration tests in Chromium, Firefox, and WebKit. The suite covers native file selection, form validation, strict CSP enforcement, responsive layout, keyboard navigation, and visible focus. File selection currently binds filenames only; it does not upload file contents. Remaining work includes an explicit async execution model, full WCAG conformance and assistive-technology testing, independent security/performance review, and real-device testing. Generated pages use per-document SHA-256 CSP hashes; inline scripts, event-handler attributes, and style attributes are disabled.
+**ORU 1.0 is not feature-complete or production-ready yet.** The current development branch passes unit tests, the TypeScript build, and Playwright integration tests in Chromium, Firefox, and WebKit. The suite covers native file selection, form validation, strict CSP enforcement, responsive layout, keyboard navigation, and visible focus. File selection currently binds filenames only; it does not upload file contents. Remaining work includes full async compatibility verification, full WCAG conformance and assistive-technology testing, independent security/performance review, and real-device testing. Generated pages use per-document SHA-256 CSP hashes; inline scripts, event-handler attributes, and style attributes are disabled.
 
 ## Documentation
 
