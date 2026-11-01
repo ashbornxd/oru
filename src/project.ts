@@ -82,6 +82,9 @@ function widgetOf(text: string, line: number): PageWidget | null {
     properties.placeholder = values[0] ?? "";
   } else {
     label = values[0];
+    if (!label && (type === "text" || type === "button") && /^[A-Za-z_]\\w*$/.test(args)) {
+      properties.bind = args;
+    }
   }
   return { type: type as PageWidget["type"], text: label, route, properties, children: [], line };
 }
