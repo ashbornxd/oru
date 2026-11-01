@@ -367,9 +367,9 @@ export function run(source: string, options: RunOptions = {}): RunResult {
       case "index": {
         const object = evalExpr(expr.object, env);
         const index = evalExpr(expr.index, env);
-        if (Array.isArray(object) && typeof index === "number") return (object as Record<string, OruValue>)[index] ?? null;
+        if (Array.isArray(object) && typeof index === "number") return object[index] ?? null;
         if (typeof object === "string" && typeof index === "number") return object[index] ?? "";
-        if (object && typeof object === "object" && typeof index === "string") return object[index] ?? null;
+        if (object && typeof object === "object" && typeof index === "string") return (object as Record<string, OruValue>)[index] ?? null;
         throw new OruError("Invalid index operation.", 0);
       }
       case "call": {
