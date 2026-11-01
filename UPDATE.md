@@ -695,3 +695,17 @@ Implemented on `oru-1.0.0-dev`:
 The full runtime contract and required test matrix are recorded in `docs/async-execution.md`.
 
 **Implementation status:** specification approved; parser, interpreter, and browser runtime support are not yet implemented. No release claim is made.
+
+
+### Milestone 31 — Initial asynchronous interpreter
+
+Implemented on `oru-1.0.0-dev`:
+- Parser accepts `async func name(...):` while preserving existing `func` syntax.
+- Expression parser recognizes `await expression`.
+- Added `runAsync(source, options)` and `callAsync(name, ...args)` without changing the synchronous `run()` / `call()` API.
+- Added explicit host capability registration through `asyncFunctions`; async host results are awaited by the interpreter.
+- Async execution supports local/state/global assignment, conditionals, loops, function calls, returns, and execution-step limits.
+- Sync calls to async functions fail explicitly rather than leaking Promise values.
+- Added regression tests for async host calls, nested async functions, sequential awaits, state updates, sync compatibility, and invalid top-level await.
+
+**Not yet release-complete:** browser event handlers are still synchronous; rejected async event handlers are not yet routed to the page error UI. Full async parser/runtime edge-case testing, accessibility, independent security/performance review, real-device testing, and release validation remain open. CI must pass on the new branch head before this milestone is considered verified.
