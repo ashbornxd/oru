@@ -353,5 +353,7 @@ page:
   assert.ok(html.includes('const isFileInput = node.type === "input" && node.properties.type === "file"'));
   assert.ok(html.includes('Array.from(el.files ?? []).map(file => file.name)'));
   assert.ok(html.includes('node.properties.multiple === true ? names : (names[0] ?? "")'));
+  assert.ok(html.includes("paint();"));
+  assert.ok(html.includes('status.setAttribute("aria-live", "polite")'));
   assert.ok(html.includes('if (node.type !== "select" && !isFileInput) el.value = textOf(node)'));
 });
