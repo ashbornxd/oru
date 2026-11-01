@@ -313,26 +313,24 @@ export function run(source: string, options: RunOptions = {}): RunResult {
     }
     return values;
   } });
-  const evalExpr = (expr: Expr, env: Environment): RuntimeValue => {
+  let invokeFunction: (name: string, args: OruValue[], line: number) => OruValue = () => null;
+  const evalExpr = (expr: Expr, env: Environment): OruValue => {
     switch (expr.kind) {
       case "literal": return expr.value;
-      case "name": {
-        const fn = functions.get(expr.name) ?? builtins.get(expr.name);
-        return fn ?? env.get(expr.name, 0);
-      }
-      case "list": return expr.items.map(x => asValue(evalExpr(x, env), 0));
-      case "object": return Object.fromEntries(expr.entries.map(([k, v]) => [k, asValue(evalExpr(v, env), 0)]));
+      case "name": return env.get(expr.name, 0);
+      case "list": return expr.items.map(x => evalExpr(x, env));
+      case "object": return Object.fromEntries(expr.entries.map(([k, v]) => [k, evalExpr(v, env)]));
       case "unary": {
-        const value = asValue(evalExpr(expr.value, env), 0);
+        const value = evalExpr(expr.value, env);
         if (expr.op === "!" || expr.op === "not") return !truthy(value);
         if (typeof value !== "number") throw new OruError("Unary '" + expr.op + "' expects a number.", 0);
         return expr.op === "-" ? -value : value;
       }
       case "binary": {
-        const left = asValue(evalExpr(expr.left, env), 0);
-        if (expr.op === "and") return truthy(left) ? asValue(evalExpr(expr.right, env), 0) : left;
-        if (expr.op === "or") return truthy(left) ? left : asValue(evalExpr(expr.right, env), 0);
-        const right = asValue(evalExpr(expr.right, env), 0);
+        const left = evalExpr(expr.left, env);
+        if (expr.op === "and") return truthy(left) ? evalExpr(expr.right, env) : left;
+        if (expr.op === "or") return truthy(left) ? left : evalExpr(expr.right, env);
+        const right = evalExpr(expr.right, env);
         switch (expr.op) {
           case "+": if (typeof left === "string" && typeof right === "string") return left + right; return numeric(left, right, expr.op);
           case "-": case "*": case "/": case "//": case "%": case "**": return numeric(left, right, expr.op);
@@ -340,38 +338,33 @@ export function run(source: string, options: RunOptions = {}): RunResult {
           case "!=": return !equal(left, right);
           case "<": case "<=": case ">": case ">=":
             if (typeof left !== typeof right || (typeof left !== "number" && typeof left !== "string")) throw new OruError("Values cannot be ordered.", 0);
-            return expr.op === "<" ? left < (right as never) : expr.op === "<=" ? left <= (right as never) : expr.op === ">" ? left > (right as never) : left >= (right as never);
+            if (expr.op === "<") return left < (right as never);
+            if (expr.op === "<=") return left <= (right as never);
+            if (expr.op === ">") return left > (right as never);
+            return left >= (right as never);
         }
         return null;
       }
       case "member": {
-        const object = asValue(evalExpr(expr.object, env), 0);
+        const object = evalExpr(expr.object, env);
         if (!object || typeof object !== "object" || Array.isArray(object)) throw new OruError("Property access requires an object.", 0);
         if (!(expr.key in object)) throw new OruError("Unknown object key '" + expr.key + "'.", 0);
         return object[expr.key]!;
       }
       case "index": {
-        const object = asValue(evalExpr(expr.object, env), 0);
-        const index = asValue(evalExpr(expr.index, env), 0);
+        const object = evalExpr(expr.object, env);
+        const index = evalExpr(expr.index, env);
         if (Array.isArray(object) && typeof index === "number") return object[index] ?? null;
         if (typeof object === "string" && typeof index === "number") return object[index] ?? "";
         if (object && typeof object === "object" && typeof index === "string") return object[index] ?? null;
         throw new OruError("Invalid index operation.", 0);
       }
       case "call": {
-        const callable = evalExpr(expr.callee, env);
-        const args = expr.args.map(x => asValue(evalExpr(x, env), 0));
-        if (typeof callable !== "function" && (!callable || typeof callable !== "object" || !("call" in callable)))
-          throw new OruError("This value cannot be called.", 0);
-        return (callable as Callable).call(args, 0);
+        if (expr.callee.kind !== "name") throw new OruError("Only named functions can be called in this release.", 0);
+        return invokeFunction(expr.callee.name, expr.args.map(x => evalExpr(x, env)), 0);
       }
     }
   };
-  function asValue(value: RuntimeValue, line: number): OruValue {
-    if (value && typeof value === "object" && "call" in value && typeof (value as Callable).call === "function")
-      throw new OruError("A function cannot be used as a data value.", line);
-    return value as OruValue;
-  }
   function truthy(value: OruValue): boolean { return value !== false && value !== null && value !== 0 && value !== ""; }
   function equal(a: OruValue, b: OruValue): boolean { return JSON.stringify(a) === JSON.stringify(b); }
   function numeric(a: OruValue, b: OruValue, op: string): number {
@@ -384,114 +377,62 @@ export function run(source: string, options: RunOptions = {}): RunResult {
     }
   }
   function displayValue(value: OruValue): string { return typeof value === "string" ? value : JSON.stringify(value); }
-  const execute = (body: Statement[], env: Environment, inFunction = false, inLoop = false): void => {
+  const executeBlock = (body: Statement[], env: Environment, inFunction = false, inLoop = false): void => {
     for (const statement of body) {
       if (++steps > maxSteps) throw new OruError("Execution step limit exceeded.", statement.line);
       switch (statement.kind) {
-        case "assign": env.declare(statement.name, asValue(evalExpr(statement.value, env), statement.line), statement.line); break;
-        case "expression": asValue(evalExpr(statement.value, env), statement.line); break;
+        case "assign": env.declare(statement.name, evalExpr(statement.value, env), statement.line); break;
+        case "expression": evalExpr(statement.value, env); break;
         case "func": functions.set(statement.name, { params: statement.params, body: statement.body, closure: env }); break;
         case "if": {
-          const branch = statement.branches.find(x => x.condition === null || truthy(asValue(evalExpr(x.condition, env), statement.line)));
-          if (branch) execute(branch.body, env, inFunction, inLoop);
+          const branch = statement.branches.find(x => x.condition === null || truthy(evalExpr(x.condition, env)));
+          if (branch) executeBlock(branch.body, env, inFunction, inLoop);
           break;
         }
         case "while": {
           let count = 0;
-          while (truthy(asValue(evalExpr(statement.condition, env), statement.line))) {
+          while (truthy(evalExpr(statement.condition, env))) {
             if (++count > maxSteps) throw new OruError("Loop iteration limit exceeded.", statement.line);
-            try { execute(statement.body, env, inFunction, true); }
+            try { executeBlock(statement.body, env, inFunction, true); }
             catch (signal) { if (signal instanceof BreakSignal) break; if (!(signal instanceof ContinueSignal)) throw signal; }
           }
           break;
         }
         case "for": {
-          const iterable = asValue(evalExpr(statement.iterable, env), statement.line);
+          const iterable = evalExpr(statement.iterable, env);
           const values = Array.isArray(iterable) ? iterable : typeof iterable === "string" ? [...iterable] : null;
           if (!values) throw new OruError("for loops require a list or string.", statement.line);
           for (const value of values) {
             const loopEnv = new Environment(env); loopEnv.declare(statement.name, value, statement.line);
-            try { execute(statement.body, loopEnv, inFunction, true); }
+            try { executeBlock(statement.body, loopEnv, inFunction, true); }
             catch (signal) { if (signal instanceof BreakSignal) break; if (!(signal instanceof ContinueSignal)) throw signal; }
           }
           break;
         }
-        case "return": if (!inFunction) throw new OruError("return can only be used inside a function.", statement.line);
-          throw new ReturnSignal(statement.value ? asValue(evalExpr(statement.value, env), statement.line) : null);
-        case "break": if (!inLoop) throw new OruError("break can only be used inside a loop.", statement.line); throw new BreakSignal();
-        case "continue": if (!inLoop) throw new OruError("continue can only be used inside a loop.", statement.line); throw new ContinueSignal();
+        case "return":
+          if (!inFunction) throw new OruError("return can only be used inside a function.", statement.line);
+          throw new ReturnSignal(statement.value ? evalExpr(statement.value, env) : null);
+        case "break":
+          if (!inLoop) throw new OruError("break can only be used inside a loop.", statement.line);
+          throw new BreakSignal();
+        case "continue":
+          if (!inLoop) throw new OruError("continue can only be used inside a loop.", statement.line);
+          throw new ContinueSignal();
       }
     }
   };
-  for (const [name, callable] of builtins) functions.set(name, { params: [], body: [], closure: global });
-  const invoke = (name: string, args: OruValue[], line: number): OruValue => {
+  invokeFunction = (name, args, line) => {
+    const builtin = builtins.get(name);
+    if (builtin) return builtin.call(args, line);
     const fn = functions.get(name);
     if (!fn) throw new OruError("Unknown function '" + name + "'.", line);
     if (args.length !== fn.params.length) throw new OruError("Function '" + name + "' expects " + fn.params.length + " argument(s).", line);
     const env = new Environment(fn.closure);
     fn.params.forEach((param, i) => env.declare(param, args[i]!, line));
-    try { execute(fn.body, env, true, false); } catch (signal) {
-      if (signal instanceof ReturnSignal) return signal.value;
-      throw signal;
-    }
+    try { executeBlock(fn.body, env, true, false); }
+    catch (signal) { if (signal instanceof ReturnSignal) return signal.value; throw signal; }
     return null;
   };
-  // Calls are resolved through this wrapper so user functions and built-ins share one call path.
-  for (const [name, callable] of builtins) functions.set(name, {
-    params: [], body: [], closure: global
-  });
-  const evaluateWithCalls = evalExpr;
-  void evaluateWithCalls;
-  // Replace call evaluation by resolving a named function at execution time.
-  const callExpression = (expr: Expr, env: Environment): OruValue => {
-    if (expr.kind === "call" && expr.callee.kind === "name") {
-      const args = expr.args.map(x => asValue(evalExpr(x, env), 0));
-      const builtin = builtins.get(expr.callee.name);
-      return builtin ? builtin.call(args, 0) : invoke(expr.callee.name, args, 0);
-    }
-    return asValue(evalExpr(expr, env), 0);
-  };
-  const originalExecute = execute;
-  void originalExecute;
-  // Execute top-level and function bodies using the same evaluator.
-  const executeProgram = (body: Statement[], env: Environment, inFunction = false, inLoop = false): void => {
-    for (const statement of body) {
-      if (++steps > maxSteps) throw new OruError("Execution step limit exceeded.", statement.line);
-      if (statement.kind === "assign") env.declare(statement.name, callExpression(statement.value, env), statement.line);
-      else if (statement.kind === "expression") callExpression(statement.value, env);
-      else if (statement.kind === "func") functions.set(statement.name, { params: statement.params, body: statement.body, closure: env });
-      else if (statement.kind === "return") {
-        if (!inFunction) throw new OruError("return can only be used inside a function.", statement.line);
-        throw new ReturnSignal(statement.value ? callExpression(statement.value, env) : null);
-      } else if (statement.kind === "break") {
-        if (!inLoop) throw new OruError("break can only be used inside a loop.", statement.line);
-        throw new BreakSignal();
-      } else if (statement.kind === "continue") {
-        if (!inLoop) throw new OruError("continue can only be used inside a loop.", statement.line);
-        throw new ContinueSignal();
-      } else if (statement.kind === "if") {
-        const branch = statement.branches.find(x => x.condition === null || truthy(callExpression(x.condition, env)));
-        if (branch) executeProgram(branch.body, env, inFunction, inLoop);
-      } else if (statement.kind === "while") {
-        let count = 0;
-        while (truthy(callExpression(statement.condition, env))) {
-          if (++count > maxSteps) throw new OruError("Loop iteration limit exceeded.", statement.line);
-          try { executeProgram(statement.body, env, inFunction, true); }
-          catch (signal) { if (signal instanceof BreakSignal) break; if (!(signal instanceof ContinueSignal)) throw signal; }
-        }
-      } else if (statement.kind === "for") {
-        const iterable = callExpression(statement.iterable, env);
-        const values = Array.isArray(iterable) ? iterable : typeof iterable === "string" ? [...iterable] : null;
-        if (!values) throw new OruError("for loops require a list or string.", statement.line);
-        for (const value of values) {
-          const loopEnv = new Environment(env); loopEnv.declare(statement.name, value, statement.line);
-          try { executeProgram(statement.body, loopEnv, inFunction, true); }
-          catch (signal) { if (signal instanceof BreakSignal) break; if (!(signal instanceof ContinueSignal)) throw signal; }
-        }
-      }
-    }
-  };
-  executeProgram(statements, global);
-  const snapshot: Record<string, OruValue> = {};
-  return { output, globals: snapshot };
+  executeBlock(statements, global);
+  return { output, globals: {} };
 }
