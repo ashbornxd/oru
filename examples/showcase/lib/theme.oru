@@ -24,10 +24,6 @@ class ActionButton:
     radius: 12
     padding: 14
     width: 220
-    hover.background: #193eae
-    active.background: #122f88
-    disabled.background: #cbd2e2
-    disabled.color: #68738a
 
 class FieldStyle:
     background: #ffffff

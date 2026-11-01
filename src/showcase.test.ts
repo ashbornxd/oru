@@ -25,7 +25,7 @@ test("builds the complete ORU 1.0 showcase website", async () => {
   assert.match(home, /1\.0\.0-dev/);
   assert.match(home, /assets\/oru-mark\.svg/);
   assert.match(home, /assets\/arrow\.svg/);
-  assert.match(home, /lib\/helpers\.or(u|u)/);
+  assert.match(home, /getGreeting/);
   assert.ok(files.has("_oru/core.js"));
   assert.ok(files.has("_oru/ast.js"));
 });

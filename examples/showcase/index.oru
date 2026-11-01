@@ -42,6 +42,8 @@ page:
                 class: ActionButton
                 icon: "assets/arrow.svg"
                 alt: "Arrow"
+                hover.background: #193eae
+                active.background: #122f88
                 on.click: loadGreeting
             text(greeting)
         row:
@@ -50,7 +52,7 @@ page:
             crossAlign: center
             box:
                 class: HeroPanel
-                text("Session visits"):
+                text("Session visits")
                 text(demoVisits):
                     size: 32
                     weight: 700
@@ -61,7 +63,7 @@ page:
                 class: HeroPanel
                 text("Imported function")
                 text(welcome("web builder"))
-                text("Version: " + APP_VERSION)
+                text(APP_VERSION)
         row:
             wrapAt: 620
             mainAlign: spaceBetween
