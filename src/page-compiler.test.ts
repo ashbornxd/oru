@@ -30,8 +30,8 @@ page:
         on.click: save
 `);
   const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
-  assert.ok(html.includes('import { run } from "./_oru/core.js";'));
-  assert.ok(html.includes("app.call(String(handler))"));
+  assert.ok(html.includes('import { runAsync } from "./_oru/core.js";'));
+  assert.ok(html.includes("instance?.callAsync(String(handler))"));
   assert.ok(html.includes('type="module"'));
 });
 
@@ -117,7 +117,7 @@ page:
   assert.ok(html.includes('el.type = region.formId ? "submit" : "button"'));
   assert.ok(html.includes('forms.set(form.id, form)'));
   assert.ok(html.includes('parent.append(el)'));
-  assert.ok(html.includes('app.call(String(node.properties["on.submit"]))'));
+  assert.ok(html.includes('instance?.callAsync(String(node.properties["on.submit"]))'));
 });
 
 test("rejects forms without a declared submit function", () => {
@@ -456,4 +456,22 @@ page:
         button("Verify")
 `);
   assert.throws(() => compilePage(page, routeForPage("index.oru"), { index: "/" }), /validationSummary must be true or false/);
+});
+
+
+test("compiles async logic and waits for async click handlers", () => {
+  const page = parsePage(`logic:
+    state ready = false
+    async func load():
+        ready = true
+    async func finish():
+        await load()
+page:
+    button("Load"):
+        on.click: finish
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('import { runAsync } from "./_oru/core.js";'));
+  assert.ok(html.includes("instance?.callAsync(String(handler))"));
+  assert.ok(html.includes("persistGlobals(); render();"));
 });
