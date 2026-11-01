@@ -63,6 +63,8 @@ Add decisions below in chronological order. Include the date, the decision, its 
 | 2026-11-01 | State scope | Support both page-local state and global state shared across pages. | Page-local state keeps isolated UI state close to its page; global state enables shared application data across pages. Exact declaration syntax, lifetime, persistence, and access rules remain to be designed. |
 | 2026-11-01 | Class imports | ORU must support importing reusable classes from other source files/modules. | Allows style classes and other class definitions to be shared instead of duplicated. Exact import syntax, module boundaries, export rules, and supported class kinds remain to be designed. |
 
+| 2026-11-01 | Core value types | ORU 1.0 will include `string`, `number`, `boolean`, and `list` as initial built-in value types. | Establishes a small, useful starting type system. Exact numeric behavior, list element typing, nested lists, and future types remain to be specified. |
+
 ## Open planning areas
 
 Work through these together. An item is not a decision until we explicitly agree on it.
@@ -88,7 +90,8 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Still to design:** Exact navigation syntax and URL mapping; widget/property grammar; asset path syntax; class/style definitions; units and color literal rules; and the behavior/semantics of `anchor`.
 - **Illustrative example:** `name = pass`, then `name = "kunal"` establishes it as a string; `name = 20` afterward is a type error.
 - **Superseded proposal:** Explicit declarations such as `string name = pass` are no longer the chosen variable syntax.
-- **Still to design:** Exact type set, inference rules, operators, expressions, functions, control flow, input conversion, and error timing. Do not assume Python's existing `pass` semantics.
+- **Agreed initial built-in types:** `string`, `number`, `boolean`, and `list`. Exact numeric behavior, list element typing, nested lists, and possible future types remain to be specified.
+- **Still to design:** Inference details, operators, expressions, functions, control flow, input conversion, and error timing. Do not assume Python's existing `pass` semantics.
 - Core syntax, values, expressions, variables, functions, control flow, and errors.
 - **Agreed file/page model:** One `.oru` file defines one page; each file has its own metadata such as title and description. The rules for routing and mapping filenames to URLs remain open.
 - Pages, reusable components, properties/arguments, slots or composition.
