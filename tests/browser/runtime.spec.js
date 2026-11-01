@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { extname, join, resolve, sep } from "node:path";
 import { compileProject } from "../../dist/project-build.js";
+import { contentSecurityPolicy } from "../../dist/security.js";
 
 let root;
 let server;
@@ -93,7 +94,7 @@ page:
         "content-type": mime[extname(target)] ?? "application/octet-stream",
         "x-content-type-options": "nosniff",
         "x-frame-options": "DENY",
-        "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        "content-security-policy": contentSecurityPolicy(body.toString("utf8"))
       });
       response.end(body);
     } catch {
@@ -118,7 +119,11 @@ test("native file selection keeps the FileList for required form submission", as
   page.on("console", message => { if (message.type() === "error") runtimeErrors.push(message.text()); });
   const response = await page.goto(baseURL);
   expect(response?.status()).toBe(200);
-  expect(response?.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+  const policy = response?.headers()["content-security-policy"] ?? "";
+  expect(policy).toContain("frame-ancestors 'none'");
+  expect(policy).toContain("script-src 'self' 'sha256-");
+  expect(policy).not.toContain("script-src 'self' 'unsafe-inline'");
+  expect(policy).toContain("style-src-attr 'unsafe-inline'");
 
   const file = page.getByLabel("Choose a file");
   const send = page.locator('#oru-controls button[aria-label="Send"]');
