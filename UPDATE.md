@@ -390,3 +390,15 @@ Implemented on `oru-1.0.0-dev`:
 - Fixed a duplicate compiler import discovered by CI. The latest verification for commit `9cfac475e2ea13a9f1ff0cc928b79270f619e5ee` passed both `npm test` and `npm run build`; subsequent documentation and route-test commits are awaiting a fresh CI run.
 
 **Remaining before ORU 1.0:** general-purpose module/function imports, richer expression bindings, full form submission and validation, responsive layout, accessibility parity, asset/security hardening, and browser-level integration tests. Do not publish or merge as a release yet.
+
+### Milestone 10 — Bound inputs and native constraints
+
+Implemented on `oru-1.0.0-dev`:
+- Added `input(name)` bindings to declared page or global variables.
+- Added a core interpreter setter that preserves variable type checks.
+- Input changes update the ORU variable and refresh bound UI content.
+- Existing native constraints now cover input type, required, minimum/maximum length, and letters/numbers patterns.
+- Password inputs are masked in the Canvas layer and must bind to page-local state.
+- Added tests for input state updates and generated native constraints.
+
+**Still incomplete:** form submission workflows, custom validation messages, file inputs, async updates, and comprehensive accessibility/browser testing.
