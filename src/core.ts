@@ -232,7 +232,7 @@ class StatementParser {
     if (match) return { kind: "return", value: match[1] ? parseExpr(match[1], line.line) : undefined, line: line.line };
     if (line.text === "break") return { kind: "break", line: line.line };
     if (line.text === "continue") return { kind: "continue", line: line.line };
-    match = line.text.match(/^(?:state\\s+)?([A-Za-z_]\\w*)\\s*=\\s*(.+)$/);
+    match = line.text.match(/^(?:state\s+)?([A-Za-z_]\w*)\s*=\s*(.+)$/);
     if (match) return { kind: "assign", name: match[1]!, value: parseExpr(match[2]!, line.line), line: line.line };
     if (line.text.endsWith(":")) throw new OruError("Unknown block statement.", line.line);
     return { kind: "expression", value: parseExpr(line.text, line.line), line: line.line };
