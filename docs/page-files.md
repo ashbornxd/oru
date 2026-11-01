@@ -115,7 +115,7 @@ page:
         on.hover: showHint
 ```
 
-Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `image`, `input`, and `textarea`.
+Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `image`, `input`, `textarea`, and `select`. A select is bound to a declared string state variable and contains `option("Visible label")` children. An option may set a distinct `value:` property. Selection updates the bound state; `required` and `disabled` use native browser behavior.
 
 Widget properties use `:`, not `=`. Values currently parse as strings, numbers, or booleans. Color values and size units remain strings for the renderer.
 
@@ -200,7 +200,7 @@ The build writes static HTML files into `dist/` and copies an optional `assets/`
 
 The development compiler emits a browser page shell with a Canvas 2D renderer and a parallel semantic DOM layer for focusable controls. The renderer handles text, box, column, row, image, link, button, and input presentation. Text can expose heading semantics with `role: heading` and `level: 1` through `6`. Forms accept a `label:` property; inputs accept a stable `label:`; icon-only buttons accept `alt:`. Rows switch to a vertical layout below 560px by default (customize with `wrapAt`). The page canvas grows with its content so longer pages can scroll. A visually hidden semantic text/image tree and native DOM controls support screen readers and keyboard interaction; this is not yet full WCAG conformance. Page-local `logic:` blocks run through the ORU interpreter, and button `on.click` handlers invoke named ORU functions.
 
-This is an early runtime, not the finished ORU 1.0 release. The compiler supports reusable page-local style classes and cross-file style-class imports. Advanced select and file controls, async and cross-field validation, advanced responsive layout controls, full WCAG conformance, and comprehensive security/browser testing remain unfinished. Do not use it for production applications yet.
+This is an early runtime, not the finished ORU 1.0 release. The compiler supports reusable page-local style classes and cross-file style-class imports. File inputs, async and cross-field validation, advanced responsive layout controls, full WCAG conformance, and comprehensive security/browser testing remain unfinished. Do not use it for production applications yet.
 
 ## Reactive page-local state
 
