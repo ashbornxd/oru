@@ -13,7 +13,7 @@ test("uses exact hashes for generated inline scripts and styles without unsafe s
   assert.ok(policy.includes("'sha256-" + scriptHash + "'"));
   assert.ok(policy.includes("'sha256-" + styleHash + "'"));
   assert.ok(policy.includes("script-src-attr 'none'"));
-  assert.ok(policy.includes("style-src-attr 'unsafe-inline'"));
+  assert.ok(policy.includes("style-src-attr 'none'"));
   assert.ok(!policy.includes("script-src 'self' 'unsafe-inline'"));
 });
 
