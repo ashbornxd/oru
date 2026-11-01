@@ -109,7 +109,9 @@ function logicDeclarations(logic: string): Map<string, LogicDeclaration> {
   return declarations;
 }
 
-export async function compileProject(projectDirectory = "."): Promise<Map<string, string>> {
+export interface CompileProjectOptions { includeRuntime?: boolean }
+
+export async function compileProject(projectDirectory = ".", options: CompileProjectOptions = {}): Promise<Map<string, string>> {
   const root = resolve(projectDirectory);
   await validateConfig(root);
   const sources = (await findPages(root)).sort();
@@ -183,7 +185,7 @@ export async function compileProject(projectDirectory = "."): Promise<Map<string
     const page = resolvePage(pageRoute.source);
     output.set(pageRoute.output, compilePage(page, pageRoute, routeMap));
   }
-  if ([...parsed.values()].some(page => page.logic.trim().length > 0)) {
+  if (options.includeRuntime !== false && [...parsed.values()].some(page => page.logic.trim().length > 0)) {
     const moduleDirectory = dirname(fileURLToPath(import.meta.url));
     const runtimeDirectories = [moduleDirectory, resolve(moduleDirectory, "../dist")];
     for (const filename of ["core.js", "ast.js"]) {
