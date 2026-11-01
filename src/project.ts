@@ -62,16 +62,16 @@ function valueOf(raw: string, line: number): PageValue {
 }
 
 function widgetOf(text: string, line: number): PageWidget | null {
-  const match = text.match(/^(?:(?:[A-Za-z_]\w*)\s+)?([A-Za-z]+)(?:\((.*)\))?\s*:?\s*$/);
+  const match = text.match(/^(?:(?:[A-Za-z_][A-Za-z0-9_]*)\\s+)?([A-Za-z]+)(?:\\((.*)\\))?\\s*:?\\s*$/);
   if (!match) return null;
   const type = match[1]!.toLowerCase();
-  if (!widgetTypes.has(type as PageWidget["type"])) throw new OruError('Unknown widget "' + type + '".', line);
+  if (!widgetTypes.has(type as PageWidget["type"])) throw new OruError("Unknown widget: " + type, line);
   const args = match[2]?.trim() ?? "";
   let label: string | undefined;
   let route: string | undefined;
+  let binding: string | undefined;
   const properties: Record<string, PageValue> = {};
-  const values = [...args.matchAll(/"((?:\\.|[^"])*)"|'((?:\\.|[^'])*)'/g)]
-    .map(item => (item[1] ?? item[2] ?? "").replace(/\\n/g, "\n"));
+  const values = [...args.matchAll(/"([^"]*)"|'([^']*)'/g)].map(item => item[1] ?? item[2] ?? "");
   if (type === "link") {
     label = values[0];
     route = values[1] ?? values[0];
@@ -80,15 +80,13 @@ function widgetOf(text: string, line: number): PageWidget | null {
     label = values[1] ?? "";
   } else if (type === "input") {
     properties.placeholder = values[0] ?? "";
+  } else if ((type === "text" || type === "button") && values.length === 0 && /^[A-Za-z_][A-Za-z0-9_]*$/.test(args)) {
+    binding = args;
   } else {
     label = values[0];
-    if (!label && (type === "text" || type === "button") && /^[A-Za-z_]\\w*$/.test(args)) {
-    if (!label && (type === "text" || type === "button") && /^[A-Za-z_]\w*$/.test(args)) {
-    }
   }
-  return { type: type as PageWidget["type"], text: label, route, properties, children: [], line };
+  return { type: type as PageWidget["type"], text: label, route, binding, properties, children: [], line };
 }
-
 export function parsePage(source: string, sourcePath?: string): OruPage {
   const lines = linesOf(source);
   const metadata = { title: "Untitled", description: "", language: "en" };
