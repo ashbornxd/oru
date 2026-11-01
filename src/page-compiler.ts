@@ -9,7 +9,7 @@ function escapeHtml(value: string): string {
 function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: string): string {
   const payload = JSON.stringify({ page, routes, logic: page.logic }).replace(/</g, "\\u003c");
   return `
-import { run } from "${corePath}";
+${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
 (() => {
   const data = ${payload};
   const app = data.logic ? run(data.logic) : null;
