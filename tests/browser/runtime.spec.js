@@ -27,8 +27,11 @@ test.beforeAll(async () => {
         asyncDone = value == "ready"
     async func failAsync():
         value = 1 / 0
-    func submit():
-        submitted = true
+    async func saveForm():
+        return "saved"
+    async func submit():
+        result = await saveForm()
+        submitted = result == "saved"
     func verify():
         verified = true
 page:
@@ -125,7 +128,7 @@ test.afterAll(async () => {
   if (root) await rm(root, { recursive: true, force: true });
 });
 
-test("native file selection keeps the FileList for required form submission", async ({ page }) => {
+test("native file selection and async form handlers complete before rerender", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const runtimeErrors = [];
   page.on("pageerror", error => runtimeErrors.push(error.message));
