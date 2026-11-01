@@ -744,3 +744,13 @@ Implemented on `oru-1.0.0-dev`:
 - Documented the explicit capability namespace rule.
 
 **Verification pending:** run the full Node and browser CI matrix on the current head.
+
+
+### Milestone 35 — Async functions across modules
+
+Implemented on `oru-1.0.0-dev`:
+- Named module imports now recognize top-level `async func` declarations as exports, alongside synchronous functions.
+- Added an integration test that compiles a page importing an async function, executes the generated logic with an explicit async host capability, awaits the imported function, and verifies the resulting state.
+- Documented asynchronous module imports and updated the README's async verification status.
+
+**Verification pending:** final CI for the latest branch head. This feature does not remove the remaining manual accessibility, independent security/performance, and physical-device release gates.
