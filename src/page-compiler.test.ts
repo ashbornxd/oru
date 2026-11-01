@@ -309,3 +309,22 @@ page:
   assert.ok(html.includes('document.createElement("option")'));
   assert.ok(html.includes('el.addEventListener(node.type === "select" ? "change" : "input"'));
 });
+
+
+test("select placeholder remains unselected so required validation works", () => {
+  const page = parsePage(`logic:
+    state country = ""
+page:
+    select(country):
+        label: Country
+        placeholder: Choose a country
+        required: true
+        option("India")
+        option("Japan")
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('placeholder.value = ""'));
+  assert.ok(html.includes('placeholder.disabled = true'));
+  assert.ok(html.includes('placeholder.selected = !textOf(node)'));
+  assert.ok(html.includes('el.required = true'));
+});
