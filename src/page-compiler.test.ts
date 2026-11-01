@@ -192,3 +192,41 @@ page:
   assert.ok(html.includes('el[key] = node.properties[key]'));
   assert.ok(html.includes('for (const key of ["min", "max", "step", "maxLength", "minLength", "name"])'));
 });
+
+
+test("compiles button hover, active, disabled states, and icon controls", () => {
+  const page = parsePage(`logic:
+    func highlight():
+        print("hover")
+    func press():
+        print("active")
+    func leave():
+        print("leave")
+page:
+    button("Continue"):
+        icon: "assets/arrow.png"
+        alt: "Continue"
+        hover.background: #dddddd
+        active.background: #bbbbbb
+        disabled.background: #eeeeee
+        on.hover: highlight
+        on.active: press
+        on.leave: leave
+`);
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes('node.properties["hover.background"]'));
+  assert.ok(html.includes('node.properties["active.background"]'));
+  assert.ok(html.includes('node.properties["disabled.background"]'));
+  assert.ok(html.includes('controls.addEventListener("pointerover"'));
+  assert.ok(html.includes('controls.addEventListener("pointerdown"'));
+  assert.ok(html.includes('runStateEvent(node, "on.leave")'));
+  assert.ok(html.includes('String(p.icon ?? "")'));
+});
+
+test("rejects button event handlers that do not exist", () => {
+  const page = parsePage(`page:
+    button("Continue"):
+        on.hover: missing
+`);
+  assert.throws(() => compilePage(page, routeForPage("index.oru"), { index: "/" }), /on.hover must reference a function/);
+});
