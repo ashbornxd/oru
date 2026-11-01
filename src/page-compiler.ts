@@ -14,7 +14,7 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   form: new Set(["background", "padding", "radius", "width", "height", "gap"]),
   text: new Set(["color", "text.color", "size", "weight", "font", "line", "align"]),
   button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color", "text.color", "align"]),
-  link: new Set(["color", "text.color", "size", "weight", "decoration", "underline", "hover.color"]),
+  link: new Set(["color", "text.color", "size", "weight", "decoration", "underline"]),
   image: new Set(["width", "height", "fit", "radius"]),
   input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "name", "text.color", "border.color"])
 };
@@ -222,7 +222,10 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         const scale = fit === "contain" ? Math.min(w / image.naturalWidth, h / image.naturalHeight) : Math.max(w / image.naturalWidth, h / image.naturalHeight);
         const drawWidth = image.naturalWidth * scale, drawHeight = image.naturalHeight * scale;
         ctx.save();
-        ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+        ctx.beginPath();
+        const radius = Math.max(0, px(p.radius, 0));
+        if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h);
+        ctx.clip();
         ctx.drawImage(image, x + (w - drawWidth) / 2, y + (h - drawHeight) / 2, drawWidth, drawHeight);
         ctx.restore();
       }
@@ -231,13 +234,14 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     }
     if (node.type === "input") {
       ctx.fillStyle = color(node, "background", "#ffffff");
-      ctx.fillRect(x, y, w, h);
+      const radius = Math.max(0, px(p.radius, 0));
+      ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.fill();
       ctx.strokeStyle = color(node, "border.color", "#999999");
-      ctx.strokeRect(x, y, w, h);
+      ctx.beginPath(); if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, radius); else ctx.rect(x, y, w, h); ctx.stroke();
       const inputValue = textOf(node);
       const visibleValue = p.type === "password" ? "•".repeat(inputValue.length) : inputValue;
       ctx.fillStyle = visibleValue ? color(node, "text.color", "#202124") : "#777777";
-      ctx.font = "14px system-ui";
+      ctx.font = px(p.size, 14) + "px system-ui";
       ctx.fillText(visibleValue || String(p.placeholder ?? ""), x + 10, y + 14);
       regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
@@ -311,9 +315,9 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         el.style.background = "transparent";
         el.style.border = "0";
         el.style.outlineOffset = "-2px";
-        el.style.padding = "0 10px";
-        el.style.color = "#202124";
-        el.style.font = "16px system-ui";
+        el.style.padding = "0 " + px(node.properties.padding, 10) + "px";
+        el.style.color = String(node.properties["text.color"] ?? node.properties.color ?? "#202124");
+        el.style.font = px(node.properties.size, 16) + "px system-ui";
       } else {
         el.style.opacity = ".001";
       }
