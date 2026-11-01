@@ -516,3 +516,17 @@ Implemented on `oru-1.0.0-dev`:
 - Added tests for state styling, event handlers, and icon asset validation.
 
 **Still incomplete:** nested button content/slots, keyboard-specific focus styling in the Canvas visual layer, advanced animation/transitions, and browser interaction testing.
+
+
+### Milestone 18 — Semantic headings and accessible form controls
+
+Implemented on `oru-1.0.0-dev`:
+- Semantic text nodes can expose heading levels 1–6.
+- Form widgets accept an accessible label.
+- Inputs accept a stable accessible label, independent of their changing value.
+- Icon-only buttons use their `alt` text as the control name.
+- The semantic page region uses a polite live region so reactive text changes can be announced.
+- Form controls are inserted in page order, improving keyboard tab sequence across forms and standalone controls.
+- Added tests for semantic headings, labels, and control order.
+
+**Still incomplete:** exact screen-reader reading order between noninteractive text and interactive controls, comprehensive keyboard-only testing, focus management after navigation, and full WCAG conformance.
