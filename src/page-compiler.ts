@@ -16,7 +16,7 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color", "text.color", "align"]),
   link: new Set(["color", "text.color", "size", "weight", "decoration", "underline"]),
   image: new Set(["width", "height", "fit", "radius"]),
-  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "name", "text.color", "border.color", "label"])
+  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "validationMessage", "name", "text.color", "border.color", "label"])
 };
 
 function resolveWidget(widget: PageWidget, classes: OruPage["classes"]): PageWidget {
@@ -350,6 +350,12 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         if (node.properties.constraint === "numbers") el.pattern = "[0-9]+";
         else if (node.properties.constraint === "letters") el.pattern = "[A-Za-z]+";
         else if (typeof node.properties.pattern === "string") el.pattern = node.properties.pattern;
+        if (typeof node.properties.validationMessage === "string" && node.properties.validationMessage.length > 0) {
+          const message = String(node.properties.validationMessage);
+          el.addEventListener("invalid", () => el.setCustomValidity(message));
+          el.addEventListener("input", () => el.setCustomValidity(""));
+          el.addEventListener("change", () => el.setCustomValidity(""));
+        }
         for (const key of ["min", "max", "step", "maxLength", "minLength", "name"]) {
           if (node.properties[key] !== undefined) el[key] = node.properties[key];
         }
