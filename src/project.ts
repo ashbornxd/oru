@@ -68,16 +68,21 @@ function widgetOf(text: string, line: number): PageWidget | null {
   const args = match[2]?.trim() ?? "";
   let label: string | undefined;
   let route: string | undefined;
-  if (args) {
-    const first = args.match(/^(?:"((?:\\.|[^"])*)"|'((?:\\.|[^'])*)')/);
-    if (first) label = (first[1] ?? first[2] ?? "").replace(/\\n/g, "\n");
-    if (type === "link") {
-      const values = [...args.matchAll(/["']([^"']*)["']/g)].map(item => item[1]!);
-      label = values[0];
-      route = values[1] ?? values[0];
-    }
+  const properties: Record<string, PageValue> = {};
+  const values = [...args.matchAll(/"((?:\\.|[^"])*)"|'((?:\\.|[^'])*)'/g)]
+    .map(item => (item[1] ?? item[2] ?? "").replace(/\\n/g, "\n"));
+  if (type === "link") {
+    label = values[0];
+    route = values[1] ?? values[0];
+  } else if (type === "image") {
+    properties.src = values[0] ?? "";
+    label = values[1] ?? "";
+  } else if (type === "input") {
+    properties.placeholder = values[0] ?? "";
+  } else {
+    label = values[0];
   }
-  return { type: type as PageWidget["type"], text: label, route, properties: {}, children: [], line };
+  return { type: type as PageWidget["type"], text: label, route, properties, children: [], line };
 }
 
 export function parsePage(source: string, sourcePath?: string): OruPage {
