@@ -55,7 +55,7 @@ function validateForms(widget: PageWidget, functions: Set<string>, insideForm = 
     }
     const fields: PageWidget[] = [];
     const collectFields = (node: PageWidget): void => {
-      if (["input", "textarea", "select"].includes(node.type) && node.binding) fields.push(node);
+      if (["input", "textarea", "select"].includes(node.type)) fields.push(node);
       node.children.forEach(collectFields);
     };
     collectFields(widget);
