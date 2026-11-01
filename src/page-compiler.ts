@@ -16,7 +16,7 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color", "text.color", "align"]),
   link: new Set(["color", "text.color", "size", "weight", "decoration", "underline"]),
   image: new Set(["width", "height", "fit", "radius"]),
-  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "validationMessage", "name", "text.color", "border.color", "label"]),
+  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "accept", "multiple", "constraint", "validationMessage", "name", "text.color", "border.color", "label"]),
   textarea: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "readOnly", "minLength", "maxLength", "validationMessage", "name", "text.color", "border.color", "label", "rows"]),
   select: new Set(["color", "background", "size", "radius", "padding", "width", "height", "required", "disabled", "name", "placeholder", "text.color", "border.color", "label"]),
   option: new Set([])
@@ -370,6 +370,10 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         if (node.type === "input") {
           el.type = String(node.properties.type ?? "text");
           el.autocomplete = String(node.properties.autocomplete ?? (el.type === "password" ? "current-password" : "on"));
+          if (el.type === "file") {
+            if (typeof node.properties.accept === "string") el.accept = node.properties.accept;
+            if (node.properties.multiple === true) el.multiple = true;
+          }
         } else if (node.type === "textarea") {
           el.rows = Number(node.properties.rows ?? 4);
           el.style.resize = "none";
@@ -377,7 +381,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         }
         if (node.properties.required === true) el.required = true;
         if (node.properties.disabled === true) el.disabled = true;
-        if (node.properties.readOnly === true) el.readOnly = true;
+        if (node.properties.readOnly === true && !(node.type === "input" && node.properties.type === "file")) el.readOnly = true;
         if (node.type === "input" && node.properties.constraint === "numbers") el.pattern = "[0-9]+";
         else if (node.type === "input" && node.properties.constraint === "letters") el.pattern = "[A-Za-z]+";
         else if (node.type === "input" && typeof node.properties.pattern === "string") el.pattern = node.properties.pattern;
@@ -387,13 +391,21 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
           el.addEventListener("input", () => el.setCustomValidity(""));
           el.addEventListener("change", () => el.setCustomValidity(""));
         }
-        for (const key of (node.type === "input" ? ["min", "max", "step", "maxLength", "minLength", "name"] : node.type === "textarea" ? ["maxLength", "minLength", "name"] : ["name"])) {
+        for (const key of (node.type === "input" ? (node.properties.type === "file" ? ["name"] : ["min", "max", "step", "maxLength", "minLength", "name"]) : node.type === "textarea" ? ["maxLength", "minLength", "name"] : ["name"])) {
           if (node.properties[key] !== undefined) el[key] = node.properties[key];
         }
         if (node.binding && app) {
-          if (node.type !== "select") el.value = textOf(node);
-          el.addEventListener(node.type === "select" ? "change" : "input", () => {
+          const isFileInput = node.type === "input" && node.properties.type === "file";
+          if (node.type !== "select" && !isFileInput) el.value = textOf(node);
+          el.addEventListener(node.type === "select" || isFileInput ? "change" : "input", () => {
             try {
+              if (isFileInput) {
+                const names = Array.from(el.files ?? []).map(file => file.name);
+                app.set(node.binding, node.properties.multiple === true ? names : (names[0] ?? ""));
+                persistGlobals();
+                render();
+                return;
+              }
               const start = el.selectionStart, end = el.selectionEnd;
               const current = app.getGlobals()[node.binding];
               const numeric = node.type !== "select" && (typeof current === "number" || (current === undefined && ["number", "range"].includes(el.type)));
