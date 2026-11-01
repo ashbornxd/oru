@@ -141,7 +141,18 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     for (const region of regions) {
       const node = region.node;
       const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : "button");
-      el.style.cssText = "position:absolute;opacity:.001;overflow:hidden;left:" + region.x + "px;top:" + region.y + "px;width:" + region.w + "px;height:" + region.h + "px;";
+      el.style.cssText = "position:absolute;overflow:hidden;left:" + region.x + "px;top:" + region.y + "px;width:" + region.w + "px;height:" + region.h + "px;";
+      if (node.type === "input") {
+        el.style.opacity = "1";
+        el.style.background = "transparent";
+        el.style.border = "0";
+        el.style.outlineOffset = "-2px";
+        el.style.padding = "0 10px";
+        el.style.color = "#202124";
+        el.style.font = "16px system-ui";
+      } else {
+        el.style.opacity = ".001";
+      }
       el.setAttribute("aria-label", textOf(node) || String(node.properties.placeholder ?? node.type));
       if (node.type === "link") {
         const route = String(node.route ?? node.properties.route ?? "");
@@ -150,6 +161,11 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         el.placeholder = String(node.properties.placeholder ?? "");
         el.type = String(node.properties.type ?? "text");
         el.autocomplete = el.type === "password" ? "current-password" : "on";
+        if (node.properties.required === true) el.required = true;
+        if (node.properties.constraint === "numbers") el.pattern = "[0-9]+";
+        if (node.properties.constraint === "letters") el.pattern = "[A-Za-z]+";
+        if (node.properties.maxLength !== undefined) el.maxLength = Number(node.properties.maxLength);
+        if (node.properties.minLength !== undefined) el.minLength = Number(node.properties.minLength);
       } else {
         el.type = "button";
         el.addEventListener("click", () => activate(node));
@@ -189,7 +205,7 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,sans-serif;background:#fff;color:#202124}
 body{overflow-x:hidden}canvas{display:block;max-width:100%;touch-action:manipulation}
 #oru-controls{position:absolute;inset:0;pointer-events:none}
-#oru-controls>*{pointer-events:auto}
+#oru-controls>*{pointer-events:auto}\n#oru-controls>button:focus-visible,#oru-controls>a:focus-visible{opacity:1!important;outline:2px solid #2457d6;outline-offset:2px}\n#oru-controls>input:focus-visible{outline:2px solid #2457d6}
 </style>
 </head>
 <body>
