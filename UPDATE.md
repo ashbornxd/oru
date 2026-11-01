@@ -236,6 +236,9 @@ These details are implemented as the first coherent baseline, but remain open to
 
 | Local style classes | Use `class name:` for a reusable page style and `class: name` on a widget to apply it. Direct widget properties take precedence over class properties. | The first implementation supports page-local classes; sharing them between files is a later step. |
 
+
+| Style class imports | Use `from module.path import className` for named style classes or `import module.path` to import a module namespace. Module paths resolve relative to the importing page file; a leading `../` moves to its parent directory. | A module is another `.oru` page file. Its declared style classes are available to import; import cycles and name collisions are build errors. Function imports are not part of this first class-import slice. |
+
 ### Completion roadmap
 
 1. Harden the core interpreter: source locations, assignment/mutation, predictable scopes, diagnostics, and test coverage.
