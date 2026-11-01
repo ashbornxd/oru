@@ -9,14 +9,14 @@ function escapeHtml(value: string): string {
 
 const classProperties: Record<PageWidget["type"], Set<string>> = {
   column: new Set(["background", "padding", "gap", "width", "height"]),
-  row: new Set(["background", "padding", "gap", "width", "height"]),
+  row: new Set(["background", "padding", "gap", "width", "height", "wrapAt"]),
   box: new Set(["background", "padding", "radius", "width", "height", "gap"]),
   form: new Set(["background", "padding", "radius", "width", "height", "gap"]),
-  text: new Set(["color", "size", "weight", "font", "line", "align"]),
-  button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color", "align"]),
-  link: new Set(["color", "size", "weight", "decoration", "underline"]),
+  text: new Set(["color", "text.color", "size", "weight", "font", "line", "align"]),
+  button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color", "text.color", "align"]),
+  link: new Set(["color", "text.color", "size", "weight", "decoration", "underline", "hover.color"]),
   image: new Set(["width", "height", "fit", "radius"]),
-  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "name"])
+  input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "name", "text.color", "border.color"])
 };
 
 function resolveWidget(widget: PageWidget, classes: OruPage["classes"]): PageWidget {
