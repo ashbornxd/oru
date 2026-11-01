@@ -115,7 +115,28 @@ page:
         on.hover: showHint
 ```
 
-Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `image`, `input`, `textarea`, and `select`. A select is bound to a declared string state variable and contains `option("Visible label")` children. An option may set a distinct `value:` property. Selection updates the bound state; `required` and `disabled` use native browser behavior. Set `placeholder: "Choose one"` to add an initially unselected prompt option, allowing native `required` validation to work correctly.
+Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `image`, `input`, `textarea`, and `select`. File selection uses the native browser picker through an input with `type: file`:
+
+```oru
+logic:
+    state avatar = ""
+    state attachments = []
+page:
+    input(avatar):
+        type: file
+        accept: "image/png,image/jpeg"
+        required: true
+        label: Profile image
+    input(attachments):
+        type: file
+        accept: ".pdf"
+        multiple: true
+        label: Supporting documents
+```
+
+A single-file binding receives the selected filename as a string. A `multiple: true` binding receives a list of filenames. The browser retains the selected file objects only in the native control; ORU state contains names, not file bytes. This is a picker and metadata feature only: it does not upload files or grant scripts access to their contents. Use a trusted backend or an explicitly designed upload integration for actual uploads.
+
+A select is bound to a declared string state variable and contains `option("Visible label")` children. An option may set a distinct `value:` property. Selection updates the bound state; `required` and `disabled` use native browser behavior. Set `placeholder: "Choose one"` to add an initially unselected prompt option, allowing native `required` validation to work correctly.
 
 Widget properties use `:`, not `=`. Values currently parse as strings, numbers, or booleans. Color values and size units remain strings for the renderer.
 
