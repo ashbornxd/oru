@@ -349,3 +349,15 @@ Implemented on `oru-1.0.0-dev`:
 - Added tests for global state restoration and local/global name isolation.
 
 **Still incomplete:** asynchronous state updates, persistence beyond the current tab session, richer expression bindings, modules/imports, style classes, form workflows, and full accessibility/security/browser validation.
+
+
+### Milestone 7 — Page-local reusable style classes
+
+Implemented on `oru-1.0.0-dev`:
+- Added top-level `class name:` declarations with indented style properties.
+- Added widget application through `class: name`.
+- The compiler validates that a class exists and that its properties are supported by the target widget type.
+- Direct widget properties override class defaults.
+- Added tests for style class parsing, application, and incompatible properties.
+
+**Still incomplete:** importing classes across files, module loading, richer expression bindings, full form workflows, and the remaining runtime/accessibility/security work.
