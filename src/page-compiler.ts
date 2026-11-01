@@ -618,7 +618,7 @@ body{overflow-x:hidden}canvas{display:block;max-width:100%;touch-action:manipula
 <body>
 <canvas aria-hidden="true"></canvas>
 <main id="oru-semantic" class="oru-sr-only" aria-label="${title}" aria-live="polite"></main>
-<div id="oru-controls" aria-label="Page controls"></div>
+<div id="oru-controls" role="group" aria-label="Page controls"></div>
 <script type="module">${script}</script>
 </body>
 </html>`;
