@@ -75,6 +75,7 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Agreed file/page model:** Each `.oru` file contains exactly one page, and each page file can define its own metadata such as title and description.
 - **Agreed page references:** Refer to a page using its relative file path without the `.oru` extension: `index`, `help`, or `pages/help`.
 - **Agreed UI composition direction:** Build page content with a nested, declarative widget tree inspired by Flutter, but with ORU's own syntax and API.
+- **Agreed:** Core widgets such as `column`, `row`, `box`, and `text` are built into ORU and available directly.
 - **Agreed comment syntax direction:** Use triple double quotes (`\"\"\" ... \"\"\"`) for comments. Exact placement and multiline parsing rules remain open.
 - **Illustrative syntax proposal (not a complete specification):** The user's example establishes the intended feel: `page:` contains layout widgets such as `column` and `row`; widgets may have optional names; properties are indented under widgets; text and links can be nested; and triple-quoted notes can appear inline to explain behavior.
 - **Still to design:** Exact navigation syntax and URL mapping; widget/property grammar; asset path syntax; class/style definitions; units and color literal rules; and the behavior/semantics of `anchor`.
