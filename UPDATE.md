@@ -1,0 +1,114 @@
+# ORU 1.0.0 — Planning Log
+
+> Temporary planning document. Record every agreed product, language, runtime, tooling, and release decision here as soon as it is made. Use this document as the source of truth when designing and building ORU 1.0.0.
+
+**Current published version:** 0.3.0  
+**Target version:** 1.0.0  
+**Status:** Planning — no 1.0 implementation decisions are final unless recorded below.
+
+## Vision
+
+ORU 1.0.0 should be a dependable, approachable programming language for building and shipping real-world websites and web applications.
+
+It should go beyond the current 0.3 prototype while keeping ORU's identity:
+- Readable, Python-inspired syntax.
+- A small, coherent language rather than a pile of unrelated shortcuts.
+- A productive workflow from project creation to local development and production build.
+- Generated websites that are accessible, responsive, secure by default, and maintainable.
+- Clear errors, useful documentation, and predictable behavior.
+
+The exact feature set and technical design are intentionally undecided until we plan them together.
+
+## Planning principles
+
+1. Agree on the user-facing behavior before choosing implementation details.
+2. Prefer a coherent feature that works end to end over many incomplete features.
+3. Keep syntax consistent and avoid unnecessary keywords or special cases.
+4. Treat accessibility, security, performance, and maintainability as core requirements.
+5. Keep the compiler, runtime, CLI, and project structure understandable and testable.
+6. Document each accepted decision in this file before implementation begins.
+7. Mark proposals as proposals; never silently turn an idea into a requirement.
+
+## Current 0.3 baseline
+
+These are observations about the existing implementation, not commitments for 1.0:
+
+- .oru source files are parsed into a small AST and compiled to static HTML with embedded CSS and a small navigation script.
+- The language currently supports project settings, multiple pages, a fixed set of elements, scoped style properties, and reusable wrapper classes.
+- The CLI currently supports project creation, a local development server, and static builds.
+- Button navigation currently handles the simple 'go ' action; there is no general application event or state system.
+- Forms generate basic HTML markup but do not provide a server-side handler, database, or submission runtime.
+- There is no established component/prop system, module/import system, package ecosystem, or official backend/runtime model.
+- The parser and compiler are intentionally small and have limited language semantics and diagnostics.
+- The build output cleanup and path handling need a security review before being considered production-ready.
+
+## Decisions
+
+_No ORU 1.0.0 decisions have been approved yet._
+
+Add decisions below in chronological order. Include the date, the decision, its reasoning, and any consequences or follow-up work.
+
+### Decision log
+
+| Date | Area | Agreed decision | Reason / consequences |
+| --- | --- | --- | --- |
+| — | — | No decisions yet. | Planning has just started. |
+
+## Open planning areas
+
+Work through these together. An item is not a decision until we explicitly agree on it.
+
+### 1. Product scope
+- What kinds of websites and web applications should 1.0 support?
+- What should be possible entirely in ORU, and where should developers be able to use existing web technologies?
+- What is explicitly out of scope for 1.0?
+
+### 2. Language design
+- Core syntax, values, expressions, variables, functions, control flow, and errors.
+- Pages, reusable components, properties/arguments, slots or composition.
+- Styling model, responsive behavior, themes, and custom CSS escape hatches.
+- Imports, project organization, and code reuse.
+
+### 3. Application capabilities
+- User interaction, events, forms, validation, and client-side state.
+- Data fetching, APIs, authentication integration, and server-side capabilities.
+- Routing, navigation, loading/error states, and application lifecycle.
+- Accessibility and internationalization.
+
+### 4. Runtime and architecture
+- Compiler output and browser runtime responsibilities.
+- Whether ORU is static-only, full-stack, or supports a clearly defined combination.
+- Build targets, development server, production server/hosting expectations.
+- Interoperability with JavaScript, CSS, HTML, and existing packages.
+
+### 5. Developer experience
+- Project templates and folder structure.
+- CLI commands, configuration, environment variables, and asset handling.
+- Formatting, linting, type checking, testing, debugging, and editor support.
+- Error messages, diagnostics, documentation, and migration from 0.3.
+
+### 6. Quality and release requirements
+- Security model and safe defaults.
+- Performance budgets and generated output quality.
+- Browser/device support and accessibility requirements.
+- Test strategy, compatibility guarantees, semantic versioning, and release checklist.
+
+## Milestones
+
+Milestones are provisional planning stages, not promises or fixed dates.
+
+1. **Vision and scope** — define the target user, use cases, and 1.0 boundaries.
+2. **Language specification** — agree on syntax and semantics before implementation.
+3. **Architecture** — choose compiler, runtime, project model, and interoperability approach.
+4. **Feature design** — specify each accepted feature and its behavior.
+5. **Implementation plan** — break the spec into testable stages.
+6. **Build and validation** — implement, test, document, and try real projects.
+7. **Release readiness** — security, performance, compatibility, migration, and npm release checks.
+
+## Rules for updating this file
+
+- After every planning decision we agree on, update the decision log and the relevant planning section in the same working session.
+- Keep unresolved alternatives under the relevant open planning area; do not present them as settled.
+- If a decision changes, record the new decision and mark the old one as superseded instead of erasing history.
+- Before implementing ORU 1.0.0, review this file and turn the approved decisions into a formal language specification and implementation roadmap.
+- Once ORU 1.0.0 ships, remove this temporary file or archive its final decisions into permanent project documentation.
