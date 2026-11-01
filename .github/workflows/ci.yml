@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, oru-1.0.0-dev]
+    branches: [main]
   pull_request:
     branches: [main]
 
