@@ -20,7 +20,7 @@ function help(): void {
 
 Usage:
   oru create <name>     Create a project
-  oru build             Build for production
+  oru eval <file>       Run a general-purpose ORU script\n  oru build             Build for production
   oru run dev           Start the local development server
   oru --help
   oru --version
