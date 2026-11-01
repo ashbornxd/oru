@@ -22,8 +22,13 @@ page:
         text(selected)
         text(submitted)
         row:
-            text("Responsive left")
-            text("Responsive right")
+            wrapAt: 600
+            mainAlign: spaceBetween
+            crossAlign: center
+            button("First"):
+                width: 80
+            button("Second"):
+                width: 80
         form:
             label: File upload
             on.submit: submit
@@ -110,4 +115,24 @@ test("native file selection keeps the FileList for required form submission", as
   await send.click();
   await expect(page.locator("#oru-semantic")).toContainText("true");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+
+test("reflows aligned controls across desktop and mobile widths", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto(baseURL);
+  const first = page.locator('#oru-controls button[aria-label="First"]');
+  const second = page.locator('#oru-controls button[aria-label="Second"]');
+  await expect(first).toHaveCount(1);
+  await expect(second).toHaveCount(1);
+  const desktopFirst = await first.boundingBox();
+  const desktopSecond = await second.boundingBox();
+  expect(desktopSecond.x).toBeGreaterThan(desktopFirst.x + 400);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(async () => (await second.boundingBox()).y).toBeGreaterThan((await first.boundingBox()).y);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  expect(errors).toEqual([]);
 });
