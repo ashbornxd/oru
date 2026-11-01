@@ -115,7 +115,7 @@ page:
         on.hover: showHint
 ```
 
-Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `image`, `input`, `textarea`, and `select`. A select is bound to a declared string state variable and contains `option("Visible label")` children. An option may set a distinct `value:` property. Selection updates the bound state; `required` and `disabled` use native browser behavior.
+Initial widgets: `column`, `row`, `box`, `form`, `text`, `button`, `link`, `image`, `input`, `textarea`, and `select`. A select is bound to a declared string state variable and contains `option("Visible label")` children. An option may set a distinct `value:` property. Selection updates the bound state; `required` and `disabled` use native browser behavior. Set `placeholder: "Choose one"` to add an initially unselected prompt option, allowing native `required` validation to work correctly.
 
 Widget properties use `:`, not `=`. Values currently parse as strings, numbers, or booleans. Color values and size units remain strings for the renderer.
 
