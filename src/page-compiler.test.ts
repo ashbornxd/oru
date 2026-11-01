@@ -305,7 +305,7 @@ page:
   assert.equal(page.widgets[0]?.binding, "country");
   assert.equal(page.widgets[0]?.children.length, 2);
   const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
-  assert.ok(html.includes('document.createElement("select")'));
+  assert.ok(html.includes('node.type === "select" ? "select"'));
   assert.ok(html.includes('document.createElement("option")'));
   assert.ok(html.includes('el.addEventListener(node.type === "select" ? "change" : "input"'));
 });
