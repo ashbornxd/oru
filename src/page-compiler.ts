@@ -255,9 +255,10 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       forms.set(form.id, form);
       controls.append(form);
     }
-    for (const region of regions) {
+    for (const [regionIndex, region] of regions.entries()) {
       const node = region.node;
       const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : "button");
+      el.dataset.oruControl = String(regionIndex);
       el.style.cssText = "position:absolute;overflow:hidden;left:" + region.x + "px;top:" + region.y + "px;width:" + region.w + "px;height:" + region.h + "px;pointer-events:auto;";
       if (node.type === "input") {
         el.style.opacity = "1";
@@ -290,8 +291,18 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         if (node.binding && app) {
           el.value = textOf(node);
           el.addEventListener("input", () => {
-            try { app.set(node.binding, el.value); persistGlobals(); }
-            catch (error) { console.error("ORU input binding failed:", error); }
+            try {
+              const start = el.selectionStart, end = el.selectionEnd;
+              const value = ["number", "range"].includes(el.type) ? (el.value === "" ? null : Number(el.value)) : el.value;
+              if (value !== null) app.set(node.binding, value);
+              persistGlobals();
+              render();
+              const replacement = controls.querySelector("[data-oru-control=\"" + regionIndex + "\"]");
+              if (replacement) {
+                replacement.focus();
+                if (typeof start === "number" && typeof end === "number" && typeof replacement.setSelectionRange === "function") replacement.setSelectionRange(start, end);
+              }
+            } catch (error) { console.error("ORU input binding failed:", error); }
           });
         }
       } else {
