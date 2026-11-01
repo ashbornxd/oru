@@ -564,3 +564,8 @@ Implemented on `oru-1.0.0-dev`:
 - Added a compiler test and documented the syntax.
 
 **Still incomplete:** file inputs, async and cross-field validation, and browser integration testing. This commit has not yet been run through CI.
+
+
+### Milestone 21 — Renderer regression-test repair
+
+The select-control implementation exposed stale compiler assertions that no longer matched the semantic DOM renderer's actual output. Updated the assertions to verify the current image alternative-text fallback, input-attribute dispatch, accessible control-label fallback, and select element creation branch. The earlier CI failure was caused by these stale expectations, not by TypeScript compilation. A fresh CI run is still required to confirm the fixes.
