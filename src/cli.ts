@@ -151,8 +151,9 @@ async function runDev(port: number): Promise<void> {
   createServer(async (request, response) => {
     try {
       const pathname = decodeURIComponent((request.url ?? "/").split("?")[0] ?? "/");
-      const relative = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
-      const file = resolve(root, relative);
+      const cleanPath = pathname.split("/").filter(Boolean).join("/");
+      const relativePath = !cleanPath ? "index.html" : cleanPath.includes(".") ? cleanPath : join(cleanPath, "index.html");
+      const file = resolve(root, relativePath);
       if (file !== root && !file.startsWith(root + sep)) throw new Error("Invalid path");
       const data = await readFile(file);
       response.writeHead(200, { "content-type": mimeTypes[extname(file)] ?? "application/octet-stream" });
