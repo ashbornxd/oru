@@ -45,3 +45,18 @@ page:
   const html = compilePage(page, routeForPage("pages/help.oru"), { "pages/help": "/pages/help" });
   assert.ok(html.includes('import { run } from "../../_oru/core.js";'));
 });
+test("binds page text to mutable ORU state", () => {
+  const page = parsePage(`logic:
+    state count = 0
+    func increment():
+        count = count + 1
+page:
+    column:
+        text(count)
+        button("Add"):
+            on.click: increment
+`);
+  assert.equal(page.widgets[0]?.children[0]?.binding, "count");
+  const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
+  assert.ok(html.includes("app.getGlobals()"));
+});
