@@ -142,6 +142,34 @@ Widget properties use `:`, not `=`. Values currently parse as strings, numbers, 
 
 Image sources must be regular files inside `assets/` or HTTPS URLs. The compiler rejects path traversal, missing local files, HTTP/data/file URLs, and symbolic links in the assets tree. HTTPS images are fetched directly by the visitor's browser.
 
+## Responsive container alignment
+
+Containers (`row`, `column`, `box`, and `form`) support two layout controls:
+
+- `mainAlign` positions children along the container's flow direction: `start` (default), `center`, `end`, `spaceBetween`, or `spaceAround`.
+- `crossAlign` positions children across the flow direction: `start`, `center`, `end`, or `stretch` (default).
+
+For a `row`, the main axis is horizontal when the row is wider than `wrapAt` (560px by default); below that threshold it flows vertically. A `column`, `box`, or `form` flows vertically. Alignment is recalculated when the viewport changes.
+
+```oru
+page:
+    column:
+        mainAlign: start
+        crossAlign: center
+        row:
+            wrapAt: 640
+            mainAlign: spaceBetween
+            crossAlign: center
+            box:
+                width: 180
+                text("First")
+            box:
+                width: 180
+                text("Second")
+```
+
+The main-axis spacing modes distribute only available free space; they do not shrink children. If content is larger than its container, it remains in normal flow and the page can scroll. Unsupported alignment values are compile-time errors.
+
 ## Reusable style classes and imports
 
 Declare a reusable page-local style class before `logic:` and `page:`:
