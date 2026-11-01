@@ -1,6 +1,6 @@
 # ORU asynchronous execution
 
-Status: async interpreter, CLI entry point, and browser event integration implemented; full compatibility and release verification remain in progress.
+Status: async interpreter, CLI entry point, module imports, and browser event integration implemented. Automated compatibility verification passes on Node 20, 22, and 24 with Chromium, Firefox, and WebKit. Manual accessibility, security/performance, and real-device review remain release gates.
 
 ## Syntax
 
@@ -42,7 +42,7 @@ Browser tests: async click and form handlers, state persistence after completion
 
 The interpreter exposes `runAsync(source, options)` and `callAsync(name, ...args)`. Host capabilities are supplied through the explicit `asyncFunctions` option. It supports async function declarations, sequential awaitable calls, return values, local/global/state assignments, conditionals, loops, and the execution-step ceiling. Lists and function arguments evaluate left-to-right; awaits are not implicitly parallelized. The legacy `run()` / `call()` path remains synchronous and gives an explicit error if an async function is invoked there. The `oru eval <file>` CLI command uses the async interpreter, so local async functions can be executed from scripts.
 
-Browser event dispatch awaits async handlers before persisting state and rerendering. Rejected handlers are caught and surfaced through an accessible alert. The remaining verification work is the full parser/runtime edge-case matrix, broader async form workflows, accessibility review, security/performance review, and real-device testing.
+Browser event dispatch awaits async handlers before persisting state and rerendering. Rejected handlers are caught and surfaced through an accessible alert. The automated parser/runtime compatibility matrix and async browser form/click coverage pass in CI. Broader real-application async workflow testing is still advisable; accessibility, independent security/performance review, and real-device testing remain manual release gates.
 
 
 ## Expanded compatibility coverage
