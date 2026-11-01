@@ -12,6 +12,7 @@ export interface PageWidget {
 export interface OruPage {
   metadata: { title: string; description: string; language: string };
   widgets: PageWidget[];
+  logic: string;
   sourcePath?: string;
 }
 type Line = { indent: number; text: string; number: number };
@@ -90,21 +91,32 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
   const metadata = { title: "Untitled", description: "", language: "en" };
   const widgets: PageWidget[] = [];
   const stack: Array<{ indent: number; widget: PageWidget }> = [];
-  let section: "metadata" | "page" | null = null;
+  let section: "metadata" | "logic" | "page" | null = null;
   let sawPage = false;
   let sawMetadata = false;
+  let sawLogic = false;
+  const logicLines: string[] = [];
 
   for (const line of lines) {
     while (stack.length && line.indent <= stack[stack.length - 1]!.indent) stack.pop();
     if (line.indent === 0 && line.text === "metadata:") {
-      if (sawMetadata || sawPage) throw new OruError("metadata must appear once before page.", line.number);
+      if (sawMetadata || sawLogic || sawPage) throw new OruError("metadata must appear once before logic and page.", line.number);
       sawMetadata = true; section = "metadata"; continue;
+    }
+    if (line.indent === 0 && line.text === "logic:") {
+      if (sawLogic || sawPage) throw new OruError("logic must appear once before page.", line.number);
+      sawLogic = true; section = "logic"; continue;
     }
     if (line.indent === 0 && line.text === "page:") {
       if (sawPage) throw new OruError("A .oru file can define exactly one page.", line.number);
       sawPage = true; section = "page"; continue;
     }
-    if (!section) throw new OruError("Start the file with metadata: or page:.", line.number);
+    if (!section) throw new OruError("Start the file with metadata:, logic:, or page:.", line.number);
+    if (section === "logic") {
+      if (line.indent < 4) throw new OruError("Logic statements must be indented once under logic:.", line.number);
+      logicLines.push(" ".repeat(line.indent - 4) + line.text);
+      continue;
+    }
     if (section === "metadata") {
       if (line.indent !== 4) throw new OruError("Metadata fields must be indented once.", line.number);
       const field = line.text.match(/^([A-Za-z_]\w*)\s*:\s*(.+)$/);
@@ -132,5 +144,5 @@ export function parsePage(source: string, sourcePath?: string): OruPage {
   }
   if (!sawPage) throw new OruError("Every .oru file must contain a page: block.");
   if (widgets.length === 0) throw new OruError("A page must contain at least one widget.");
-  return { metadata, widgets, sourcePath };
+  return { metadata, widgets, logic: logicLines.join("\n"), sourcePath };
 }
