@@ -38,7 +38,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
   };
   const prop = (node, key, fallback) => node.properties[key] ?? fallback;
   const color = (node, key, fallback) => String(prop(node, key, fallback));
-  const textOf = node => { const key = node.properties.bind; if (key && app) return String(app.getGlobals()[String(key)] ?? ""); return node.text ?? ""; };
+  const textOf = node => { if (node.binding && app) return String(app.getGlobals()[node.binding] ?? ""); return node.text ?? ""; };
   function measure(node, maxWidth) {
     const type = node.type;
     const p = node.properties;
