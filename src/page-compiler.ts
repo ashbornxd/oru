@@ -39,6 +39,11 @@ function validateLinks(widget: PageWidget, routes: Record<string, string>): void
   }
   for (const child of widget.children) validateLinks(child, routes);
 }
+function validateBindings(widget: PageWidget, declared: Set<string>): void {
+  if (widget.binding && !declared.has(widget.binding)) throw new OruError("Bound widget variable must be declared with state or global: " + widget.binding, widget.line);
+  for (const child of widget.children) validateBindings(child, declared);
+}
+
 function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: string): string {
   const payload = JSON.stringify({ page, routes, logic: page.logic }).replace(/</g, "\\u003c");
   return `
@@ -149,8 +154,11 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     if (node.type === "input") {
       ctx.strokeStyle = color(node, "border.color", "#999999");
       ctx.strokeRect(x, y, w, h);
-      ctx.fillStyle = "#777777"; ctx.font = "14px system-ui";
-      ctx.fillText(String(p.placeholder ?? ""), x + 10, y + 14);
+      const inputValue = textOf(node);
+      const visibleValue = p.type === "password" ? "•".repeat(inputValue.length) : inputValue;
+      ctx.fillStyle = visibleValue ? color(node, "text.color", "#202124") : "#777777";
+      ctx.font = "14px system-ui";
+      ctx.fillText(visibleValue || String(p.placeholder ?? ""), x + 10, y + 14);
       regions.push({ x, y, w, h, node });
       return { width: w, height: h };
     }
@@ -210,6 +218,13 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
         if (node.properties.constraint === "letters") el.pattern = "[A-Za-z]+";
         if (node.properties.maxLength !== undefined) el.maxLength = Number(node.properties.maxLength);
         if (node.properties.minLength !== undefined) el.minLength = Number(node.properties.minLength);
+        if (node.binding && app) {
+          el.value = textOf(node);
+          el.addEventListener("change", () => {
+            try { app.set(node.binding, el.value); persistGlobals(); render(); }
+            catch (error) { console.error("ORU input binding failed:", error); }
+          });
+        }
       } else {
         el.type = "button";
         el.addEventListener("click", () => activate(node));
@@ -238,7 +253,8 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const depth = route.output.split("/").length - 1;
   const corePath = depth === 0 ? "./_oru/core.js" : "../".repeat(depth) + "_oru/core.js";
   const resolvedPage = { ...page, widgets: page.widgets.map(widget => resolveWidget(widget, page.classes)) };
-  for (const widget of resolvedPage.widgets) validateLinks(widget, routes);
+  const declaredBindings = new Set([...page.logic.matchAll(/(?:^|\n)\s*(?:state|global)\s+([A-Za-z_]\w*)\s*=/g)].map(match => match[1]!));
+  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings); }
   const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
