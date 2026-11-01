@@ -669,3 +669,17 @@ Implemented on `oru-1.0.0-dev`:
 **Verification:** GitHub Actions run `41304768998` passed all unit tests, TypeScript build, and Playwright tests in Chromium, Firefox, and WebKit, including keyboard navigation, visible focus, strict CSP, file selection, form validation, and responsive layout.
 
 **Not yet release-ready:** asynchronous execution remains unimplemented. Full WCAG conformance and assistive-technology evaluation, independent security/performance review, and real-device testing are also outstanding.
+
+
+### Milestone 30 — Security hardening, package contents, and release CI
+
+Implemented on `oru-1.0.0-dev`:
+- Environment snapshots now use null-prototype records, preventing names such as `__proto__` from mutating the snapshot object's prototype.
+- Added regression coverage for prototype-like variable names.
+- Restricted the npm package file allowlist to the compiled runtime, documentation, examples, README, and license.
+- Expanded CI to Node.js 20, 22, and 24.
+- Added a high-severity npm audit gate and an npm package dry-run check before the cross-browser Playwright suite.
+
+**Verification: GitHub Actions run `41309470666` passed all three Node.js matrix jobs.** Each job completed dependency installation, `npm audit --audit-level=high`, all unit tests, TypeScript build, `npm pack --dry-run`, browser installation, and Playwright tests in Chromium, Firefox, and WebKit.
+
+**Release status remains blocked:** an explicit async execution model and async browser workflows have not been designed or implemented. Full WCAG/assistive-technology review, independent security and performance review, real-device testing, and final release validation remain required. Automated CI success is not a production certification.
