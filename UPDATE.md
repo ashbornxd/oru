@@ -51,6 +51,7 @@ Add decisions below in chronological order. Include the date, the decision, its 
 ### Decision log
 
 | Date | Area | Agreed decision | Reason / consequences |
+| 2026-11-01 | Language design order | Design ORU's general-purpose programming fundamentals (types, variables, values, operators, and logic) before designing website/UI syntax. | ORU should be a real programming language, not just a markup language with styling syntax. |
 | --- | --- | --- | --- |
 | 2026-11-01 | Runtime target | ORU 1.0 applications must run in ordinary web browsers. A separate ORU desktop/mobile runtime is not required for 1.0. | Browser reach is the delivery target. The ORU runtime and renderer will execute within the browser, with compatibility across major browsers as a requirement. |
 | 2026-11-01 | Renderer backend | Use Canvas 2D as the drawing backend for the ORU 1.0 renderer. | It provides a simpler foundation for a UI-focused renderer: text, shapes, images, layouts, and interactions. Keep the renderer architecture modular so a different backend, potentially WebGL, can be explored later if justified. |
@@ -65,6 +66,9 @@ Work through these together. An item is not a decision until we explicitly agree
 - What is explicitly out of scope for 1.0?
 
 ### 2. Language design
+- **Agreed priority:** Design general-purpose programming fundamentals before website/UI syntax.
+- **Proposed variable declaration syntax (not finalized):** `string name = pass` and `int age = pass`. The idea is to allow a typed variable to be declared without an initial value, then assigned later (potentially from user input).
+- **Open question:** Define exactly what `pass` means, how uninitialized variables behave, and how input is read and converted to the declared type. Do not assume Python's existing `pass` semantics.
 - Core syntax, values, expressions, variables, functions, control flow, and errors.
 - Pages, reusable components, properties/arguments, slots or composition.
 - Styling model, responsive behavior, themes, and custom CSS escape hatches.
