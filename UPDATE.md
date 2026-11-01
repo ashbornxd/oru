@@ -541,3 +541,14 @@ Implemented on `oru-1.0.0-dev`:
 - Added compiler output tests and documented the property.
 
 **Still open:** richer input widgets, async validation, cross-field validation, and validation summaries.
+
+
+### Milestone 19 — Multiline text inputs
+
+Implemented on `oru-1.0.0-dev`:
+- Added the `textarea(name)` widget for multiline text bound to a declared ORU state/global variable (password values remain restricted to page-local state through the existing input safety check).
+- Added configurable placeholder, accessible label, row count, height, required, disabled, read-only, length constraints, and name properties.
+- The Canvas layer draws the multiline value and the native textarea overlay handles editing, focus, keyboard input, and form submission.
+- Added a compiler test and documented the widget.
+
+**Still incomplete:** select/dropdown controls, file inputs, async and cross-field validation, and full browser integration testing.
