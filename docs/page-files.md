@@ -112,3 +112,22 @@ The build writes static HTML files into `dist/` and copies an optional `assets/`
 The development compiler emits a browser page shell with a Canvas 2D renderer and a parallel semantic DOM layer for focusable controls. The initial renderer handles basic text, box, column, row, image, link, button, and input presentation. Page-local `logic:` blocks run through the ORU interpreter, and button `on.click` handlers invoke named ORU functions.
 
 This is an early vertical slice, not the finished ORU 1.0 runtime. Cross-page global state, modules/imports, reusable style classes, form submission/validation, advanced responsive layout, and full keyboard/assistive-technology behavior are not complete yet. Do not use it for production applications until those features and the security/browser test suites are finished.
+
+## Reactive page-local state
+
+The page logic block supports page-local state declarations using `state name = value`. Bind a text or button widget to a state variable by passing the identifier without quotes, for example `text(count)` or `button(count)`. After a click handler updates the state, bound widgets are redrawn automatically.
+
+```oru
+logic:
+    state count = 0
+    func increment():
+        count = count + 1
+page:
+    column:
+        text("Count:")
+        text(count)
+        button("Add"):
+            on.click: increment
+```
+
+State currently belongs to one page instance. Cross-page global state, durable storage, richer binding expressions, and dependency-level redraw optimization are not yet implemented.
