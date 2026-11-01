@@ -207,3 +207,31 @@ test("validates button icon assets like image widget assets", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+
+test("imports top-level async functions into page logic", async () => {
+  const root = await mkdtemp(join(tmpdir(), "oru-async-imports-"));
+  try {
+    await writeFile(join(root, "oru.config"), 'name: "Async imports"\n');
+    await writeFile(join(root, "utils.oru"), `logic:
+    async func loadGreeting():
+        return await getGreeting()
+page:
+    text("Utilities")
+`);
+    await writeFile(join(root, "index.oru"), `from utils import loadGreeting
+logic:
+    state greeting = "pending"
+    async func initialize():
+        greeting = await loadGreeting()
+page:
+    text(greeting)
+`);
+    const files = await compileProject(root, { includeRuntime: false });
+    const html = files.get("index.html") ?? "";
+    assert.ok(html.includes("async func loadGreeting()"));
+    assert.ok(html.includes("async func initialize()"));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
