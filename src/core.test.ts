@@ -203,3 +203,46 @@ async func accumulate():
   assert.equal(await program.callAsync("accumulate"), 5);
   assert.equal(program.getGlobals().total, 5);
 });
+
+
+test("evaluates awaited list items from left to right", async () => {
+  const order: number[] = [];
+  const program = await runAsync(`async func collect():
+    values = [await fetchValue(1), await fetchValue(2), await fetchValue(3)]
+    return values
+`, {
+    asyncFunctions: {
+      fetchValue: async value => { order.push(Number(value)); return Number(value); }
+    }
+  });
+  assert.deepEqual(await program.callAsync("collect"), [1, 2, 3]);
+  assert.deepEqual(order, [1, 2, 3]);
+});
+
+test("evaluates awaited function arguments from left to right", async () => {
+  const order: number[] = [];
+  const program = await runAsync(`async func combine(first, second):
+    return first + second
+async func collect():
+    return await combine(await fetchValue(1), await fetchValue(2))
+`, {
+    asyncFunctions: {
+      fetchValue: async value => { order.push(Number(value)); return Number(value); }
+    }
+  });
+  assert.equal(await program.callAsync("collect"), 3);
+  assert.deepEqual(order, [1, 2]);
+});
+
+test("runs async scripts through the async interpreter entry point", async () => {
+  const output: string[] = [];
+  await runAsync(`async func main():
+    value = await fetchValue()
+    print(value)
+main()
+`, {
+    asyncFunctions: { fetchValue: async () => "ready" },
+    output: value => output.push(String(value))
+  });
+  assert.deepEqual(output, ["ready"]);
+});
