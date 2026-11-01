@@ -59,6 +59,7 @@ Add decisions below in chronological order. Include the date, the decision, its 
 | 2026-11-01 | Assignment and configuration syntax | Use `:` for structured configuration fields (for example, `metadata:` with indented `title: "..."`) and `=` for variable declarations and assignments. A variable may be declared as `name = pass`; its type is inferred from the first value later assigned. | Separates configuration syntax from variable syntax and avoids requiring a type keyword when declaring an uninitialized variable. |
 | 2026-11-01 | File and page model | Each `.oru` source file defines exactly one page. Each file can declare its own page metadata, including its title and description. | Gives each page a clear, independent source file and page-specific metadata. Multi-page projects are composed from multiple `.oru` files; routing and file-to-URL mapping remain to be designed. |
 | 2026-11-01 | Application state | ORU 1.0 will include a built-in state system. | State will let interactions update application data and UI, such as changing button text to `Logging in...` after a click. Exact declaration syntax, update rules, reactivity, and lifecycle remain to be designed. |
+| 2026-11-01 | State reactivity | State is automatically reactive: when a state value changes, every UI element that depends on it updates automatically. | Developers should not need to manually refresh or redraw dependent UI. The dependency tracking and update scheduling model remain to be designed. |
 
 ## Open planning areas
 
@@ -96,6 +97,7 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Agreed direction:** Support UI events and interaction states, including button click, hover, active, and disabled states. Buttons may contain text or images.
 - **Agreed direction:** Provide form and input widgets for ordinary text and sensitive values such as passwords, with configurable constraints such as letters-only or numbers-only. Password inputs conceal entered characters; actual secure handling and validation rules must be designed explicitly.
 - **Agreed:** ORU 1.0 will have a built-in state system so interactions can update application data and UI (for example, changing a button label to `Logging in...` after it is clicked). State declaration syntax, update semantics, reactivity, and lifecycle are still open.
+- **Agreed:** State is automatically reactive. When a state value changes, all UI elements that depend on it update automatically; developers do not manually refresh the UI. Dependency tracking and update scheduling remain to be designed.
 - User interaction, event syntax, forms, validation, and client-side state.
 - Data fetching, APIs, authentication integration, and server-side capabilities.
 - Routing, navigation, loading/error states, and application lifecycle.
