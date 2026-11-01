@@ -60,6 +60,8 @@ Add decisions below in chronological order. Include the date, the decision, its 
 | 2026-11-01 | File and page model | Each `.oru` source file defines exactly one page. Each file can declare its own page metadata, including its title and description. | Gives each page a clear, independent source file and page-specific metadata. Multi-page projects are composed from multiple `.oru` files; routing and file-to-URL mapping remain to be designed. |
 | 2026-11-01 | Application state | ORU 1.0 will include a built-in state system. | State will let interactions update application data and UI, such as changing button text to `Logging in...` after a click. Exact declaration syntax, update rules, reactivity, and lifecycle remain to be designed. |
 | 2026-11-01 | State reactivity | State is automatically reactive: when a state value changes, every UI element that depends on it updates automatically. | Developers should not need to manually refresh or redraw dependent UI. The dependency tracking and update scheduling model remain to be designed. |
+| 2026-11-01 | State scope | Support both page-local state and global state shared across pages. | Page-local state keeps isolated UI state close to its page; global state enables shared application data across pages. Exact declaration syntax, lifetime, persistence, and access rules remain to be designed. |
+| 2026-11-01 | Class imports | ORU must support importing reusable classes from other source files/modules. | Allows style classes and other class definitions to be shared instead of duplicated. Exact import syntax, module boundaries, export rules, and supported class kinds remain to be designed. |
 
 ## Open planning areas
 
@@ -91,6 +93,7 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Agreed file/page model:** One `.oru` file defines one page; each file has its own metadata such as title and description. The rules for routing and mapping filenames to URLs remain open.
 - Pages, reusable components, properties/arguments, slots or composition.
 - Styling model, responsive behavior, themes, and custom CSS escape hatches.
+- **Agreed:** ORU must support importing reusable classes from other source files/modules. This includes sharing named classes such as reusable style classes; exact syntax, export rules, module boundaries, and class kinds remain to be designed.
 - Imports, project organization, and code reuse.
 
 ### 3. Application capabilities
@@ -98,6 +101,7 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Agreed direction:** Provide form and input widgets for ordinary text and sensitive values such as passwords, with configurable constraints such as letters-only or numbers-only. Password inputs conceal entered characters; actual secure handling and validation rules must be designed explicitly.
 - **Agreed:** ORU 1.0 will have a built-in state system so interactions can update application data and UI (for example, changing a button label to `Logging in...` after it is clicked). State declaration syntax, update semantics, reactivity, and lifecycle are still open.
 - **Agreed:** State is automatically reactive. When a state value changes, all UI elements that depend on it update automatically; developers do not manually refresh the UI. Dependency tracking and update scheduling remain to be designed.
+- **Agreed:** Support both page-local state and global state shared across pages. Declaration syntax, lifetime, persistence, and access rules remain to be designed.
 - User interaction, event syntax, forms, validation, and client-side state.
 - Data fetching, APIs, authentication integration, and server-side capabilities.
 - Routing, navigation, loading/error states, and application lifecycle.
