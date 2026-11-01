@@ -379,3 +379,14 @@ Implemented on `oru-1.0.0-dev`:
 - Added project build tests for named imports, namespace imports, and circular import rejection.
 
 **Scope boundary:** this first import milestone shares style classes only. General-purpose function/module imports and external package imports remain unfinished.
+
+
+### Milestone 9 — Style imports and route validation
+
+- Named and namespace style-class imports are parsed and resolved across `.oru` page modules.
+- Import resolution rejects missing modules/classes, duplicate names, project traversal, and circular imports.
+- Internal links are checked against the project's route table at compile time; unresolved links fail the build rather than becoming arbitrary external navigation.
+- Added tests for import resolution, cycles, and invalid internal routes.
+- Fixed a duplicate compiler import discovered by CI. The latest verification for commit `9cfac475e2ea13a9f1ff0cc928b79270f619e5ee` passed both `npm test` and `npm run build`; subsequent documentation and route-test commits are awaiting a fresh CI run.
+
+**Remaining before ORU 1.0:** general-purpose module/function imports, richer expression bindings, full form submission and validation, responsive layout, accessibility parity, asset/security hardening, and browser-level integration tests. Do not publish or merge as a release yet.
