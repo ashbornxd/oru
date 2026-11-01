@@ -403,7 +403,16 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
                 const names = Array.from(el.files ?? []).map(file => file.name);
                 app.set(node.binding, node.properties.multiple === true ? names : (names[0] ?? ""));
                 persistGlobals();
-                render();
+                paint();
+                let status = semantic.querySelector('[data-oru-file-status="' + regionIndex + '"]');
+                if (!status) {
+                  status = document.createElement("p");
+                  status.className = "oru-sr-only";
+                  status.dataset.oruFileStatus = String(regionIndex);
+                  status.setAttribute("aria-live", "polite");
+                  semantic.append(status);
+                }
+                status.textContent = names.length ? "Selected: " + names.join(", ") : "No file selected";
                 return;
               }
               const start = el.selectionStart, end = el.selectionEnd;
