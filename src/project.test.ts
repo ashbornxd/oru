@@ -61,6 +61,6 @@ page:
 
 test("parses reactive value bindings for text and buttons", () => {
   const page = parsePage('logic:\n    state count = 0\npage:\n    text(count)\n    button(count)\n');
-  assert.equal(page.widgets[0]?.properties.bind, "count");
-  assert.equal(page.widgets[1]?.properties.bind, "count");
+  assert.equal(page.widgets[0]?.binding, "count");
+  assert.equal(page.widgets[1]?.binding, "count");
 });
