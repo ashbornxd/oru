@@ -11,6 +11,7 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   column: new Set(["background", "padding", "gap", "width", "height"]),
   row: new Set(["background", "padding", "gap", "width", "height"]),
   box: new Set(["background", "padding", "radius", "width", "height", "gap"]),
+  form: new Set(["background", "padding", "radius", "width", "height", "gap"]),
   text: new Set(["color", "size", "weight", "font", "line", "align"]),
   button: new Set(["color", "background", "size", "weight", "radius", "padding", "width"]),
   link: new Set(["color", "size", "weight", "decoration"]),
@@ -38,6 +39,19 @@ function validateLinks(widget: PageWidget, routes: Record<string, string>): void
     if (!Object.prototype.hasOwnProperty.call(routes, route)) throw new OruError("Unknown internal route: " + route, widget.line);
   }
   for (const child of widget.children) validateLinks(child, routes);
+}
+function validateForms(widget: PageWidget, logic: string, insideForm = false): void {
+  if (widget.type === "form") {
+    if (insideForm) throw new OruError("Forms cannot be nested.", widget.line);
+    const handler = widget.properties["on.submit"];
+    if (typeof handler !== "string" || !new RegExp("\\bfunc\\s+" + handler + "\\s*\\(").test(logic)) {
+      throw new OruError("A form requires on.submit: name referencing a function in logic:.", widget.line);
+    }
+  }
+  if (insideForm && widget.type === "button" && widget.properties["on.click"] !== undefined) {
+    throw new OruError("Buttons inside a form submit the form; use on.submit on the form instead.", widget.line);
+  }
+  for (const child of widget.children) validateForms(child, logic, insideForm || widget.type === "form");
 }
 function validateBindings(widget: PageWidget, declared: Set<string>, globals: Set<string>): void {
   if (widget.binding && !declared.has(widget.binding)) throw new OruError("Bound widget variable must be declared with state or global: " + widget.binding, widget.line);
@@ -75,6 +89,10 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
   const canvas = document.querySelector("canvas");
   const ctx = canvas.getContext("2d");
   const controls = document.getElementById("oru-controls");
+  const formIds = new Map();
+  const formNodes = [];
+  const collectForms = node => { if (node.type === "form") { formIds.set(node, "oru-form-" + (formNodes.length + 1)); formNodes.push(node); } node.children.forEach(collectForms); };
+  data.page.widgets.forEach(collectForms);
   let regions = [];
   const px = (value, fallback) => {
     if (typeof value === "number") return value;
@@ -122,14 +140,15 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     const children = node.children.map(child => measure(child, Math.max(40, width - padding * 2)));
     return { width, height: px(p.height, children.reduce((sum, item) => sum + item.height, 0) + padding * 2), lines: [] };
   }
-  function draw(node, x, y, maxWidth) {
+  function draw(node, x, y, maxWidth, formId = null) {
+    if (node.type === "form") formId = formIds.get(node) ?? null;
     const p = node.properties;
     const box = measure(node, maxWidth);
     const padding = px(p.padding, 0), gap = px(p.gap, 12);
     const w = Math.min(maxWidth, px(p.width, box.width));
     const h = px(p.height, box.height);
     const bg = p.background ?? p.color;
-    if (bg && ["box", "column", "row"].includes(node.type)) {
+    if (bg && ["box", "column", "row", "form"].includes(node.type)) {
       ctx.fillStyle = String(bg);
       const radius = Math.max(0, px(p.radius, 0));
       ctx.beginPath(); ctx.roundRect(x, y, w, h, radius); ctx.fill();
@@ -142,7 +161,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       const lineHeight = px(p.line, size * 1.4);
       box.lines.forEach((line, i) => ctx.fillText(line, x + padding, y + padding + i * lineHeight, Math.max(20, w - padding * 2)));
       if (node.type === "link") ctx.fillRect(x + padding, y + h - 2, Math.min(w - padding * 2, ctx.measureText(textOf(node)).width), 1);
-      if (node.type === "button" || node.type === "link") regions.push({ x, y, w, h, node });
+      if (node.type === "button" || node.type === "link") regions.push({ x, y, w, h, node, formId });
       return { width: w, height: h };
     }
     if (node.type === "image") {
@@ -169,7 +188,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     const childWidth = horizontal && node.children.length ? available / node.children.length : available;
     for (const child of node.children) {
       const childBox = measure(child, childWidth);
-      draw(child, horizontal ? cursor : x + padding, horizontal ? y + padding : cursor, childWidth);
+      draw(child, horizontal ? cursor : x + padding, horizontal ? y + padding : cursor, childWidth, formId);
       cursor += (horizontal ? childBox.width : childBox.height) + gap;
     }
     return { width: w, height: h };
@@ -191,6 +210,22 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       cursorY += size.height + 12;
     }
     controls.replaceChildren();
+    const forms = new Map();
+    for (const node of formNodes) {
+      const form = document.createElement("form");
+      form.id = formIds.get(node);
+      form.style.display = "contents";
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+        try {
+          if (app) app.call(String(node.properties["on.submit"]));
+          persistGlobals();
+          render();
+        } catch (error) { console.error("ORU form submission failed:", error); }
+      });
+      forms.set(form.id, form);
+      controls.append(form);
+    }
     for (const region of regions) {
       const node = region.node;
       const el = document.createElement(node.type === "link" ? "a" : node.type === "input" ? "input" : "button");
@@ -227,11 +262,12 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
           });
         }
       } else {
-        el.type = "button";
-        el.addEventListener("click", () => activate(node));
+        el.type = region.formId ? "submit" : "button";
+        if (!region.formId) el.addEventListener("click", () => activate(node));
       }
       if (node.type === "link") el.addEventListener("click", event => { event.preventDefault(); activate(node); });
-      controls.append(el);
+      const parent = region.formId ? forms.get(region.formId) : controls;
+      parent.append(el);
     }
   }
   canvas.addEventListener("click", event => {
@@ -256,7 +292,7 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const resolvedPage = { ...page, widgets: page.widgets.map(widget => resolveWidget(widget, page.classes)) };
   const declaredBindings = new Set([...page.logic.matchAll(/(?:^|\n)\s*(?:state|global)\s+([A-Za-z_]\w*)\s*=/g)].map(match => match[1]!));
   const globalBindings = new Set([...page.logic.matchAll(/(?:^|\n)\s*global\s+([A-Za-z_]\w*)\s*=/g)].map(match => match[1]!));
-  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings, globalBindings); }
+  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings, globalBindings); validateForms(widget, page.logic); }
   const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
