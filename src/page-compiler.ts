@@ -8,10 +8,10 @@ function escapeHtml(value: string): string {
 }
 
 const classProperties: Record<PageWidget["type"], Set<string>> = {
-  column: new Set(["background", "padding", "gap", "width", "height"]),
-  row: new Set(["background", "padding", "gap", "width", "height", "wrapAt"]),
-  box: new Set(["background", "padding", "radius", "width", "height", "gap"]),
-  form: new Set(["background", "padding", "radius", "width", "height", "gap"]),
+  column: new Set(["background", "padding", "gap", "width", "height", "mainAlign", "crossAlign"]),
+  row: new Set(["background", "padding", "gap", "width", "height", "wrapAt", "mainAlign", "crossAlign"]),
+  box: new Set(["background", "padding", "radius", "width", "height", "gap", "mainAlign", "crossAlign"]),
+  form: new Set(["background", "padding", "radius", "width", "height", "gap", "mainAlign", "crossAlign"]),
   text: new Set(["color", "text.color", "size", "weight", "font", "line", "align", "role", "level"]),
   button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color", "text.color", "align"]),
   link: new Set(["color", "text.color", "size", "weight", "decoration", "underline"]),
@@ -72,6 +72,19 @@ function validateBindings(widget: PageWidget, declared: Set<string>, globals: Se
   if (widget.binding && !declared.has(widget.binding)) throw new OruError("Bound widget variable must be declared with state or global: " + widget.binding, widget.line);
   if (widget.type === "input" && widget.properties.type === "password" && widget.binding && globals.has(widget.binding)) throw new OruError("Password inputs must use page-local state.", widget.line);
   for (const child of widget.children) validateBindings(child, declared, globals);
+}
+function validateLayout(widget: PageWidget): void {
+  if (["row", "column", "box", "form"].includes(widget.type)) {
+    const main = widget.properties.mainAlign;
+    const cross = widget.properties.crossAlign;
+    if (main !== undefined && !["start", "center", "end", "spaceBetween", "spaceAround"].includes(String(main))) {
+      throw new OruError("mainAlign must be start, center, end, spaceBetween, or spaceAround.", widget.line);
+    }
+    if (cross !== undefined && !["start", "center", "end", "stretch"].includes(String(cross))) {
+      throw new OruError("crossAlign must be start, center, end, or stretch.", widget.line);
+    }
+  }
+  for (const child of widget.children) validateLayout(child);
 }
 
 function runtimeSource(page: OruPage, routes: Record<string, string>, corePath: string): string {
@@ -161,13 +174,13 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     const children = node.children.map(child => measure(child, Math.max(40, width - padding * 2)));
     return { width, height: px(p.height, children.reduce((sum, item) => sum + item.height, 0) + padding * 2), lines: [] };
   }
-  function draw(node, x, y, maxWidth, formId = null) {
+  function draw(node, x, y, maxWidth, formId = null, forcedHeight) {
     if (node.type === "form") formId = formIds.get(node) ?? null;
     const p = node.properties;
     const box = measure(node, maxWidth);
     const padding = px(p.padding, 0), gap = px(p.gap, 12);
     const w = Math.min(maxWidth, px(p.width, box.width));
-    const h = px(p.height, box.height);
+    const h = forcedHeight === undefined ? px(p.height, box.height) : Math.max(0, forcedHeight);
     const disabled = node.type === "button" && p.disabled === true;
     const baseBackground = p.background ?? (node.type === "button" ? "#eeeeee" : p.color);
     const bg = node.type === "button"
@@ -253,13 +266,36 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       return { width: w, height: h };
     }
     const horizontal = node.type === "row" && w >= px(p.wrapAt, 560);
+    const available = Math.max(40, w - padding * 2);
+    const childWidth = horizontal && node.children.length ? Math.max(40, (available - gap * Math.max(0, node.children.length - 1)) / node.children.length) : available;
+    const children = node.children.map(child => ({ node: child, box: measure(child, childWidth) }));
+    const mainSizes = children.map(item => horizontal ? item.box.width : item.box.height);
+    const totalMain = mainSizes.reduce((sum, size) => sum + size, 0);
+    const mainExtent = horizontal ? available : Math.max(0, h - padding * 2);
+    const free = Math.max(0, mainExtent - totalMain - gap * Math.max(0, children.length - 1));
+    const mainAlign = String(p.mainAlign ?? "start");
     let cursor = horizontal ? x + padding : y + padding;
-    const available = Math.max(40, w - padding * 2 - (horizontal ? gap * Math.max(0, node.children.length - 1) : 0));
-    const childWidth = horizontal && node.children.length ? available / node.children.length : available;
-    for (const child of node.children) {
-      const childBox = measure(child, childWidth);
-      draw(child, horizontal ? cursor : x + padding, horizontal ? y + padding : cursor, childWidth, formId);
-      cursor += (horizontal ? childBox.width : childBox.height) + gap;
+    let itemGap = gap;
+    if (mainAlign === "center") cursor += free / 2;
+    else if (mainAlign === "end") cursor += free;
+    else if (mainAlign === "spaceBetween" && children.length > 1) itemGap += free / (children.length - 1);
+    else if (mainAlign === "spaceAround" && children.length > 0) {
+      itemGap += free / children.length;
+      cursor += free / (children.length * 2);
+    }
+    const crossAlign = String(p.crossAlign ?? "stretch");
+    for (const item of children) {
+      const childBox = item.box;
+      const crossExtent = horizontal ? Math.max(0, h - padding * 2) : available;
+      const crossSize = horizontal ? childBox.height : childBox.width;
+      const crossOffset = crossAlign === "center" ? Math.max(0, (crossExtent - crossSize) / 2)
+        : crossAlign === "end" ? Math.max(0, crossExtent - crossSize) : 0;
+      const childX = horizontal ? cursor : x + padding + crossOffset;
+      const childY = horizontal ? y + padding + crossOffset : cursor;
+      const childMaxWidth = horizontal ? childWidth : crossAlign === "stretch" ? available : childBox.width;
+      const stretchedHeight = horizontal && crossAlign === "stretch" ? crossExtent : undefined;
+      draw(item.node, childX, childY, childMaxWidth, formId, stretchedHeight);
+      cursor += (horizontal ? childBox.width : childBox.height) + itemGap;
     }
     return { width: w, height: h };
   }
@@ -503,7 +539,7 @@ export function compilePage(page: OruPage, route: PageRoute, routes: Record<stri
   const declaredBindings = new Set([...page.logic.matchAll(/^(?:(?:state|global)\s+)?([A-Za-z_]\w*)\s*=/gm)].map(match => match[1]!));
   const globalBindings = new Set([...page.logic.matchAll(/^global\s+([A-Za-z_]\w*)\s*=/gm)].map(match => match[1]!));
   const declaredFunctions = new Set([...page.logic.matchAll(/\bfunc\s+([A-Za-z_]\w*)\s*\(/g)].map(match => match[1]!));
-  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings, globalBindings); validateForms(widget, declaredFunctions); validateEvents(widget, declaredFunctions); }
+  for (const widget of resolvedPage.widgets) { validateLinks(widget, routes); validateBindings(widget, declaredBindings, globalBindings); validateForms(widget, declaredFunctions); validateEvents(widget, declaredFunctions); validateLayout(widget); }
   const script = runtimeSource(resolvedPage, routes, corePath);
   return `<!doctype html>
 <html lang="${language}">
