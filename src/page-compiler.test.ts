@@ -167,7 +167,7 @@ test("builds a scrollable responsive page and accessible semantic content", () =
   assert.ok(html.includes('<canvas aria-hidden="true"></canvas>'));
   assert.ok(html.includes('id="oru-semantic"'));
   assert.ok(html.includes('item.textContent = textOf(node)'));
-  assert.ok(html.includes('item.alt = String(node.text ?? "")'));
+  assert.ok(html.includes('item.alt = String(node.properties.alt ?? node.text ?? "")'));
   assert.ok(html.includes('const contentHeight = data.page.widgets.reduce'));
   assert.ok(html.includes('controls.style.height = pageHeight + "px"'));
   assert.ok(html.includes('width >= px(p.wrapAt, 560)'));
@@ -190,7 +190,7 @@ page:
   const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
   assert.ok(html.includes('el.disabled = true'));
   assert.ok(html.includes('el[key] = node.properties[key]'));
-  assert.ok(html.includes('for (const key of ["min", "max", "step", "maxLength", "minLength", "name"])'));
+  assert.ok(html.includes('node.type === "input" ? ["min", "max", "step", "maxLength", "minLength", "name"]'));
 });
 
 
@@ -254,7 +254,7 @@ page:
   assert.ok(html.includes('aria-live="polite"'));
   assert.ok(html.includes('document.createElement(role === "heading" ? "h" + level : "p")'));
   assert.ok(html.includes('form.setAttribute("aria-label", String(node.properties.label ?? "Form"))'));
-  assert.ok(html.includes('node.properties.label ?? node.properties.placeholder ?? node.binding ?? "Input"'));
+  assert.ok(html.includes('node.properties.label ?? node.properties.placeholder ?? node.binding ?? (node.type === "textarea" ? "Text area" : node.type === "select" ? "Select" : "Input")'));
   assert.ok(html.includes('if (region.formId && !parent.isConnected) controls.append(parent)'));
 });
 
