@@ -57,8 +57,10 @@ async function validateAssetTree(root: string): Promise<void> {
 }
 
 async function validateWidgetAssets(widget: ReturnType<typeof parsePage>["widgets"][number], root: string): Promise<void> {
-  if (widget.type === "image") {
-    const source = String(widget.properties.src ?? "");
+  const sources: string[] = [];
+  if (widget.type === "image") sources.push(String(widget.properties.src ?? ""));
+  if (widget.type === "button" && widget.properties.icon) sources.push(String(widget.properties.icon));
+  for (const source of sources) {
     if (/^https:\/\//i.test(source)) {
       let url: URL;
       try { url = new URL(source); } catch { throw new OruError("Invalid remote image URL.", widget.line); }
