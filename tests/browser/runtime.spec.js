@@ -25,6 +25,8 @@ test.beforeAll(async () => {
     async func finishAsync():
         value = await fetchValue()
         asyncDone = value == "ready"
+    async func failAsync():
+        value = 1 / 0
     func submit():
         submitted = true
     func verify():
@@ -37,6 +39,8 @@ page:
         text(asyncDone)
         button("Async action"):
             on.click: finishAsync
+        button("Fail action"):
+            on.click: failAsync
         row:
             wrapAt: 600
             mainAlign: spaceBetween
@@ -228,4 +232,14 @@ test("awaits async click handlers before persisting and rendering state", async 
   await action.click();
   await expect(page.locator("#oru-semantic")).toContainText("true");
   expect(errors).toEqual([]);
+});
+
+
+test("announces rejected async handlers with an accessible error message", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(baseURL);
+  await page.locator('#oru-controls button[aria-label="Fail action"]').click();
+  const alert = page.getByRole("alert");
+  await expect(alert).toBeVisible();
+  await expect(alert).toContainText("Division by zero");
 });
