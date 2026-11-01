@@ -13,7 +13,7 @@ const classProperties: Record<PageWidget["type"], Set<string>> = {
   box: new Set(["background", "padding", "radius", "width", "height", "gap"]),
   form: new Set(["background", "padding", "radius", "width", "height", "gap"]),
   text: new Set(["color", "size", "weight", "font", "line", "align"]),
-  button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color"]),
+  button: new Set(["color", "background", "size", "weight", "radius", "padding", "width", "disabled", "icon", "alt", "hover.background", "hover.color", "active.background", "active.color", "disabled.background", "disabled.color", "align"]),
   link: new Set(["color", "size", "weight", "decoration", "underline"]),
   image: new Set(["width", "height", "fit", "radius"]),
   input: new Set(["color", "background", "size", "radius", "padding", "width", "height", "type", "required", "disabled", "readOnly", "min", "max", "step", "minLength", "maxLength", "pattern", "autocomplete", "constraint", "name"])
@@ -109,6 +109,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
   let regions = [];
   let hoveredNode = null;
   let activeNode = null;
+  let pixelRatio = 1;
   const px = (value, fallback) => {
     if (typeof value === "number") return value;
     if (typeof value !== "string") return fallback;
@@ -251,9 +252,21 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     }
     return { width: w, height: h };
   }
+  function paint() {
+    const width = Math.max(280, document.documentElement.clientWidth);
+    ctx.clearRect(0, 0, width, canvas.height / pixelRatio);
+    regions = [];
+    let cursorY = 24;
+    for (const widget of data.page.widgets) {
+      const size = measure(widget, width - 40);
+      draw(widget, 20, cursorY, width - 40);
+      cursorY += size.height + 12;
+    }
+  }
   function render() {
     const width = Math.max(280, document.documentElement.clientWidth);
     const dpr = Math.min(2, window.devicePixelRatio || 1);
+    pixelRatio = dpr;
     canvas.width = Math.floor(width * dpr);
     canvas.style.width = width + "px";
     const contentHeight = data.page.widgets.reduce((height, widget) => height + measure(widget, width - 40).height + 12, 24);
@@ -262,14 +275,7 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
     canvas.style.height = pageHeight + "px";
     controls.style.height = pageHeight + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, canvas.height / dpr);
-    regions = [];
-    let cursorY = 24;
-    for (const widget of data.page.widgets) {
-      const size = measure(widget, width - 40);
-      draw(widget, 20, cursorY, width - 40);
-      cursorY += size.height + 12;
-    }
+    paint();
     controls.replaceChildren();
     semantic.replaceChildren();
     const addSemantic = (node, parent) => {
@@ -357,6 +363,44 @@ ${page.logic.trim() ? `import { run } from "${corePath}";` : ""}
       parent.append(el);
     }
   }
+  const controlNode = event => {
+    const target = event.target instanceof Element ? event.target.closest("[data-oru-control]") : null;
+    if (!target) return null;
+    return regions[Number(target.dataset.oruControl)]?.node ?? null;
+  };
+  const runStateEvent = (node, key) => {
+    const handler = node?.properties?.[key];
+    if (handler && app) {
+      try { app.call(String(handler)); persistGlobals(); render(); }
+      catch (error) { console.error("ORU " + key + " handler failed:", error); }
+    }
+  };
+  controls.addEventListener("pointerover", event => {
+    const node = controlNode(event);
+    if (!node || node.type !== "button" || node.properties.disabled === true || hoveredNode === node) return;
+    hoveredNode = node;
+    paint();
+    runStateEvent(node, "on.hover");
+  });
+  controls.addEventListener("pointerout", event => {
+    if (!(event.target instanceof Element) || !event.target.isConnected) return;
+    const node = controlNode(event);
+    if (!node || node !== hoveredNode) return;
+    if (event.relatedTarget instanceof Node && event.target.contains(event.relatedTarget)) return;
+    hoveredNode = null;
+    paint();
+    runStateEvent(node, "on.leave");
+  });
+  controls.addEventListener("pointerdown", event => {
+    const node = controlNode(event);
+    if (event.button !== 0 || !node || node.type !== "button" || node.properties.disabled === true) return;
+    activeNode = node;
+    paint();
+    runStateEvent(node, "on.active");
+  });
+  const clearActive = () => { if (activeNode) { activeNode = null; paint(); } };
+  window.addEventListener("pointerup", clearActive);
+  window.addEventListener("pointercancel", clearActive);
   canvas.addEventListener("click", event => {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left, y = event.clientY - rect.top;
