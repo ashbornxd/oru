@@ -76,6 +76,7 @@ Work through these together. An item is not a decision until we explicitly agree
 - **Agreed page references:** Refer to a page using its relative file path without the `.oru` extension: `index`, `help`, or `pages/help`.
 - **Agreed UI composition direction:** Build page content with a nested, declarative widget tree inspired by Flutter, but with ORU's own syntax and API.
 - **Agreed:** Core widgets such as `column`, `row`, `box`, and `text` are built into ORU and available directly.
+- **Agreed:** Developers can define reusable named style classes (for example, `class navText:`) and apply them to widgets. Exact syntax and behavior remain to be designed.
 - **Agreed:** Developers can define reusable named style classes (for example, `class navText:`) and apply them to compatible widgets. Exact semantics and syntax remain to be designed.
 - **Agreed:** Developers can define reusable named style classes and apply them to widgets. The exact syntax and style precedence remain open.
 - **Agreed comment syntax direction:** Use triple double quotes (`\"\"\" ... \"\"\"`) for comments. Exact placement and multiline parsing rules remain open.
