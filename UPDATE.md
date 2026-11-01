@@ -4,7 +4,7 @@
 
 **Current published version:** 0.3.0  
 **Target version:** 1.0.0  
-**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, button hover/active/disabled states and image icons, responsive row wrapping, scrollable pages, and a semantic text/image layer with native keyboard-operable controls. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: advanced form controls (selects, textareas, and file inputs), advanced layout primitives, full WCAG conformance, broader security review, browser integration testing, and final release validation.
+**Status:** Active development; not release-ready. Implemented on `oru-1.0.0-dev`: the core interpreter, page parser, route builder, static project compiler, Canvas 2D runtime, page-local logic and events, reactive text/button/input bindings, session-scoped cross-page global state, reusable style classes, named cross-file function/value imports, native form submission and constraints, button hover/active/disabled states and image icons, responsive row wrapping, scrollable pages, and a semantic text/image layer with native keyboard-operable controls. Local image paths are constrained to regular files under `assets/`, HTTPS images are supported, and symlinks are rejected. Still open: advanced form controls (file inputs; select controls are implemented), advanced layout primitives, full WCAG conformance, broader security review, browser integration testing, and final release validation.
 
 ## Vision
 
@@ -552,3 +552,15 @@ Implemented on `oru-1.0.0-dev`:
 - Added a compiler test and documented the widget.
 
 **Still incomplete:** select/dropdown controls, file inputs, async and cross-field validation, and full browser integration testing.
+
+
+### Milestone 20 — Native select controls
+
+Implemented on `oru-1.0.0-dev`:
+- Added `select(name)` bound to a declared string state variable.
+- Added nested `option("Visible label")` entries, with an optional distinct `value:` property.
+- The Canvas layer displays the selected value while a native accessible HTML select handles keyboard, pointer, and mobile selection.
+- Selection changes update the bound ORU state; native required and disabled behavior is supported.
+- Added a compiler test and documented the syntax.
+
+**Still incomplete:** file inputs, async and cross-field validation, and browser integration testing. This commit has not yet been run through CI.
