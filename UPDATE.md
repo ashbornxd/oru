@@ -734,3 +734,13 @@ Implemented on `oru-1.0.0-dev`:
 **Verification:** CI is running on the updated branch head. Earlier async runtime and browser integration commits passed the complete Node 20/22/24 matrix, including Chromium, Firefox, and WebKit.
 
 **Release blockers remain:** the current CI result must pass on the final head; WCAG and assistive-technology review, independent security/performance review, and physical-device testing cannot be replaced by automated tests.
+
+
+### Milestone 34 — Async capability namespace safety
+
+Implemented on `oru-1.0.0-dev`:
+- Reject async host capability names that collide with built-ins (`print`, `len`, `range`) or declared ORU functions.
+- Added regression tests for both user-function and built-in collisions.
+- Documented the explicit capability namespace rule.
+
+**Verification pending:** run the full Node and browser CI matrix on the current head.
