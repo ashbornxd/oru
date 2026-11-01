@@ -698,6 +698,11 @@ export async function runAsync(source: string, options: AsyncRunOptions = {}): P
   };
 
   await execute(statements, global, false, false, false, true);
+  for (const name of hostFunctions.keys()) {
+    if (name === "print" || name === "len" || name === "range" || functions.has(name)) {
+      throw new OruError("Host capability '" + name + "' conflicts with a built-in or ORU function.", 0);
+    }
+  }
   return {
     output, globals: allGlobals(),
     callAsync: (name, ...args) => call(name, args, 0),
