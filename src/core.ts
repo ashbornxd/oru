@@ -257,6 +257,11 @@ class Environment {
     if (existing.type && existing.type !== type) throw new OruError("Type error: '" + name + "' is " + existing.type + ", not " + type + ".", line);
     existing.type = type; existing.initialized = true; existing.value = value;
   }
+  snapshot(): Record<string, OruValue> {
+    const result: Record<string, OruValue> = {};
+    for (const [name, binding] of this.values) if (binding.initialized) result[name] = binding.value!;
+    return result;
+  }
   get(name: string, line: number): OruValue {
     const binding = this.values.get(name);
     if (binding) {
@@ -403,8 +408,8 @@ export function run(source: string, options: RunOptions = {}): RunResult {
           const values = Array.isArray(iterable) ? iterable : typeof iterable === "string" ? [...iterable] : null;
           if (!values) throw new OruError("for loops require a list or string.", statement.line);
           for (const value of values) {
-            const loopEnv = new Environment(env); loopEnv.declare(statement.name, value, statement.line);
-            try { executeBlock(statement.body, loopEnv, inFunction, true); }
+            env.declare(statement.name, value, statement.line);
+            try { executeBlock(statement.body, env, inFunction, true); }
             catch (signal) { if (signal instanceof BreakSignal) break; if (!(signal instanceof ContinueSignal)) throw signal; }
           }
           break;
@@ -434,5 +439,5 @@ export function run(source: string, options: RunOptions = {}): RunResult {
     return null;
   };
   executeBlock(statements, global);
-  return { output, globals: {} };
+  return { output, globals: global.snapshot() };
 }
