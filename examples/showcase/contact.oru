@@ -36,8 +36,11 @@ page:
                     type: email
                     required: true
                     autocomplete: email
+                    placeholder: "you@example.com"
                     label: Email address
                     class: FieldStyle
+                text("We will use this only as the example contact address."):
+                    class: MutedText
                 select(topic):
                     required: true
                     label: What are you building?
@@ -49,30 +52,44 @@ page:
                         value: "browser-app"
                     option("Experiment"):
                         value: "experiment"
+                text("Pick the type that best describes your project."):
+                    class: MutedText
                 textarea(message):
                     required: true
                     minLength: 8
                     maxLength: 400
                     rows: 5
+                    placeholder: "Tell us what you are making and what it should do..."
                     label: Project description
                     class: FieldStyle
+                text("At least 8 characters. Keep it simple for this local demo."):
+                    class: MutedText
                 input(password):
                     type: password
                     required: true
+                    placeholder: "Enter a demo passphrase"
+                    minLength: 8
                     label: Demo passphrase
                     class: FieldStyle
+                text("Use 8 or more characters."):
+                    class: MutedText
                 input(confirmation):
                     type: password
                     required: true
                     matches: password
+                    placeholder: "Enter it again"
                     validationMessage: "Passphrases must match."
                     label: Confirm passphrase
                     class: FieldStyle
+                text("Re-enter the same passphrase to confirm it."):
+                    class: MutedText
                 input(attachment):
                     type: file
                     accept: ".png,.jpg,.jpeg,.pdf"
                     label: Optional attachment (filename only)
                     class: FieldStyle
+                text("Optional. Choose a PNG, JPG, or PDF. Only the filename is displayed."):
+                    class: MutedText
                 button("Validate demo form"):
                     class: ActionButton
             text(status)
