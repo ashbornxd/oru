@@ -95,7 +95,7 @@ page:
   const html = compilePage(page, routeForPage("index.oru"), { index: "/" });
   assert.ok(html.includes("app.set(node.binding, value)"));
   assert.ok(html.includes("Keep the focused native element mounted while typing"));
-  assert.ok(html.includes("replacement.setSelectionRange(start, end)"));
+  assert.ok(html.includes("persistGlobals();\n              // Keep the focused native element mounted while typing."));
   assert.ok(html.includes("el.required = true"));
 });
 
