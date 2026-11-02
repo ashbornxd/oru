@@ -62,7 +62,7 @@ page:
                     placeholder: "Tell us what you are making and what it should do..."
                     label: Project description
                     class: FieldStyle
-                text("At least 8 characters. Keep it simple for this local demo."):
+                text("Describe the main features or goal of your project."):
                     class: MutedText
                 input(password):
                     type: password
