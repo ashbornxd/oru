@@ -1,53 +1,46 @@
-# ORU 1.0 release verification checklist
+# ORU 0.9.0 release and follow-up checklist
 
-This checklist is intentionally separate from automated CI. A green build does not certify accessibility, security, performance, or real-device behavior.
+ORU 0.9.0 is an early public release of the new language and browser runtime. It is intentionally pre-1.0: users should expect changes while we gather feedback and improve compatibility.
 
-## Automated checks
+## Verified before release
 
 - [x] Node.js 20, 22, and 24 unit tests and TypeScript build.
 - [x] Dependency audit at the configured high-severity threshold.
 - [x] npm package dry-run.
 - [x] Playwright tests in Chromium, Firefox, and WebKit.
 - [x] Async runtime, module import, form, CSP, and keyboard-focus regression coverage.
+- [x] Physical Android phone testing by the maintainer.
+- [ ] Re-run the complete workflow against the exact release commit.
 
-Re-run the complete workflow against the exact final release commit before publishing.
+## Public beta feedback
 
-## Accessibility review
+- [ ] Collect user reports for installation, project creation, development server, and production builds.
+- [ ] Test representative small and larger real-world projects.
+- [ ] Track regressions, crashes, confusing diagnostics, and documentation gaps.
+- [ ] Prioritize and fix release-blocking issues; publish patch releases as needed.
+
+## Follow-up quality work
+
+These are important goals for a stable 1.0 release, not claims that 0.9.0 has already passed them.
 
 - [ ] Complete a WCAG 2.2 AA review of generated pages and controls.
-- [ ] Test keyboard-only operation, including logical focus order, visible focus, forms, validation, and error recovery.
-- [ ] Test with at least one desktop screen reader and one mobile screen reader.
-- [ ] Verify headings, landmarks, names/roles/values, announcements, zoom/reflow, and contrast.
-- [ ] Record findings and close every release-blocking issue.
+- [ ] Test keyboard-only workflows and desktop/mobile screen readers.
+- [ ] Obtain an independent security review of parser/interpreter boundaries, host capabilities, module and asset paths, generated HTML, CSP, and CLI filesystem behavior.
+- [ ] Review deployment headers and the threat model in a representative production deployment.
+- [ ] Measure render time, interaction latency, memory use, and generated asset size on low-end hardware.
+- [ ] Expand device/browser testing beyond the maintainer's Android phone, including supported desktop and iOS environments.
 
-## Security review
+## Package and release hygiene
 
-- [ ] Obtain an independent review of parser/interpreter boundaries, host capabilities, module and asset path handling, generated HTML, CSP, and CLI filesystem behavior.
-- [ ] Review dependency vulnerabilities and package contents at the release commit.
-- [ ] Verify the deployment headers and threat model in a representative production deployment.
-- [ ] Record findings and close every release-blocking issue.
+- [ ] Verify package contents, CLI entry point, exports, Node.js engine range, and version.
+- [ ] Verify installation from npm and run a clean starter project using the published package.
+- [ ] Keep the changelog current for every release.
 
-## Performance review
+## Stable 1.0.0 exit criteria
 
-- [ ] Measure representative small and large projects.
-- [ ] Measure initial render, interaction latency, memory use, and resize behavior on low-end hardware.
-- [ ] Check generated asset size and runtime startup cost.
-- [ ] Record budgets and results.
+- [ ] No known release-blocking correctness, security, or data-loss issues.
+- [ ] Core syntax and runtime behavior documented and sufficiently stable.
+- [ ] Accessibility, security, and performance follow-up reviewed and documented.
+- [ ] Automated tests pass on the exact release commit.
+- [ ] Package installation and clean starter-project smoke test pass.
 
-## Device and browser review
-
-- [ ] Test a physical Android phone and tablet.
-- [ ] Test a physical iPhone/iPad if supported by the release target.
-- [ ] Test desktop Chrome, Firefox, Safari, and Edge on supported operating systems.
-- [ ] Check touch, keyboard, viewport resizing, orientation, file inputs, and form behavior.
-
-## Final release
-
-- [ ] Review README, language and page-file docs, examples, license, and security policy.
-- [ ] Confirm package name, exports, CLI entry point, files allowlist, Node engine range, and version.
-- [ ] Create and review the final changelog.
-- [ ] Run `npm pack --dry-run` and inspect the actual tarball contents.
-- [ ] Tag `v1.0.0` and publish only after all release gates are signed off.
-- [ ] Verify installation from npm and build/run a clean starter project from the published package.
-
-**Release rule:** keep the 1.0 pull request unmerged and do not publish stable 1.0.0 while any required checkbox above is open.
