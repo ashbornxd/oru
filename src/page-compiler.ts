@@ -587,14 +587,18 @@ ${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
     if (hit.node.type === "button" || hit.node.type === "link") activate(hit.node);
   });
   let renderedWidth = 0;
+  let pendingViewportRender = false;
   const resizeForViewport = () => {
     const width = Math.max(280, document.documentElement.clientWidth);
-    if (width !== renderedWidth) {
+    const focusedControl = controls.contains(document.activeElement);
+    if (width !== renderedWidth && !focusedControl) {
       render();
       return;
     }
     // Mobile browsers resize the viewport when the software keyboard opens.
-    // Keep native controls mounted so the focused field and keyboard stay active.
+    // Never rebuild native controls while one is focused: Android would dismiss
+    // the keyboard and discard the active selection/caret.
+    if (width !== renderedWidth) pendingViewportRender = true;
     const contentHeight = data.page.widgets.reduce((height, widget) => height + measure(widget, width - 40).height + 12, 24);
     const pageHeight = Math.max(window.innerHeight, 600, contentHeight + 24);
     canvas.height = Math.ceil(pageHeight * pixelRatio);
@@ -603,10 +607,19 @@ ${page.logic.trim() ? `import { runAsync } from "${corePath}";` : ""}
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     paint();
   };
+  controls.addEventListener("focusout", () => {
+    if (!pendingViewportRender) return;
+    setTimeout(() => {
+      if (controls.contains(document.activeElement)) return;
+      pendingViewportRender = false;
+      render();
+    }, 0);
+  });
   const originalRender = render;
   render = () => {
     originalRender();
     renderedWidth = Math.max(280, document.documentElement.clientWidth);
+    pendingViewportRender = false;
   };
   window.addEventListener("resize", resizeForViewport);
   render();
