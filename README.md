@@ -2,64 +2,40 @@
 
 **A simpler way to build for the web.**
 
-ORU is a Python-inspired programming language for websites and browser applications. Its source files use the `.oru` extension.
+ORU is a Python-inspired programming language for building websites and browser applications. Write readable `.oru` files and run them with the ORU CLI.
 
-> **Release status:** ORU 0.3.0 is the published npm release. ORU 1.0 is being developed on `oru-1.0.0-dev` and is not published.
+> **Current release: 0.9.0** — the first public release of the new ORU language and browser runtime. It is a pre-1.0 release; expect rough edges and breaking changes as the language matures. The earlier 0.3.0 release is available as a separate historical version.
 
-## Published release (0.3.0)
+## Install
 
-Install the stable published version:
+Requirements: Node.js 20 or newer.
 
 ```sh
-npm install --global @ashbornxd/oru@0.3.0
+npm install --global @ashbornxd/oru@0.9.0
 ```
 
-The 0.3 syntax and behavior are documented in [language basics](docs/language-basics.md).
-
-## ORU 1.0 development build
-
-Requirements: Node.js 20+ and npm.
+Create and run a project:
 
 ```sh
-git clone --branch oru-1.0.0-dev https://github.com/ashbornxd/oru.git
-cd oru
-npm install
-npm test
-npm run build
-npm link
-```
-
-Create and preview a 1.0 project:
-
-```sh
-oru create myWebsite
-cd myWebsite
+oru create my-website
+cd my-website
 oru run dev
 ```
 
-Open `http://localhost:3000`. Build static output with `oru build`; files are written to `dist/`. An optional `assets/` directory is copied into the output.
-
-## Complete interactive showcase
-
-A multi-page test website is included at [`examples/showcase/`](examples/showcase/README.md). It exercises the language core, page compiler, browser runtime, modules, async handlers, global state, style classes, responsive layouts, native forms, validation, file selection, assets, and routes.
-
-Run it from the repository root:
+Open the local address printed by the CLI (usually `http://localhost:3000`). Create a production build with:
 
 ```sh
-npm install
-npm run build
-cd examples/showcase
-node ../../dist/cli.js run dev
+oru build
 ```
 
-Open `http://localhost:3000`. The showcase README lists what to test. Its form is local-only and does not send data.
+The generated static site is written to `dist/` and can be hosted on a static web host. An optional project `assets/` directory is copied into the output.
 
-## 1.0 page example
+## Quick example
 
 Project structure:
 
 ```text
-myWebsite/
+my-website/
 ├── oru.config
 ├── index.oru
 └── pages/
@@ -84,39 +60,51 @@ page:
     column:
         text("Hello, web!"):
             size: 32
-        link("Get help", "pages/help"):
+        link("Get help", "pages/help")
 ```
 
 Each `.oru` file defines one page. `index.oru` maps to `/`; `pages/help.oru` maps to `/pages/help`.
 
-## Language core
+## What's included
 
-The 1.0 interpreter currently includes:
+- Python-inspired language core: values, variables, expressions, functions, conditionals, loops, and built-ins.
+- Project CLI for creating projects, running a local development server, evaluating scripts, and building static output.
+- Multi-page projects, routes, assets, module imports, and reusable style classes.
+- Canvas-based browser rendering with semantic content and native keyboard-operable controls.
+- Page-local state, session-scoped global state, reactive bindings, events, and async execution.
+- Native forms, inputs, textareas, selects, file selection, and browser validation.
+- Responsive layouts and baseline security protections, including path validation and content security policies.
 
-- Strings, numbers, booleans, lists, and dictionary/object values
-- Inferred, type-stable variables and uninitialized declarations
-- Arithmetic, comparisons, and logical expressions
-- Functions, lexical closures, conditionals, and loops
-- `print`, `len`, and `range` built-ins
-- The `oru eval <file>` script command (async-aware in 1.0)
-
-## Browser runtime status
-
-The 1.0 development branch has a page compiler and Canvas 2D browser renderer, with text, layout, image, link, button, native form controls, and file selection plus a semantic DOM control layer. Page-local logic, click handlers, reactive text/button/input bindings, session-scoped `global` values, native form submission and constraints, cross-field input matching, accessible validation summaries, button hover/active/disabled states and icon assets, reusable style classes, and named cross-file function/value imports are implemented. The renderer supports responsive row wrapping, main/cross-axis container alignment, scrollable content, semantic content, and native keyboard-operable controls. The compiler rejects unresolved internal routes, unsafe module paths, unsafe image sources, and symbolic links in project assets. Playwright browser integration tests target Chromium, Firefox, and WebKit, including desktop/mobile layout checks.
-
-**ORU 1.0 feature implementation is complete on the development branch, but it is not yet approved for production.** The current branch passes unit tests, the TypeScript build, package validation, security dependency audit, and Playwright integration tests in Chromium, Firefox, and WebKit on Node.js 20, 22, and 24. The suite covers native file selection, form validation, strict CSP enforcement, responsive layout, keyboard navigation, and visible focus. File selection currently binds filenames only; it does not upload file contents. Async compatibility tests now cover mixed sync/async calls, nested awaits, evaluation order, short-circuiting, state restoration, and asynchronous function imports. Release gates still include full WCAG conformance and assistive-technology testing, independent security/performance review, and real-device testing. Generated pages use per-document SHA-256 CSP hashes; inline scripts, event-handler attributes, and style attributes are disabled.
+File selection currently exposes filenames only; it does not upload file contents. Forms do not submit data to a server automatically.
 
 ## Documentation
 
-- [Published 0.3 language basics](docs/language-basics.md)
-- [ORU 1.0 syntax reference](docs/syntax-reference.md) — concise guide to language, page, widget, layout, event, form, import, and CLI syntax.
-- [1.0 language core](docs/core-language.md)
-- [1.0 page files and browser runtime](docs/page-files.md)
-- [1.0 planning and implementation log](UPDATE.md)
-- [1.0 release verification checklist](docs/release-checklist.md)
+- [Syntax reference](docs/syntax-reference.md) — language, page, widget, layout, event, form, import, and CLI syntax.
+- [Language core](docs/core-language.md)
+- [Page files and browser runtime](docs/page-files.md)
+- [Async execution](docs/async-execution.md)
+- [Examples and interactive showcase](examples/showcase/README.md)
 - [Security policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
 
-## Contributing
+## Try the showcase from source
+
+```sh
+git clone https://github.com/ashbornxd/oru.git
+cd oru
+npm install
+npm run build
+cd examples/showcase
+node ../../dist/cli.js run dev
+```
+
+The showcase includes a multi-page site covering language features, imports, state, async handlers, layouts, forms, validation, assets, and routes. Its form is local-only and does not send data.
+
+## Feedback and bug reports
+
+ORU 0.9.0 is an early public release. Please report reproducible bugs, confusing behavior, and documentation gaps through the [GitHub issue tracker](https://github.com/ashbornxd/oru/issues). Include your Node.js version, operating system, a minimal `.oru` example, and the exact error or unexpected result. Do not include secrets or private user data.
+
+## Development
 
 ```sh
 npm install
