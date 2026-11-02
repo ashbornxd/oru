@@ -109,6 +109,7 @@ The 1.0 development branch has a page compiler and Canvas 2D browser renderer, w
 ## Documentation
 
 - [Published 0.3 language basics](docs/language-basics.md)
+- [ORU 1.0 syntax reference](docs/syntax-reference.md) — concise guide to language, page, widget, layout, event, form, import, and CLI syntax.
 - [1.0 language core](docs/core-language.md)
 - [1.0 page files and browser runtime](docs/page-files.md)
 - [1.0 planning and implementation log](UPDATE.md)
