@@ -2,92 +2,116 @@
 
 **A simpler way to build for the web.**
 
-ORU is a Python-inspired language for building websites. Describe pages, content, layouts, and styles in readable `.oru` files. ORU compiles them into standard web files.
+ORU is a Python-inspired programming language for building websites and browser applications. Write readable `.oru` files and run them with the ORU CLI.
 
-> ORU 0.3 is an early language redesign. Syntax and compiler behavior may still change before 1.0.
-
-## Requirements
-
-- Node.js 20 or newer
-- npm
+> **Current release: 0.9.0** — the first public release of the new ORU language and browser runtime. It is a pre-1.0 release; expect rough edges and breaking changes as the language matures. The earlier 0.3.0 release is available as a separate historical version.
 
 ## Install
 
+Requirements: Node.js 20 or newer.
+
 ```sh
-npm install --global @ashbornxd/oru
-oru --version
+npm install --global @ashbornxd/oru@0.9.0
 ```
 
-## Create and run a project
+Create and run a project:
 
 ```sh
-oru create myWebsite
-cd myWebsite
+oru create my-website
+cd my-website
 oru run dev
 ```
 
-Open http://localhost:3000.
-
-## Build
+Open the local address printed by the CLI (usually `http://localhost:3000`). Create a production build with:
 
 ```sh
 oru build
 ```
 
-ORU writes static files to `dist/` and copies an optional `assets/` folder. Deploy `dist/` to any static web host.
+The generated static site is written to `dist/` and can be hosted on a static web host. An optional project `assets/` directory is copied into the output.
 
-## Language example
+## Quick example
 
-```oru
-title = "My website"
-description = "Made with ORU."
+Project structure:
 
-page index:
-    section:
-        section.padding = 32
-        section.align = center
-
-        heading("Hello, web!"):
-            heading.size = 44
-            heading.color = "#182230"
-
-        text("A website written in ORU."):
-            text.size = 18
-            text.color = "#596579"
-
-        button("Explore", "go about"):
-            button.background = "#2457d6"
-            button.color = white
-            button.radius = 12
-
-page about:
-    section:
-        heading("About")
-        text("Another page, in the same file.")
+```text
+my-website/
+├── oru.config
+├── index.oru
+└── pages/
+    └── help.oru
 ```
 
-## What ORU provides
+`oru.config`:
 
-- Multiple pages in one source file
-- Semantic elements and reusable style classes
-- Element-scoped styling such as `text.color` and `button.radius`
-- Simple vertical stacks and auto-fitting grids
-- Responsive defaults for phones, tablets, and desktops
-- Static HTML output and a local development server
-- Optional local assets
+```text
+name: "My Website"
+```
+
+`index.oru`:
+
+```oru
+metadata:
+    title: "My website"
+    description: "Made with ORU."
+    language: "en"
+
+page:
+    column:
+        text("Hello, web!"):
+            size: 32
+        link("Get help", "pages/help")
+```
+
+Each `.oru` file defines one page. `index.oru` maps to `/`; `pages/help.oru` maps to `/pages/help`.
+
+## What's included
+
+- Python-inspired language core: values, variables, expressions, functions, conditionals, loops, and built-ins.
+- Project CLI for creating projects, running a local development server, evaluating scripts, and building static output.
+- Multi-page projects, routes, assets, module imports, and reusable style classes.
+- Canvas-based browser rendering with semantic content and native keyboard-operable controls.
+- Page-local state, session-scoped global state, reactive bindings, events, and async execution.
+- Native forms, inputs, textareas, selects, file selection, and browser validation.
+- Responsive layouts and baseline security protections, including path validation and content security policies.
+
+File selection currently exposes filenames only; it does not upload file contents. Forms do not submit data to a server automatically.
 
 ## Documentation
 
-Read [Language basics](docs/language-basics.md) for the current syntax and supported elements.
+- [Syntax reference](docs/syntax-reference.md) — language, page, widget, layout, event, form, import, and CLI syntax.
+- [Language core](docs/core-language.md)
+- [Page files and browser runtime](docs/page-files.md)
+- [Async execution](docs/async-execution.md)
+- [Examples and interactive showcase](examples/showcase/README.md)
+- [Security policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
 
-## Contributing
+## Try the showcase from source
 
 ```sh
 git clone https://github.com/ashbornxd/oru.git
 cd oru
 npm install
+npm run build
+cd examples/showcase
+node ../../dist/cli.js run dev
+```
+
+The showcase includes a multi-page site covering language features, imports, state, async handlers, layouts, forms, validation, assets, and routes. Its form is local-only and does not send data.
+
+## Feedback and bug reports
+
+ORU 0.9.0 is an early public release. Please report reproducible bugs, confusing behavior, and documentation gaps through the [GitHub issue tracker](https://github.com/ashbornxd/oru/issues). Include your Node.js version, operating system, a minimal `.oru` example, and the exact error or unexpected result. Do not include secrets or private user data.
+
+## Development
+
+```sh
+npm install
 npm test
 npm run build
+npx playwright install chromium firefox webkit
+npm run test:browser
 ```
 
 ## License

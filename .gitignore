@@ -34,3 +34,6 @@ Desktop.ini
 .idea/
 *.swp
 *.swo
+
+# ORU showcase build verification
+examples/showcase/.test-dist/
