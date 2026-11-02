@@ -1,6 +1,6 @@
 {
   "name": "@ashbornxd/oru",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A Python-inspired programming language for building websites and browser applications.",
   "type": "module",
   "bin": {

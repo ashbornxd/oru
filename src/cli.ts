@@ -7,7 +7,7 @@ import { compileProject } from "./project-build.js";
 import { contentSecurityPolicy, staticHostingHeaders } from "./security.js";
 import { runAsync as runLanguage } from "./core.js";
 
-const VERSION = "1.0.0-dev.0";
+const VERSION = "0.9.1";
 const STARTER = `metadata:
     title: "My website"
     description: "A website built with ORU."
