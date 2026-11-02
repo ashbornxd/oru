@@ -12,6 +12,8 @@ ORU 0.9.0 is an early public release of the new language and browser runtime. It
 - [x] Physical Android phone testing by the maintainer.
 - [ ] Re-run the complete workflow against the exact release commit.
 
+The CI workflow is required on every commit before merging this release preparation.
+
 ## Public beta feedback
 
 - [ ] Collect user reports for installation, project creation, development server, and production builds.
