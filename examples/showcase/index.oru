@@ -2,8 +2,8 @@ from lib.theme import PageShell, HeroPanel, MutedText, ActionButton
 from lib.helpers import APP_VERSION, welcome, getGreeting
 
 metadata:
-    title: "ORU 1.0 Showcase"
-    description: "An interactive website built with the ORU 1.0 development language."
+    title: "ORU 0.9.1 Showcase"
+    description: "An interactive website built with the ORU 0.9.1 development language."
     language: "en"
 
 logic:

@@ -2,9 +2,9 @@
 
 **A simpler way to build for the web.**
 
-ORU is a Python-inspired programming language for building websites and browser applications. Write readable `.oru` files and run them with the ORU CLI.
+ORU is a programming language for building websites and browser applications. Write readable `.oru` files and run them with the ORU CLI.
 
-> **Current release: 0.9.0** — the first public release of the new ORU language and browser runtime. It is a pre-1.0 release; expect rough edges and breaking changes as the language matures. The earlier 0.3.0 release is available as a separate historical version.
+> **Current release: 0.9.1** — the first public release of the new ORU language and browser runtime. It is a pre-1.0 release; expect rough edges and breaking changes as the language matures. The earlier 0.3.0 release is available as a separate historical version.
 
 ## Install
 
